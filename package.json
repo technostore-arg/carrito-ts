@@ -1,0 +1,33 @@
+{
+  "name": "technostore-ecosystem",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n server,technostore,futurohard,admin \"npm:server\" \"npm:dev:technostore\" \"npm:dev:futurohard\" \"npm:dev:admin\"",
+    "dev:technostore": "vite --config apps/technostore/vite.config.js --port 5173",
+    "dev:futurohard": "vite --config apps/futurohard/vite.config.js --port 5174",
+    "dev:admin": "vite --config apps/admin/vite.config.js --port 5175",
+    "client": "vite --config apps/technostore/vite.config.js",
+    "server": "node server/index.js",
+    "build": "npm run build:technostore && npm run build:futurohard && npm run build:admin",
+    "build:technostore": "vite build --config apps/technostore/vite.config.js",
+    "build:futurohard": "vite build --config apps/futurohard/vite.config.js",
+    "build:admin": "vite build --config apps/admin/vite.config.js",
+    "preview": "vite preview --config apps/technostore/vite.config.js"
+  },
+  "dependencies": {
+    "concurrently": "^10.0.5",
+    "express": "^5.2.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.11"
+  }
+}
