@@ -2,7 +2,22 @@ import express from 'express'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { randomBytes, timingSafeEqual } from 'node:crypto'
-import db, { rowToProduct } from './db.js'
+import { existsSync } from 'node:fs'
+import {
+  getProducts,
+  getProductById,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  createOrder,
+  getOrders,
+  getOrderById,
+  updateOrderStatus,
+  updateOrderStatusByCode,
+  getOrderByCode,
+  logMpPayment,
+  createConsulta,
+} from './db.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3001
@@ -15,9 +30,6 @@ const app = express()
 app.use(express.json())
 
 const sessions = new Map()
-
-const FREE_SHIPPING_THRESHOLD = 300000
-const SHIPPING_COST = 15000
 
 function auth(req, res, next) {
   const token = (req.headers.authorization || '').replace('Bearer ', '')
@@ -47,15 +59,23 @@ app.post('/api/admin/login', (req, res) => {
 
 /* ---------------- Products ---------------- */
 
-app.get('/api/products', (req, res) => {
-  const rows = db.prepare('SELECT * FROM products WHERE active = 1 ORDER BY id').all()
-  res.json(rows.map(rowToProduct))
+app.get('/api/products', async (req, res) => {
+  try {
+    const rows = await getProducts({ activeOnly: true })
+    res.json(rows)
+  } catch (e) {
+    res.status(503).json({ error: e.message })
+  }
 })
 
-app.get('/api/products/:id', (req, res) => {
-  const row = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id)
-  if (!row) return res.status(404).json({ error: 'Producto no encontrado' })
-  res.json(rowToProduct(row))
+app.get('/api/products/:id', async (req, res) => {
+  try {
+    const row = await getProductById(req.params.id)
+    if (!row) return res.status(404).json({ error: 'Producto no encontrado' })
+    res.json(row)
+  } catch (e) {
+    res.status(503).json({ error: e.message })
+  }
 })
 
 function validateProduct(body) {
@@ -66,164 +86,115 @@ function validateProduct(body) {
   return errors
 }
 
-app.post('/api/products', auth, (req, res) => {
-  const errors = validateProduct(req.body)
-  if (errors.length) return res.status(400).json({ error: errors.join(', ') })
-  const b = req.body
-  const info = db.prepare(`
-    INSERT INTO products (name, brand, category, price, old_price, rating, reviews, stock, badge, emoji, specs, vram, cuda, tflops, frameworks, image)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    b.name.trim(), b.brand?.trim() || '', b.category,
-    Number(b.price), b.oldPrice ? Number(b.oldPrice) : null,
-    Number(b.rating) || 4.5, Number(b.reviews) || 0,
-    Number(b.stock) || 0, b.badge?.trim() || null,
-    b.emoji?.trim() || '📦', JSON.stringify(Array.isArray(b.specs) ? b.specs : []),
-    b.vram ?? null, b.cuda ?? null, b.tflops ?? null,
-    JSON.stringify(Array.isArray(b.frameworks) ? b.frameworks : []),
-    b.image?.trim() || null,
-  )
-  const row = db.prepare('SELECT * FROM products WHERE id = ?').get(info.lastInsertRowid)
-  res.status(201).json(rowToProduct(row))
-})
-
-app.put('/api/products/:id', auth, (req, res) => {
-  const existing = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id)
-  if (!existing) return res.status(404).json({ error: 'Producto no encontrado' })
-  const b = { ...rowToProduct(existing), ...req.body }
-  const errors = validateProduct(b)
-  if (errors.length) return res.status(400).json({ error: errors.join(', ') })
-  db.prepare(`
-    UPDATE products SET name=?, brand=?, category=?, price=?, old_price=?, rating=?,
-      reviews=?, stock=?, badge=?, emoji=?, specs=?, active=?, vram=?, cuda=?, tflops=?, frameworks=?, image=?
-    WHERE id=?
-  `).run(
-    b.name.trim(), b.brand?.trim() || '', b.category,
-    Number(b.price), b.oldPrice ? Number(b.oldPrice) : null,
-    Number(b.rating), Number(b.reviews), Number(b.stock),
-    b.badge || null, b.emoji || '📦', JSON.stringify(b.specs || []),
-    b.active ? 1 : 0,
-    b.vram ?? null, b.cuda ?? null, b.tflops ?? null,
-    JSON.stringify(Array.isArray(b.frameworks) ? b.frameworks : []),
-    b.image || null,
-    existing.id,
-  )
-  const row = db.prepare('SELECT * FROM products WHERE id = ?').get(existing.id)
-  res.json(rowToProduct(row))
-})
-
-app.delete('/api/products/:id', auth, (req, res) => {
-  const info = db.prepare('DELETE FROM products WHERE id = ?').run(req.params.id)
-  if (info.changes === 0) return res.status(404).json({ error: 'Producto no encontrado' })
-  res.json({ ok: true })
-})
-
-/* ---------------- Orders ---------------- */
-
-app.post('/api/orders', (req, res) => {
-  const { customer, items } = req.body || {}
-  if (!customer?.name || !customer?.email) {
-    return res.status(400).json({ error: 'Faltan datos del cliente' })
-  }
-  if (!Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ error: 'El carrito está vacío' })
-  }
-
-  const getStock = db.prepare('SELECT id, name, emoji, price, stock FROM products WHERE id = ?')
-  let subtotal = 0
-  const resolved = []
-
-  for (const it of items) {
-    const p = getStock.get(it.id)
-    if (!p) return res.status(400).json({ error: `Producto ${it.id} inexistente` })
-    const qty = Math.max(1, Math.floor(Number(it.qty) || 1))
-    if (qty > p.stock) {
-      return res.status(400).json({ error: `Stock insuficiente de "${p.name}" (${p.stock} disponibles)` })
-    }
-    resolved.push({ product_id: p.id, name: p.name, emoji: p.emoji, qty, unit_price: p.price })
-    subtotal += p.price * qty
-  }
-
-  const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST
-  const total = subtotal + shipping
-  const code = `TS-${randomBytes(3).toString('hex').toUpperCase()}`
-
-  db.exec('BEGIN')
+app.post('/api/products', auth, async (req, res) => {
   try {
-    const orderId = db.prepare(`
-      INSERT INTO orders (code, customer_name, email, phone, city, address, payment_method, subtotal, shipping, total)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      code, customer.name.trim(), customer.email.trim(),
-      customer.phone || '', customer.city || '', customer.address || '',
-      ['mercadopago', 'transferencia', 'tarjeta'].includes(customer.paymentMethod)
-        ? customer.paymentMethod
-        : 'mercadopago',
-      subtotal, shipping, total,
-    ).lastInsertRowid
-
-    const insertItem = db.prepare(`
-      INSERT INTO order_items (order_id, product_id, name, emoji, qty, unit_price)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `)
-    const decStock = db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?')
-    for (const r of resolved) {
-      insertItem.run(orderId, r.product_id, r.name, r.emoji, r.qty, r.unit_price)
-      decStock.run(r.qty, r.product_id)
-    }
-    db.exec('COMMIT')
+    const errors = validateProduct(req.body)
+    if (errors.length) return res.status(400).json({ error: errors.join(', ') })
+    const row = await createProduct(req.body)
+    res.status(201).json(row)
   } catch (e) {
-    db.exec('ROLLBACK')
-    console.error(e)
-    return res.status(500).json({ error: 'Error al registrar el pedido' })
+    res.status(503).json({ error: e.message })
   }
+})
 
-  res.status(201).json({ ok: true, code, total })
+app.put('/api/products/:id', auth, async (req, res) => {
+  try {
+    const existing = await getProductById(req.params.id)
+    if (!existing) return res.status(404).json({ error: 'Producto no encontrado' })
+    const merged = { ...existing, ...req.body }
+    const errors = validateProduct(merged)
+    if (errors.length) return res.status(400).json({ error: errors.join(', ') })
+    const row = await updateProduct(req.params.id, req.body)
+    res.json(row)
+  } catch (e) {
+    res.status(503).json({ error: e.message })
+  }
+})
+
+app.delete('/api/products/:id', auth, async (req, res) => {
+  try {
+    const ok = await deleteProduct(req.params.id)
+    if (!ok) return res.status(404).json({ error: 'Producto no encontrado' })
+    res.json({ ok: true })
+  } catch (e) {
+    res.status(503).json({ error: e.message })
+  }
+})
+
+/* ---------------- Consultas (encargo WhatsApp) ---------------- */
+
+app.post('/api/consultas', async (req, res) => {
+  try {
+    const { sku, nombre, marca, telefono, mensaje } = req.body || {}
+    const id = await createConsulta({ sku, nombre, marca, telefono, mensaje, origen: 'whatsapp' })
+    res.status(201).json({ ok: true, id })
+  } catch (e) {
+    res.status(503).json({ error: e.message })
+  }
 })
 
 /* ---------------- Orders ---------------- */
 
-app.get('/api/orders', auth, (req, res) => {
-  const status = req.query.status
-  const rows = status
-    ? db.prepare('SELECT * FROM orders ORDER BY id DESC').all().filter(o => o.status === status)
-    : db.prepare('SELECT * FROM orders ORDER BY id DESC').all()
-  const itemsStmt = db.prepare('SELECT * FROM order_items WHERE order_id = ?')
-  res.json(rows.map(o => ({ ...o, items: itemsStmt.all(o.id) })))
+app.post('/api/orders', async (req, res) => {
+  try {
+    const { customer, items } = req.body || {}
+    if (!customer?.name || !customer?.email) {
+      return res.status(400).json({ error: 'Faltan datos del cliente' })
+    }
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'El carrito está vacío' })
+    }
+    const result = await createOrder({ customer, items })
+    res.status(201).json({ ok: true, ...result })
+  } catch (e) {
+    res.status(400).json({ error: e.message })
+  }
 })
 
-app.patch('/api/orders/:id', auth, (req, res) => {
-  const allowed = ['pendiente', 'pagado', 'enviado', 'entregado', 'cancelado']
-  if (!allowed.includes(req.body?.status)) {
-    return res.status(400).json({ error: 'Estado inválido' })
+app.get('/api/orders', auth, async (req, res) => {
+  try {
+    const rows = await getOrders({ status: req.query.status })
+    res.json(rows)
+  } catch (e) {
+    res.status(503).json({ error: e.message })
   }
-  const info = db.prepare('UPDATE orders SET status = ? WHERE id = ?').run(req.body.status, req.params.id)
-  if (info.changes === 0) return res.status(404).json({ error: 'Pedido no encontrado' })
-  res.json({ ok: true })
+})
+
+app.patch('/api/orders/:id', auth, async (req, res) => {
+  try {
+    const allowed = ['pendiente', 'pagado', 'enviado', 'entregado', 'cancelado']
+    if (!allowed.includes(req.body?.status)) {
+      return res.status(400).json({ error: 'Estado inválido' })
+    }
+    const ok = await updateOrderStatus(req.params.id, req.body.status)
+    if (!ok) return res.status(404).json({ error: 'Pedido no encontrado' })
+    res.json({ ok: true })
+  } catch (e) {
+    res.status(503).json({ error: e.message })
+  }
 })
 
 /* ---------------- MercadoPago ---------------- */
 
 app.post('/api/mp/create-preference', async (req, res) => {
-  const { code } = req.body || {}
-  const order = db.prepare('SELECT * FROM orders WHERE code = ?').get(code)
-  if (!order) return res.status(404).json({ error: 'Orden no encontrada' })
-
-  if (!MP_TOKEN) {
-    return res.json({ mock: true, code: order.code })
-  }
-
-  const items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id)
-  const base = `${req.protocol}://${req.get('host')}`
   try {
+    const { code } = req.body || {}
+    const order = await getOrderByCode(code)
+    if (!order) return res.status(404).json({ error: 'Orden no encontrada' })
+
+    if (!MP_TOKEN) {
+      return res.json({ mock: true, code: order.code })
+    }
+
+    const base = `${req.protocol}://${req.get('host')}`
     const r = await fetch('https://api.mercadopago.com/checkout/preferences', {
       method: 'POST',
       headers: { Authorization: `Bearer ${MP_TOKEN}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        items: items.map(i => ({
-          title: i.name,
+        items: (order.items || []).map((i) => ({
+          title: i.nombre,
           quantity: i.qty,
-          unit_price: i.unit_price,
+          unit_price: i.precio_unitario,
           currency_id: 'ARS',
         })),
         external_reference: order.code,
@@ -238,8 +209,7 @@ app.post('/api/mp/create-preference', async (req, res) => {
     })
     const d = await r.json()
     if (!r.ok) throw new Error(d.message || 'Error de MercadoPago')
-    db.prepare('INSERT INTO mp_payments (order_code, preference_id, payload) VALUES (?, ?, ?)')
-      .run(order.code, d.id ?? null, JSON.stringify(d))
+    await logMpPayment({ code: order.code, preferenceId: d.id ?? null, payload: d })
     res.json({ init_point: d.init_point ?? d.sandbox_init_point, code: order.code })
   } catch (e) {
     console.error('[mp]', e.message)
@@ -247,15 +217,14 @@ app.post('/api/mp/create-preference', async (req, res) => {
   }
 })
 
-app.post('/api/mp/webhook', (req, res) => {
+app.post('/api/mp/webhook', async (req, res) => {
   try {
     const body = req.body || {}
     const data = body.data || {}
     const ref = data.external_reference || body.external_reference || null
-    db.prepare('INSERT INTO mp_payments (order_code, preference_id, payload) VALUES (?, ?, ?)')
-      .run(ref, String(data.id ?? ''), JSON.stringify(body))
+    await logMpPayment({ code: ref, preferenceId: String(data.id ?? ''), payload: body })
     if (ref && (body.type === 'payment' || body.action?.includes('payment'))) {
-      db.prepare("UPDATE orders SET status = 'pagado' WHERE code = ?").run(ref)
+      await updateOrderStatusByCode(ref, 'pagado')
     }
   } catch (e) {
     console.error('[mp webhook]', e.message)
@@ -270,7 +239,6 @@ const TS_DIST = path.join(__dirname, '..', 'apps', 'technostore', 'dist')
 const FH_DIST = path.join(__dirname, '..', 'apps', 'futurohard', 'dist')
 const ADMIN_DIST = path.join(__dirname, '..', 'apps', 'admin', 'dist')
 const FALLBACK_DIST = path.join(__dirname, '..', 'dist')
-import { existsSync } from 'node:fs'
 
 const noCacheHtml = (res, filePath) => {
   if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')

@@ -18,11 +18,14 @@
     "build:technostore": "vite build --config apps/technostore/vite.config.js",
     "build:futurohard": "vite build --config apps/futurohard/vite.config.js",
     "build:admin": "vite build --config apps/admin/vite.config.js",
-    "preview": "vite preview --config apps/technostore/vite.config.js"
+    "preview": "vite preview --config apps/technostore/vite.config.js",
+    "migrate:firestore": "node server/migrate-to-firestore.mjs"
   },
   "dependencies": {
     "concurrently": "^10.0.5",
     "express": "^5.2.1",
+    "firebase-admin": "^14.3.0",
+    "framer-motion": "^13.1.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
