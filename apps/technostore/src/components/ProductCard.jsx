@@ -1,36 +1,69 @@
-import { useCart } from '../context/CartContext'
-import { ars } from '../utils/format'
+import { motion, useReducedMotion } from "framer-motion"
+import { ars, waLink } from "../utils/format"
 
-export default function ProductCard({ product }) {
-  const { addToCart } = useCart()
-  const discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : 0
+function specsPreview(especificaciones) {
+  const entries = Object.entries(especificaciones || {}).slice(0, 2)
+  if (entries.length === 0) return null
+  return entries.map(([k, v]) => `${k}: ${v}`).join(" · ")
+}
+
+export default function ProductCard({ producto, onAddToCart }) {
+  const shouldReduce = useReducedMotion()
+  const { nombre, descripcion, categoria, tipo_venta, precio, stock, especificaciones, imagenes, sku } = producto
+  const foto = imagenes?.[0]
+  const esEncargo = tipo_venta === "encargo"
+  const preview = specsPreview(especificaciones)
+  const waHref = esEncargo ? waLink(`Hola, quiero consultar por ${nombre} (SKU: ${sku})`) : null
+
+  const handleEncargo = () => {
+    try { fetch("/api/consultas", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sku, nombre, marca: producto.marca, mensaje: `Hola, quiero consultar por ${nombre} (SKU: ${sku})`, origen: "whatsapp" }) }).catch(() => {}) } catch {}
+  }
+
   return (
-    <article className="card">
+    <motion.article
+      className="card"
+      whileHover={shouldReduce ? undefined : { y: -4 }}
+      transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+      style={{ willChange: "transform" }}
+    >
       <div className="card-media">
-        {product.image ? (
-          <img src={product.image} alt={product.name} loading="lazy" />
-        ) : (
-          <div className="fallback" />
-        )}
-        {product.badge && !discount && <span className="badge">{product.badge}</span>}
-        {discount > 0 && <span className="badge deal">-{discount}%</span>}
-        {product.vram >= 16 && <span className="vram-chip">{product.vram}GB</span>}
-        {product.stock <= 4 && <span className="stock-warn">Pocas unidades</span>}
+        {foto ? <img src={foto} alt={nombre} loading="lazy" /> : <div className="fallback" aria-hidden />}
+        <span className={`badge ${esEncargo ? "badge--encargo" : ""}`}>{esEncargo ? "A pedido" : categoria}</span>
+        {!esEncargo && stock != null && stock <= 4 && <span className="stock-warn">Últimas {stock}</span>}
       </div>
+
       <div className="card-body">
-        <span className="brand">{product.brand}</span>
-        <h3>{product.name}</h3>
-        <span className="spec-line">{product.specs?.slice(0, 2).join(' · ')}</span>
-        <div className="rating">
-          <span className="stars">{'★'.repeat(Math.round(product.rating))}{'☆'.repeat(5 - Math.round(product.rating))}</span>
-          <small>{product.rating.toFixed(1)} · {product.reviews}</small>
-        </div>
+        <span className="brand">{sku}</span>
+        <h3 title={nombre}>{nombre}</h3>
+        {descripcion && <p className="card-desc">{descripcion}</p>}
+        {preview && <span className="spec-line">{preview}</span>}
+
         <div className="price-row">
-          <span className="price">{ars(product.price)}</span>
-          {product.oldPrice && <span className="old-price">{ars(product.oldPrice)}</span>}
+          {esEncargo ? (
+            <span className="price price--encargo">A consultar</span>
+          ) : (
+            <>
+              <span className="price">{ars(precio)}</span>
+              <span className="price-note">IVA incl.</span>
+            </>
+          )}
         </div>
-        <button className="add-btn" onClick={() => addToCart(product)}>Agregar al carrito</button>
+
+        <div className="card-meta">
+          <span className="meta-dot" />
+          <small>{esEncargo ? "Entrega a pedido" : `Stock: ${stock}`}</small>
+        </div>
+
+        {esEncargo ? (
+          <motion.a whileTap={{ scale: 0.97 }} transition={{ duration: 0.15 }} className="add-btn" href={waHref} target="_blank" rel="noreferrer" onClick={handleEncargo} aria-label={`Consultar por ${nombre} vía WhatsApp`}>
+            Consultar por WhatsApp
+          </motion.a>
+        ) : (
+          <motion.button whileTap={{ scale: 0.97 }} transition={{ duration: 0.15 }} className="add-btn add-btn--ghost" onClick={() => onAddToCart?.(producto)}>
+            Agregar al carrito
+          </motion.button>
+        )}
       </div>
-    </article>
+    </motion.article>
   )
 }

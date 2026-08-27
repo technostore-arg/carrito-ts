@@ -1,32 +1,47 @@
 import { CountUp } from '../hooks/motion'
-import HeroVideo from './HeroVideo'
 
 const POSTER = 'assets/video/futurohard-poster.jpg'
+const VIDEO = 'assets/video/futurohard-hero.mp4'
 
-export default function Hero({ onExplore }) {
+export default function Hero({ onExplore, onServicios }) {
+  const base = import.meta.env.BASE_URL || '/'
+  const videoSrc = VIDEO.startsWith('/') ? VIDEO : base + VIDEO
+  const posterSrc = POSTER.startsWith('/') ? POSTER : base + POSTER
   return (
     <>
-      <HeroVideo src="assets/video/futurohard-hero.mp4" poster={POSTER}>
-        <span className="hero-tag">Vertical IA · ecosistema TechnoStore</span>
-        <h1>Hardware para <br />correr IA en serio</h1>
-        <p className="hero-sub">
-          GPUs 16–48GB VRAM, memorias ECC y rigs armados para Ollama, vLLM y ComfyUI.
-        </p>
-        <div className="hero-actions">
-          <button className="btn-primary" onClick={onExplore}>Explorar hardware IA</button>
-          <a className="btn-ghost" href="#servicios" onClick={e=>{e.preventDefault();document.getElementById('servicios')?.scrollIntoView({behavior:'smooth'})}}>Instalación de modelos</a>
+      <section className="hero container">
+        <div className="hero-copy">
+          <span className="hero-tag" style={{ color: 'var(--celeste)', background: 'rgba(6,182,212,0.1)', borderColor: 'rgba(6,182,212,0.2)' }}>Vertical IA - TechnoStore</span>
+          <h1>
+            Hardware para <span className="grad-text">IA real</span>
+          </h1>
+          <p className="hero-sub">
+            GPUs 24-48GB VRAM, RAM ECC y rigs armados para Ollama, vLLM y ComfyUI.
+            Testeado 48h, listo para producir.
+          </p>
+          <div className="hero-actions">
+            <button className="btn-primary" onClick={onExplore}>Explorar hardware IA</button>
+            <button className="btn-ghost" onClick={onServicios}>Instalacion de modelos</button>
+          </div>
+          <div className="hero-proof">
+            <span className="proof-stars">★★★★★</span> 4.9 - +120 rigs entregados
+          </div>
         </div>
-        <div className="hero-proof">
-          <span className="proof-stars">★★★★★</span> +120 rigs entregados · 48GB VRAM máx.
+        <div className="hero-media" style={{ borderColor: 'rgba(168,85,247,0.18)' }}>
+          <video autoPlay muted loop playsInline preload="metadata" poster={posterSrc}>
+            <source src={videoSrc} type="video/mp4" />
+          </video>
         </div>
-      </HeroVideo>
+      </section>
+      <div className="diagonal-break" aria-hidden />
       <div className="marquee" aria-hidden="true">
         <div className="marquee-track">
-          {['GPUs 48GB VRAM','Ollama · vLLM · ComfyUI','Testeado 48h','Soporte CUDA','Envío a todo el país'].flatMap(x=>[x,x]).map((item,i)=>(
-            <span key={i}>{item} <i>·</i></span>
+          {['VRAM 48GB','Ollama vLLM','ComfyUI 48h','CUDA 12','Soporte real'].flatMap(x=>[x,x]).map((item,i)=>(
+            <span key={i}>{item} <i>◆</i></span>
           ))}
         </div>
       </div>
+      <div className="diagonal-break--alt" aria-hidden />
     </>
   )
 }

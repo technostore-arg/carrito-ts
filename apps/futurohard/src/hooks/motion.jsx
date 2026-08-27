@@ -1,13 +1,58 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from "react"
+import { motion, useReducedMotion } from "framer-motion"
 
-export function Reveal({ children, delay = 0, className = '' }) {
+// ── Stagger container para grids ───────────────────────────────
+export const staggerContainer = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.07, delayChildren: 0.08 },
+  },
+}
+
+export const cardReveal = {
+  hidden: { opacity: 0, y: 14 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.38, ease: [0.25, 0.1, 0.25, 1] },
+  },
+}
+
+// ── Wrapper para ProductGrid ───────────────────────────────────
+export function StaggerGrid({ children, className = "" }) {
+  const shouldReduce = useReducedMotion()
+  if (shouldReduce) return <div className={className}>{children}</div>
+  return (
+    <motion.div
+      className={className}
+      variants={staggerContainer}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-40px" }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+export function RevealCard({ children, index = 0 }) {
+  const shouldReduce = useReducedMotion()
+  if (shouldReduce) return <>{children}</>
+  return (
+    <motion.div variants={cardReveal} custom={index} style={{ height: "100%" }}>
+      {children}
+    </motion.div>
+  )
+}
+
+// ── Legacy Reveal (compat) ─────────────────────────────────────
+export function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null)
   const [shown, setShown] = useState(false)
-
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setShown(true)
       return
     }
@@ -18,31 +63,25 @@ export function Reveal({ children, delay = 0, className = '' }) {
           io.disconnect()
         }
       },
-      { threshold: 0.1 },
+      { threshold: 0.1 }
     )
     io.observe(el)
     return () => io.disconnect()
   }, [])
-
   return (
-    <div
-      ref={ref}
-      className={`reveal ${shown ? 'revealed' : ''} ${className}`}
-      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
-    >
+    <div ref={ref} className={`reveal ${shown ? "revealed" : ""} ${className}`} style={delay ? { transitionDelay: `${delay}ms` } : undefined}>
       {children}
     </div>
   )
 }
 
-export function CountUp({ to, prefix = '', suffix = '', duration = 1600 }) {
+export function CountUp({ to, prefix = "", suffix = "", duration = 1600 }) {
   const ref = useRef(null)
   const [val, setVal] = useState(0)
-
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setVal(to)
       return
     }
@@ -60,7 +99,7 @@ export function CountUp({ to, prefix = '', suffix = '', duration = 1600 }) {
         }
         raf = requestAnimationFrame(tick)
       },
-      { threshold: 0.4 },
+      { threshold: 0.4 }
     )
     io.observe(el)
     return () => {
@@ -68,32 +107,11 @@ export function CountUp({ to, prefix = '', suffix = '', duration = 1600 }) {
       cancelAnimationFrame(raf)
     }
   }, [to, duration])
-
   return (
     <span ref={ref}>
       {prefix}
-      {val.toLocaleString('es-AR')}
+      {val.toLocaleString("es-AR")}
       {suffix}
     </span>
   )
-}
-
-export function tiltHandlers(ref, maxDeg = 8) {
-  const disabled = () =>
-    typeof window !== 'undefined' && window.matchMedia('(hover: none)').matches
-
-  return {
-    onMouseMove: e => {
-      const el = ref.current
-      if (!el || disabled()) return
-      const r = el.getBoundingClientRect()
-      const px = (e.clientX - r.left) / r.width - 0.5
-      const py = (e.clientY - r.top) / r.height - 0.5
-      el.style.transform = `perspective(900px) rotateY(${(px * maxDeg).toFixed(2)}deg) rotateX(${(-py * maxDeg).toFixed(2)}deg) translateY(-6px) scale(1.015)`
-    },
-    onMouseLeave: () => {
-      const el = ref.current
-      if (el) el.style.transform = ''
-    },
-  }
 }

@@ -1,52 +1,45 @@
+import { motion } from "framer-motion"
+
 const SORTS = [
-  { id: 'destacados', label: 'Destacados' },
-  { id: 'precio-asc', label: 'Menor precio' },
-  { id: 'precio-desc', label: 'Mayor precio' },
-  { id: 'rating', label: 'Mejor valorados' },
+  { id: "destacados", label: "Destacados" },
+  { id: "precio-asc", label: "Menor precio" },
+  { id: "precio-desc", label: "Mayor precio" },
+  { id: "rating", label: "Mejor valorados" },
 ]
 
 const VRAMS = [
-  { value: '', label: 'Toda VRAM' },
-  { value: '16', label: '16 GB+' },
-  { value: '24', label: '24 GB+' },
-  { value: '48', label: '48 GB+' },
+  { value: "", label: "Toda VRAM" },
+  { value: "16", label: "16 GB+" },
+  { value: "24", label: "24 GB+" },
+  { value: "48", label: "48 GB+" },
 ]
 
 const FRAMEWORKS = [
-  { value: '', label: 'Todos los frameworks' },
-  { value: 'ollama', label: 'Ollama' },
-  { value: 'vllm', label: 'vLLM' },
-  { value: 'comfyui', label: 'ComfyUI / SDXL' },
-  { value: 'pytorch', label: 'PyTorch' },
-  { value: 'lmstudio', label: 'LM Studio' },
+  { value: "", label: "Todos los frameworks" },
+  { value: "ollama", label: "Ollama" },
+  { value: "vllm", label: "vLLM" },
+  { value: "comfyui", label: "ComfyUI / SDXL" },
+  { value: "pytorch", label: "PyTorch" },
+  { value: "lmstudio", label: "LM Studio" },
 ]
 
-export default function CategoryFilter({
-  active,
-  labels,
-  counts,
-  onChange,
-  sort,
-  onSortChange,
-  vram,
-  onVramChange,
-  framework,
-  onFrameworkChange,
-}) {
+export default function CategoryFilter({ active, labels, counts, onChange, sort, onSortChange, vram, onVramChange, framework, onFrameworkChange }) {
   return (
     <>
       <div className="section-head">
         <div className="filter-pills" role="tablist">
           {Object.entries(labels).map(([id, label]) => (
-            <button
+            <motion.button
               key={id}
               role="tab"
               aria-selected={active === id}
-              className={`pill ${active === id ? 'active' : ''}`}
+              className={`pill ${active === id ? "active" : ""}`}
               onClick={() => onChange(id)}
+              whileTap={{ scale: 0.96 }}
+              transition={{ duration: 0.14, ease: [0.25, 0.1, 0.25, 1] }}
             >
               {label} <em>{counts[id] ?? 0}</em>
-            </button>
+            </motion.button>
           ))}
         </div>
         <label className="sort-wrap">
@@ -61,15 +54,11 @@ export default function CategoryFilter({
         </label>
       </div>
 
-      {(active === 'todos' || active === 'gpus' || active === 'workstations') && (
+      {(active === "todos" || active === "gpus" || active === "workstations") && (
         <div className="extra-filters">
           <label className="sort-wrap">
-            <span>🎯 VRAM:</span>
-            <select
-              value={vram}
-              onChange={e => onVramChange(e.target.value)}
-              disabled={active === 'workstations'}
-            >
+            <span>VRAM:</span>
+            <select value={vram} onChange={e => onVramChange(e.target.value)} disabled={active === "workstations"}>
               {VRAMS.map(v => (
                 <option key={v.value} value={v.value}>
                   {v.label}
@@ -78,7 +67,7 @@ export default function CategoryFilter({
             </select>
           </label>
           <label className="sort-wrap">
-            <span>🧰 Framework:</span>
+            <span>Framework:</span>
             <select value={framework} onChange={e => onFrameworkChange(e.target.value)}>
               {FRAMEWORKS.map(f => (
                 <option key={f.value} value={f.value}>
@@ -88,12 +77,9 @@ export default function CategoryFilter({
             </select>
           </label>
           {(vram || framework) && (
-            <button className="pill clear-btn" onClick={() => {
-              onVramChange('')
-              onFrameworkChange('')
-            }}>
-              ✕ Limpiar filtros IA
-            </button>
+            <motion.button whileTap={{ scale: 0.96 }} transition={{ duration: 0.14 }} className="pill clear-btn" onClick={() => { onVramChange(""); onFrameworkChange(""); }}>
+              Limpiar filtros IA
+            </motion.button>
           )}
         </div>
       )}

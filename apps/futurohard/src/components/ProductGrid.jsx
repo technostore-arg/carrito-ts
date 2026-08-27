@@ -1,30 +1,64 @@
-import ProductCard from './ProductCard'
-import { Reveal } from '../hooks/motion'
+import { motion } from "framer-motion"
+import ProductCard from "./ProductCard"
+import { StaggerGrid, RevealCard } from "../hooks/motion"
+
+function SkeletonCard() {
+  return (
+    <div className="card card--fh" aria-hidden>
+      <div className="card-media" style={{ background: "var(--bg-alt)" }}>
+        <div className="skeleton shimmer" style={{ width: "100%", height: "100%" }} />
+      </div>
+      <div className="card-body">
+        <div className="skeleton" style={{ width: 70, height: 10, borderRadius: 4 }} />
+        <div className="skeleton" style={{ width: "85%", height: 15, borderRadius: 6, marginTop: 10 }} />
+        <div className="skeleton" style={{ width: "60%", height: 11, borderRadius: 6, marginTop: 8 }} />
+        <div className="skeleton" style={{ width: 100, height: 18, borderRadius: 8, marginTop: 14 }} />
+      </div>
+    </div>
+  )
+}
 
 export default function ProductGrid({ products, totalLabel, onReset }) {
+  if (!products) {
+    return (
+      <>
+        <p className="grid-count mono" style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 12 }}>
+          Cargando…
+        </p>
+        <div className="product-grid">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+      </>
+    )
+  }
+
   if (products.length === 0) {
     return (
-      <div className="empty-state">
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }} className="empty-state">
         <span className="empty-emoji">🔎</span>
-        <h3>No encontramos productos</h3>
-        <p>Prueba con otra búsqueda o explora otra categoría.</p>
-        <button className="btn-ghost" onClick={onReset}>
-          Ver todo el catálogo
-        </button>
-      </div>
+        <h3>Sin resultados</h3>
+        <p>Probá con otra categoría o búsqueda técnica (ej. “48GB”, “Gen5”).</p>
+        <motion.button whileTap={{ scale: 0.97 }} transition={{ duration: 0.15 }} className="btn-ghost" onClick={onReset}>
+          Ver catálogo completo
+        </motion.button>
+      </motion.div>
     )
   }
 
   return (
     <>
-      <p className="grid-count">{totalLabel}</p>
-      <div className="product-grid">
+      <p className="grid-count mono" style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 12 }}>
+        {totalLabel}
+      </p>
+      <StaggerGrid className="product-grid">
         {products.map((p, i) => (
-          <Reveal key={p.id} delay={Math.min(i * 55, 385)}>
-            <ProductCard product={p} />
-          </Reveal>
+          <RevealCard key={p.sku} index={i}>
+            <ProductCard producto={p} />
+          </RevealCard>
         ))}
-      </div>
+      </StaggerGrid>
     </>
   )
 }
