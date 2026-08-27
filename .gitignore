@@ -6,4 +6,8 @@ server/*.db
 server/*.db-*
 *.log
 .env
+.env.*
+!.env.example
+firebase-service-account.json
+firebase-config.js
 .DS_Store
