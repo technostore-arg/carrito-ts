@@ -22,12 +22,18 @@ export const COLLECTIONS = {
   ORDERS: 'pedidos',
   CONSULTAS: 'consultas',
   MP_PAYMENTS: 'mp_payments',
+  PENDING_CHECKOUTS: 'pending_checkouts',
 }
 
 export const FREE_SHIPPING_THRESHOLD = 300000
 export const SHIPPING_COST = 15000
 
 let _db = null
+let _noConfig = false
+
+export function isFirebaseConfigured() {
+  return !_noConfig
+}
 
 export function getFirestoreDb() {
   if (_db) return _db
@@ -47,19 +53,20 @@ export function getFirestoreDb() {
         privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
       }),
     })
-  } else {
-    const saPath = path.join(__dirname, 'firebase-service-account.json')
-    if (existsSync(saPath)) {
-      const sa = JSON.parse(readFileSync(saPath, 'utf-8'))
-      initializeApp({ credential: cert(sa) })
     } else {
-      throw new Error(
-        'FIREBASE_NO_CONFIG: no se encontró configuración de Firebase. Usá el emulador ' +
-        '(FIRESTORE_EMULATOR_HOST) o definí FIREBASE_PROJECT_ID/FIREBASE_CLIENT_EMAIL/' +
-        'FIREBASE_PRIVATE_KEY (o GOOGLE_APPLICATION_CREDENTIALS). Ver README.md.',
-      )
+      const saPath = path.join(__dirname, 'firebase-service-account.json')
+      if (existsSync(saPath)) {
+        const sa = JSON.parse(readFileSync(saPath, 'utf-8'))
+        initializeApp({ credential: cert(sa) })
+      } else {
+        _noConfig = true
+        throw new Error(
+          'FIREBASE_NO_CONFIG: no se encontró configuración de Firebase. Usá el emulador ' +
+          '(FIRESTORE_EMULATOR_HOST) o definí FIREBASE_PROJECT_ID/FIREBASE_CLIENT_EMAIL/' +
+          'FIREBASE_PRIVATE_KEY (o GOOGLE_APPLICATION_CREDENTIALS). Ver README.md. [MOCK disponible]',
+        )
+      }
     }
-  }
 
   _db = getFirestore()
   _db.settings({ ignoreUndefinedProperties: true })

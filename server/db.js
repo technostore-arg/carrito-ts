@@ -13,8 +13,13 @@
  */
 import { randomBytes } from 'node:crypto'
 import { getFirestoreDb, COLLECTIONS, FREE_SHIPPING_THRESHOLD, SHIPPING_COST } from './firebase.js'
+import { mockStore } from './mock-store.js'
 
 const { PRODUCTS, ORDERS, CONSULTAS, MP_PAYMENTS } = COLLECTIONS
+
+function useMock(err) {
+  return err && String(err.message || '').includes('FIREBASE_NO_CONFIG')
+}
 
 /* ---------------- Traducción doc <-> forma API ---------------- */
 
@@ -82,161 +87,230 @@ export function productToDoc(p) {
 /* ---------------- Productos ---------------- */
 
 export async function getProducts({ activeOnly = true } = {}) {
-  const db = getFirestoreDb()
-  let q = db.collection(PRODUCTS)
-  if (activeOnly) q = q.where('active', '==', true)
-  const snap = await q.get()
-  return snap.docs.map(docToProduct)
+  try {
+    const db = getFirestoreDb()
+    let q = db.collection(PRODUCTS)
+    if (activeOnly) q = q.where('active', '==', true)
+    const snap = await q.get()
+    return snap.docs.map(docToProduct)
+  } catch (e) {
+    if (useMock(e)) return mockStore.getProducts({ activeOnly })
+    throw e
+  }
 }
 
 export async function getProductById(id) {
-  const db = getFirestoreDb()
-  const doc = await db.collection(PRODUCTS).doc(String(id)).get()
-  if (!doc.exists) return null
-  return docToProduct(doc)
+  try {
+    const db = getFirestoreDb()
+    const doc = await db.collection(PRODUCTS).doc(String(id)).get()
+    if (!doc.exists) return null
+    return docToProduct(doc)
+  } catch (e) {
+    if (useMock(e)) return mockStore.getProductById(id)
+    throw e
+  }
 }
 
 export async function createProduct(data) {
-  const db = getFirestoreDb()
-  const ref = await db.collection(PRODUCTS).add({
-    ...productToDoc(data),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  })
-  return docToProduct(await ref.get())
+  try {
+    const db = getFirestoreDb()
+    const ref = await db.collection(PRODUCTS).add({
+      ...productToDoc(data),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    })
+    return docToProduct(await ref.get())
+  } catch (e) {
+    if (useMock(e)) return mockStore.createProduct(data)
+    throw e
+  }
 }
 
 export async function updateProduct(id, data) {
-  const db = getFirestoreDb()
-  const ref = db.collection(PRODUCTS).doc(String(id))
-  const existing = await ref.get()
-  if (!existing.exists) return null
-  const merged = { ...docToProduct(existing), ...data }
-  await ref.set({ ...productToDoc(merged), updatedAt: new Date().toISOString() })
-  return docToProduct(await ref.get())
+  try {
+    const db = getFirestoreDb()
+    const ref = db.collection(PRODUCTS).doc(String(id))
+    const existing = await ref.get()
+    if (!existing.exists) return null
+    const merged = { ...docToProduct(existing), ...data }
+    await ref.set({ ...productToDoc(merged), updatedAt: new Date().toISOString() })
+    return docToProduct(await ref.get())
+  } catch (e) {
+    if (useMock(e)) return mockStore.updateProduct(id, data)
+    throw e
+  }
 }
 
 export async function deleteProduct(id) {
-  const db = getFirestoreDb()
-  const ref = db.collection(PRODUCTS).doc(String(id))
-  const existing = await ref.get()
-  if (!existing.exists) return false
-  await ref.delete()
-  return true
+  try {
+    const db = getFirestoreDb()
+    const ref = db.collection(PRODUCTS).doc(String(id))
+    const existing = await ref.get()
+    if (!existing.exists) return false
+    await ref.delete()
+    return true
+  } catch (e) {
+    if (useMock(e)) return mockStore.deleteProduct(id)
+    throw e
+  }
 }
 
 /* ---------------- Pedidos ---------------- */
 
 export async function createOrder({ customer, items }) {
-  const db = getFirestoreDb()
-  const code = `TS-${randomBytes(3).toString('hex').toUpperCase()}`
+  try {
+    const db = getFirestoreDb()
+    const code = `TS-${randomBytes(3).toString('hex').toUpperCase()}`
 
-  return db.runTransaction(async (tx) => {
-    let subtotal = 0
-    const resolved = []
-    for (const it of items) {
-      const ref = db.collection(PRODUCTS).doc(String(it.id))
-      const snap = await tx.get(ref)
-      if (!snap.exists) throw new Error(`Producto ${it.id} inexistente`)
-      const p = docToProduct(snap)
-      const qty = Math.max(1, Math.floor(Number(it.qty) || 1))
-      if (qty > (p.stock || 0)) {
-        throw new Error(`Stock insuficiente de "${p.name}" (${p.stock} disponibles)`)
+    return db.runTransaction(async (tx) => {
+      let subtotal = 0
+      const resolved = []
+      for (const it of items) {
+        const ref = db.collection(PRODUCTS).doc(String(it.id))
+        const snap = await tx.get(ref)
+        if (!snap.exists) throw new Error(`Producto ${it.id} inexistente`)
+        const p = docToProduct(snap)
+        const qty = Math.max(1, Math.floor(Number(it.qty) || 1))
+        if (qty > (p.stock || 0)) {
+          throw new Error(`Stock insuficiente de "${p.name}" (${p.stock} disponibles)`)
+        }
+        resolved.push({ producto_id: p.id, nombre: p.name, emoji: p.emoji, qty, precio_unitario: p.price })
+        subtotal += p.price * qty
+        tx.update(ref, { stock: (p.stock - qty) })
       }
-      resolved.push({ producto_id: p.id, nombre: p.name, emoji: p.emoji, qty, precio_unitario: p.price })
-      tx.update(ref, { stock: (p.stock - qty) })
-    }
 
-    const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST
-    const total = subtotal + shipping
-    const orderDoc = {
-      code,
-      customer_name: customer.name?.trim(),
-      email: customer.email?.trim(),
-      phone: customer.phone || '',
-      city: customer.city || '',
-      address: customer.address || '',
-      payment_method: ['mercadopago', 'transferencia', 'tarjeta'].includes(customer.paymentMethod)
-        ? customer.paymentMethod
-        : 'mercadopago',
-      subtotal,
-      shipping,
-      total,
-      status: 'pendiente',
-      created_at: new Date().toISOString(),
-      items: resolved,
-    }
-    const ref = db.collection(ORDERS).doc()
-    tx.set(ref, orderDoc)
-    return { code, total }
-  })
+      const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST
+      const total = subtotal + shipping
+      const orderDoc = {
+        code,
+        customer_name: customer.name?.trim(),
+        email: customer.email?.trim(),
+        phone: customer.phone || '',
+        city: customer.city || '',
+        address: customer.address || '',
+        payment_method: ['mercadopago', 'transferencia', 'tarjeta'].includes(customer.paymentMethod)
+          ? customer.paymentMethod
+          : 'mercadopago',
+        subtotal,
+        shipping,
+        total,
+        status: 'pendiente',
+        created_at: new Date().toISOString(),
+        items: resolved,
+      }
+      const ref = db.collection(ORDERS).doc()
+      tx.set(ref, orderDoc)
+      return { code, total }
+    })
+  } catch (e) {
+    if (useMock(e)) return mockStore.createOrder({ customer, items })
+    throw e
+  }
 }
 
 export async function getOrders({ status } = {}) {
-  const db = getFirestoreDb()
-  let q = db.collection(ORDERS)
-  if (status) q = q.where('status', '==', status)
-  const snap = await q.get()
-  const rows = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
-  // Ordenar en memoria para evitar índice compuesto (status + created_at) en Firestore
-  rows.sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))
-  return rows
+  try {
+    const db = getFirestoreDb()
+    let q = db.collection(ORDERS)
+    if (status) q = q.where('status', '==', status)
+    const snap = await q.get()
+    const rows = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+    rows.sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))
+    return rows
+  } catch (e) {
+    if (useMock(e)) return mockStore.getOrders({ status })
+    throw e
+  }
 }
 
 export async function getOrderById(id) {
-  const db = getFirestoreDb()
-  const doc = await db.collection(ORDERS).doc(String(id)).get()
-  if (!doc.exists) return null
-  return { id: doc.id, ...doc.data() }
+  try {
+    const db = getFirestoreDb()
+    const doc = await db.collection(ORDERS).doc(String(id)).get()
+    if (!doc.exists) return null
+    return { id: doc.id, ...doc.data() }
+  } catch (e) {
+    if (useMock(e)) return mockStore.orders.find(o=> String(o.id)===String(id)) || null
+    throw e
+  }
 }
 
 export async function getOrderByCode(code) {
-  const db = getFirestoreDb()
-  const snap = await db.collection(ORDERS).where('code', '==', code).limit(1).get()
-  if (snap.empty) return null
-  const d = snap.docs[0]
-  return { id: d.id, ...d.data() }
+  try {
+    const db = getFirestoreDb()
+    const snap = await db.collection(ORDERS).where('code', '==', code).limit(1).get()
+    if (snap.empty) return null
+    const d = snap.docs[0]
+    return { id: d.id, ...d.data() }
+  } catch (e) {
+    if (useMock(e)) return mockStore.getOrderByCode(code)
+    throw e
+  }
 }
 
 export async function updateOrderStatus(id, status) {
-  const db = getFirestoreDb()
-  const ref = db.collection(ORDERS).doc(String(id))
-  const existing = await ref.get()
-  if (!existing.exists) return false
-  await ref.update({ status })
-  return true
+  try {
+    const db = getFirestoreDb()
+    const ref = db.collection(ORDERS).doc(String(id))
+    const existing = await ref.get()
+    if (!existing.exists) return false
+    await ref.update({ status })
+    return true
+  } catch (e) {
+    if (useMock(e)) return mockStore.updateOrderStatus(id, status)
+    throw e
+  }
 }
 
 export async function updateOrderStatusByCode(code, status) {
-  const order = await getOrderByCode(code)
-  if (!order) return false
-  return updateOrderStatus(order.id, status)
+  try {
+    const order = await getOrderByCode(code)
+    if (!order) return false
+    return updateOrderStatus(order.id, status)
+  } catch (e) {
+    if (useMock(e)) {
+      const o = mockStore.getOrderByCode(code)
+      if (!o) return false
+      return mockStore.updateOrderStatus(o.id, status)
+    }
+    throw e
+  }
 }
 
 /* ---------------- MercadoPago ---------------- */
 
 export async function logMpPayment({ code, preferenceId, payload }) {
-  const db = getFirestoreDb()
-  await db.collection(MP_PAYMENTS).add({
-    order_code: code,
-    preference_id: preferenceId ?? null,
-    payload,
-    created_at: new Date().toISOString(),
-  })
+  try {
+    const db = getFirestoreDb()
+    await db.collection(MP_PAYMENTS).add({
+      order_code: code,
+      preference_id: preferenceId ?? null,
+      payload,
+      created_at: new Date().toISOString(),
+    })
+  } catch (e) {
+    if (useMock(e)) return
+    throw e
+  }
 }
 
 /* ---------------- Consultas (encargo WhatsApp) ---------------- */
 
 export async function createConsulta({ sku, nombre, marca, telefono, mensaje, origen = 'whatsapp' }) {
-  const db = getFirestoreDb()
-  const ref = await db.collection(CONSULTAS).add({
-    sku: sku || null,
-    nombre: nombre || null,
-    marca: marca || null,
-    telefono: telefono || '',
-    mensaje: mensaje || '',
-    origen,
-    createdAt: new Date().toISOString(),
-  })
-  return ref.id
+  try {
+    const db = getFirestoreDb()
+    const ref = await db.collection(CONSULTAS).add({
+      sku: sku || null,
+      nombre: nombre || null,
+      marca: marca || null,
+      telefono: telefono || '',
+      mensaje: mensaje || '',
+      origen,
+      createdAt: new Date().toISOString(),
+    })
+    return ref.id
+  } catch (e) {
+    if (useMock(e)) return mockStore.createConsulta({ sku, nombre, marca, telefono, mensaje, origen })
+    throw e
+  }
 }

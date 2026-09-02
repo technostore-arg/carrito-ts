@@ -8,7 +8,7 @@ const NAV = [
   { id: "accesorios", label: "Accesorios" },
 ]
 
-export default function Header({ search, onSearchChange, onSelectCategory }) {
+export default function Header({ search, onSearchChange, onSelectCategory, activeCategory }) {
   const [open, setOpen] = useState(false)
   const shouldReduce = useReducedMotion()
 
@@ -21,12 +21,12 @@ export default function Header({ search, onSearchChange, onSelectCategory }) {
     <header className="header">
       <div className="header-inner">
         <button className="logo-link" onClick={() => onSelectCategory("todos")} aria-label="TechnoStore inicio">
-          <img src="/logo.jpg" alt="TechnoStore" className="logo-img" />
+          <img src="/logo.png" alt="TechnoStore" className="logo-img" />
         </button>
 
         <nav className="nav nav--desktop">
           {NAV.map(item => (
-            <button key={item.id} onClick={() => onSelectCategory(item.id)}>
+            <button key={item.id} onClick={() => onSelectCategory(item.id)} className={activeCategory === item.id ? "active" : ""} aria-current={activeCategory === item.id ? "page" : undefined}>
               {item.label}
             </button>
           ))}
@@ -34,7 +34,8 @@ export default function Header({ search, onSearchChange, onSelectCategory }) {
 
         <div className="search search--desktop">
           <span className="search-icon">⌕</span>
-          <input type="text" placeholder="Buscar por nombre o spec" value={search} onChange={e => onSearchChange(e.target.value)} />
+          <input type="text" placeholder="Buscar modelo, marca…" value={search} onChange={e => onSearchChange(e.target.value)} aria-label="Buscar productos" />
+          {search && <button className="search-clear" onClick={() => onSearchChange("")} aria-label="Limpiar búsqueda">✕</button>}
         </div>
 
         <motion.button

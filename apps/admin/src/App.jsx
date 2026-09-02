@@ -2,11 +2,13 @@ import { useState } from 'react'
 import Catalog from './components/Catalog.jsx'
 import Orders from './components/Orders.jsx'
 import Metrics from './components/Metrics.jsx'
+import Ingesta from './components/Ingesta.jsx'
 
 const TABS = [
   { id: 'catalogo', label: 'Catálogo', icon: '📦' },
   { id: 'pedidos', label: 'Pedidos', icon: '🧾' },
   { id: 'metricas', label: 'Métricas', icon: '📊' },
+  { id: 'ingesta', label: 'Ingesta', icon: '📥' },
 ]
 
 export default function App() {
@@ -63,6 +65,7 @@ export default function App() {
         {tab === 'catalogo' && <Catalog />}
         {tab === 'pedidos' && <Orders />}
         {tab === 'metricas' && <Metrics />}
+        {tab === 'ingesta' && <Ingesta token={token} />}
       </main>
 
       <footer className="admin-foot muted">Adaptador: <code>src/data/adapter.js</code> · mock local → Firestore sin tocar componentes · Esquema: <code>packages/catalog-schema</code></footer>

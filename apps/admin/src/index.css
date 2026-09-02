@@ -88,7 +88,11 @@ tr:last-child td{border-bottom:none}
 .admin-login .card{max-width:380px;width:100%;display:grid;gap:12px;text-align:center}
 .admin-login input{padding:11px 14px;border-radius:10px;border:1px solid var(--border);background:#0a0c10;color:var(--text);width:100%}
 .btn-sm,.btn-primary,.btn-ghost,.select-sm{min-height:32px}
+.table-wrap{ -webkit-overflow-scrolling:touch; }
+.table-wrap input[type="checkbox"]{ width:22px; height:22px; accent-color:#fff; cursor:pointer; }
+.check-wrap{ display:grid; place-items:center; min-width:44px; min-height:44px; padding:6px; cursor:pointer; }
 @media(max-width:375px){ .btn-sm{padding:6px 12px;min-height:36px} .modal{margin:10px;padding:16px} }
 
 @media(max-width:900px){ .kpi-grid{grid-template-columns:1fr 1fr} .cols2{grid-template-columns:1fr} .compare{grid-template-columns:1fr} .grid2{grid-template-columns:1fr} .grid2 .span2{grid-column:1} .topbar{flex-wrap:wrap;gap:10px} }
-@media(max-width:600px){ .kpi-grid{grid-template-columns:1fr} .toolbar{flex-direction:column;align-items:stretch} .toolbar-left{width:100%} .search{min-width:0;width:100%} .seg{width:100%;justify-content:space-between} .seg button{flex:1} .tabs{gap:6px;padding:10px 12px} .tabs button{flex:1 1 auto;font-size:.82rem;padding:7px 10px} .topbar{padding:10px 12px} .topbar b{font-size:.9rem} main{padding:0 12px 24px} .table-wrap{border-radius:10px} table{font-size:.8rem;min-width:600px} .admin-foot{font-size:.72rem;padding:10px 12px} }
+@media(max-width:600px){ .kpi-grid{grid-template-columns:1fr} .toolbar{flex-direction:column;align-items:stretch} .toolbar-left{width:100%} .search{min-width:0;width:100%} .seg{width:100%;justify-content:space-between} .seg button{flex:1} .tabs{gap:6px;padding:10px 12px} .tabs button{flex:1 1 auto;font-size:.82rem;padding:7px 10px} .topbar{padding:10px 12px} .topbar b{font-size:.9rem} main{padding:0 12px 24px} .table-wrap{border-radius:10px} table{font-size:.8rem;min-width:640px} th,td{padding:12px 10px} .table-wrap input[type="checkbox"]{ width:24px; height:24px; } .check-wrap{ min-width:44px; min-height:44px; } .admin-foot{font-size:.72rem;padding:10px 12px} .btn-primary,.btn-ghost{ min-height:44px; width:100%; } }
+@media(max-width:768px){ .table-wrap{ margin:0 -12px; border-radius:0; border-left:none; border-right:none; } table{ min-width:680px; } td{ padding:14px 10px; } }

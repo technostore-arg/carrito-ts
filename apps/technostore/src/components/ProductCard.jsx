@@ -2,12 +2,12 @@ import { motion, useReducedMotion } from "framer-motion"
 import { ars, waLink } from "../utils/format"
 
 function specsPreview(especificaciones) {
-  const entries = Object.entries(especificaciones || {}).slice(0, 2)
+  const entries = Object.entries(especificaciones || {}).filter(([k]) => !k.startsWith('_')).slice(0, 2)
   if (entries.length === 0) return null
   return entries.map(([k, v]) => `${k}: ${v}`).join(" · ")
 }
 
-export default function ProductCard({ producto, onAddToCart }) {
+export default function ProductCard({ producto, onAddToCart, onDetail }) {
   const shouldReduce = useReducedMotion()
   const { nombre, descripcion, categoria, tipo_venta, precio, stock, especificaciones, imagenes, sku } = producto
   const foto = imagenes?.[0]
@@ -24,7 +24,8 @@ export default function ProductCard({ producto, onAddToCart }) {
       className="card"
       whileHover={shouldReduce ? undefined : { y: -4 }}
       transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
-      style={{ willChange: "transform" }}
+      style={{ willChange: "transform", cursor: "pointer" }}
+      onClick={() => onDetail?.(producto)}
     >
       <div className="card-media">
         {foto ? <img src={foto} alt={nombre} loading="lazy" /> : <div className="fallback" aria-hidden />}
@@ -54,15 +55,20 @@ export default function ProductCard({ producto, onAddToCart }) {
           <small>{esEncargo ? "Entrega a pedido" : `Stock: ${stock}`}</small>
         </div>
 
-        {esEncargo ? (
-          <motion.a whileTap={{ scale: 0.97 }} transition={{ duration: 0.15 }} className="add-btn" href={waHref} target="_blank" rel="noreferrer" onClick={handleEncargo} aria-label={`Consultar por ${nombre} vía WhatsApp`}>
-            Consultar por WhatsApp
-          </motion.a>
-        ) : (
-          <motion.button whileTap={{ scale: 0.97 }} transition={{ duration: 0.15 }} className="add-btn add-btn--ghost" onClick={() => onAddToCart?.(producto)}>
-            Agregar al carrito
+        <div className="card-actions">
+          <motion.button whileTap={{ scale: 0.97 }} transition={{ duration: 0.15 }} className="add-btn add-btn--ghost" onClick={e => { e.stopPropagation(); onDetail?.(producto) }}>
+            Ver detalle
           </motion.button>
-        )}
+          {esEncargo ? (
+            <motion.a whileTap={{ scale: 0.97 }} transition={{ duration: 0.15 }} className="add-btn" href={waHref} target="_blank" rel="noreferrer" onClick={e => { e.stopPropagation(); handleEncargo() }} aria-label={`Consultar por ${nombre} vía WhatsApp`}>
+              WhatsApp
+            </motion.a>
+          ) : (
+            <motion.button whileTap={{ scale: 0.97 }} transition={{ duration: 0.15 }} className="add-btn" onClick={e => { e.stopPropagation(); onAddToCart?.(producto) }}>
+              Agregar
+            </motion.button>
+          )}
+        </div>
       </div>
     </motion.article>
   )

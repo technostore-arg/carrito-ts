@@ -7,7 +7,7 @@ const NAV = [
   { id: "workstations", label: "Workstations" },
 ]
 
-export default function Header({ search, onSearchChange, onSelectCategory, onServicios }) {
+export default function Header({ search, onSearchChange, onSelectCategory, onServicios, activeCategory }) {
   const [open, setOpen] = useState(false)
   const shouldReduce = useReducedMotion()
   const closeAnd = fn => (...args) => {
@@ -19,7 +19,7 @@ export default function Header({ search, onSearchChange, onSelectCategory, onSer
     <header className="header">
       <div className="header-inner">
         <button className="logo-link" onClick={() => onSelectCategory("todos")} aria-label="Futuro Hard inicio">
-          <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="Futuro Hard" style={{ height: 28 }} />
+          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Futuro Hard" style={{ height: 28, mixBlendMode: 'screen' }} />
         </button>
 
         <nav className="nav nav--desktop">
@@ -27,12 +27,13 @@ export default function Header({ search, onSearchChange, onSelectCategory, onSer
             <button
               key={item.id}
               onClick={() => onSelectCategory(item.id)}
+              className={activeCategory === item.id ? "active" : ""}
               style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "12px", letterSpacing: "0.06em" }}
             >
               {item.label}
             </button>
           ))}
-          <button onClick={onServicios} style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "12px", color: "var(--muted)" }}>
+          <button onClick={onServicios} style={{ fontFamily: "JetBrains Mono, monospace", fontSize: "12px", color: activeCategory === "servicios" ? "var(--text)" : "var(--muted)" }}>
             Instalación
           </button>
         </nav>
@@ -40,6 +41,7 @@ export default function Header({ search, onSearchChange, onSelectCategory, onSer
         <div className="search search--desktop">
           <span className="search-icon">⌕</span>
           <input type="text" placeholder="Buscar por VRAM, TFLOPS" value={search} onChange={e => onSearchChange(e.target.value)} />
+          {search && <button className="search-clear" onClick={() => onSearchChange("")} aria-label="Limpiar búsqueda">✕</button>}
         </div>
 
         <motion.button

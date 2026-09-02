@@ -90,9 +90,17 @@ export function validarProducto(p) {
  * @param {any} raw
  * @returns {Producto}
  */
+function getField(raw, keys) {
+  // Búsqueda case-insensitive, con normalización de acentos y espacios
+  const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '')
+  const map = new Map(Object.entries(raw).map(([k, v]) => [norm(k), v]))
+  for (const k of keys) if (map.has(norm(k))) return map.get(norm(k))
+  return undefined
+}
+
 export function normalizarProducto(raw = {}) {
-  const tipo_venta = TIPOS_VENTA.includes(raw.tipo_venta)
-    ? raw.tipo_venta
+  const tipo_venta = TIPOS_VENTA.includes(raw.tipo_venta) || TIPOS_VENTA.includes(getField(raw, ['tipo_venta','tipoVenta']))
+    ? (TIPOS_VENTA.includes(raw.tipo_venta) ? raw.tipo_venta : getField(raw, ['tipo_venta','tipoVenta']))
     : TIPOS_VENTA.includes(raw.tipoVenta)
       ? raw.tipoVenta
       : "directa"
@@ -100,17 +108,17 @@ export function normalizarProducto(raw = {}) {
   const esEncargo = tipo_venta === "encargo"
 
   return {
-    id: raw.id ?? null,
-    sku: String(raw.sku ?? raw.SKU ?? raw.id ?? "").trim().toUpperCase(),
-    nombre: String(raw.nombre ?? raw.name ?? "").trim(),
-    descripcion: String(raw.descripcion ?? raw.description ?? "").trim(),
-    marca: MARCAS.includes(raw.marca) ? raw.marca : "technostore",
-    categoria: String(raw.categoria ?? raw.category ?? "").trim().toLowerCase(),
-    subcategoria: String(raw.subcategoria ?? raw.subCategory ?? "").trim(),
+    id: raw.id ?? getField(raw, ['id']) ?? null,
+    sku: String(raw.sku ?? raw.SKU ?? getField(raw, ['sku','codigo','cod','code','id','articulo']) ?? raw.id ?? "").trim().toUpperCase(),
+    nombre: String(raw.nombre ?? raw.name ?? getField(raw, ['nombre','name','descripcion','description','producto','articulo','titulo','title']) ?? "").trim(),
+    descripcion: String(raw.descripcion ?? raw.description ?? getField(raw, ['descripcion','description','detalle','observaciones','producto']) ?? "").trim(),
+    marca: MARCAS.includes(raw.marca) ? raw.marca : MARCAS.includes(getField(raw, ['marca','brand'])) ? getField(raw, ['marca','brand']) : "technostore",
+    categoria: String(raw.categoria ?? raw.category ?? getField(raw, ['categoria','category','rubro','familia','grupo','tipo']) ?? "").trim().toLowerCase(),
+    subcategoria: String(raw.subcategoria ?? raw.subCategory ?? getField(raw, ['subcategoria','subcategory']) ?? "").trim(),
     tipo_venta,
-    precio: Number(raw.precio ?? raw.price ?? 0),
-    moneda: MONEDAS.includes(raw.moneda) ? raw.moneda : "ARS",
-    stock: esEncargo ? null : Number(raw.stock ?? 0),
+    precio: Number(raw.precio ?? raw.price ?? getField(raw, ['precio','price','preciolista','precio_lista','importe','valor','cost','costo','pvp']) ?? 0),
+    moneda: MONEDAS.includes(raw.moneda) ? raw.moneda : MONEDAS.includes(getField(raw, ['moneda','currency'])) ? getField(raw, ['moneda','currency']) : "ARS",
+    stock: esEncargo ? null : Number(raw.stock ?? getField(raw, ['stock','cantidad','qty','quantity','disponible','existencia']) ?? 0),
     especificaciones:
       raw.especificaciones ?? raw.specs ?? raw.specsTecnicas ?? raw.especificacoes ?? {},
     imagenes: Array.isArray(raw.imagenes)

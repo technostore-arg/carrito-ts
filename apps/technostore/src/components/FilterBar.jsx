@@ -10,22 +10,29 @@ const CATEGORIAS = [
 
 const RANGOS = [
   { id: "todos", label: "Todos los precios" },
-  { id: "0-300", label: "Hasta $300.000" },
-  { id: "300-800", label: "$300.000 — $800.000" },
-  { id: "800-1500", label: "$800.000 — $1.500.000" },
-  { id: "1500+", label: "Más de $1.500.000" },
+  { id: "0-400", label: "Hasta $400.000" },
+  { id: "400-700", label: "$400.000 — $700.000" },
+  { id: "700-1200", label: "$700.000 — $1.200.000" },
+  { id: "1200+", label: "Más de $1.200.000" },
 ]
 
 function rangoMatch(precio, rango) {
   if (rango === "todos") return true
-  if (rango === "0-300") return precio <= 300000
-  if (rango === "300-800") return precio > 300000 && precio <= 800000
-  if (rango === "800-1500") return precio > 800000 && precio <= 1500000
-  if (rango === "1500+") return precio > 1500000
+  if (rango === "0-400") return precio <= 400000
+  if (rango === "400-700") return precio > 400000 && precio <= 700000
+  if (rango === "700-1200") return precio > 700000 && precio <= 1200000
+  if (rango === "1200+") return precio > 1200000
   return true
 }
 
-export default function FilterBar({ categoria, marca, rango, onCategoria, onMarca, onRango, marcasDisponibles, counts }) {
+const ORDENES = [
+  { id: "relevancia", label: "Relevancia" },
+  { id: "precio-asc", label: "Menor precio" },
+  { id: "precio-desc", label: "Mayor precio" },
+  { id: "nombre-asc", label: "A — Z" },
+]
+
+export default function FilterBar({ categoria, marca, rango, orden, onCategoria, onMarca, onRango, onOrden, marcasDisponibles, counts, totalVisibles, totalAll, hasFiltros, onLimpiar }) {
   return (
     <div className="filter-bar">
       <div className="filter-row">
@@ -72,9 +79,29 @@ export default function FilterBar({ categoria, marca, rango, onCategoria, onMarc
             ))}
           </select>
         </label>
+
+        <label className="filter-select">
+          <span>Ordenar</span>
+          <select value={orden} onChange={e => onOrden(e.target.value)}>
+            {ORDENES.map(o => (
+              <option key={o.id} value={o.id}>{o.label}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <div className="filter-meta">
+        <span className="filter-count">
+          {totalVisibles === totalAll
+            ? `${totalAll} productos`
+            : `${totalVisibles} de ${totalAll} productos`}
+        </span>
+        {hasFiltros && (
+          <button className="filter-clear" onClick={onLimpiar}>✕ Limpiar filtros</button>
+        )}
       </div>
     </div>
   )
 }
 
-export { rangoMatch }
+export { rangoMatch, ORDENES }

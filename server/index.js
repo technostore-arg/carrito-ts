@@ -9,25 +9,27 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
-  createOrder,
   getOrders,
   getOrderById,
   updateOrderStatus,
-  updateOrderStatusByCode,
   getOrderByCode,
   logMpPayment,
   createConsulta,
 } from './db.js'
+import { handleNormalizeCatalogFile } from './ingesta/handler.js'
+import { listBorradores, getBorrador, aplicarBorrador, descartarBorrador, createBorradorGeneric } from './ingesta/borradores.js'
+import { createPreference, handleWebhook } from './checkout.js'
+import { applyPricing } from './ingesta/pricing.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3001
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'technostore2026'
 const MP_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN || ''
 
-const CATEGORIES = ['gpus', 'memorias', 'workstations', 'accesorios']
+const CATEGORIES = ['celulares', 'notebooks', 'computadoras', 'gpus', 'memorias', 'workstations', 'accesorios']
 
 const app = express()
-app.use(express.json())
+app.use(express.json({ limit: '20mb' }))
 
 const sessions = new Map()
 
@@ -80,9 +82,10 @@ app.get('/api/products/:id', async (req, res) => {
 
 function validateProduct(body) {
   const errors = []
-  if (!body.name || String(body.name).trim().length < 3) errors.push('Nombre inválido')
-  if (!CATEGORIES.includes(body.category)) errors.push('Categoría inválida')
-  if (!(Number(body.price) > 0)) errors.push('Precio inválido')
+  if (!body.name && !body.nombre) errors.push('Nombre inválido')
+  const cat = body.category || body.categoria
+  if (!CATEGORIES.includes(cat)) errors.push('Categoría inválida')
+  if (!(Number(body.price || body.precio) > 0)) errors.push('Precio inválido')
   return errors
 }
 
@@ -119,6 +122,134 @@ app.delete('/api/products/:id', auth, async (req, res) => {
   } catch (e) {
     res.status(503).json({ error: e.message })
   }
+})
+
+/* ---------------- Ingesta — borradores_catalogo ---------------- */
+
+app.post('/api/ingesta/upload', auth, async (req, res) => {
+  try {
+    const { fileBase64, fileName, mimeType, contentBase64, pricing } = req.body || {}
+    const b64 = fileBase64 || contentBase64
+    if (!b64 || !fileName) return res.status(400).json({ error: 'Falta fileBase64 y fileName' })
+    const buffer = Buffer.from(b64, 'base64')
+    if (buffer.length > 12 * 1024 * 1024) return res.status(413).json({ error: 'Archivo muy grande (max 12MB)' })
+    const ext = fileName.toLowerCase().split('.').pop()
+    if (!['xlsx', 'xls', 'csv', 'pdf', 'txt'].includes(ext)) return res.status(400).json({ error: 'Formato no soportado: usa xlsx, csv, pdf o txt' })
+    // pricing opcional: { esCosto:boolean, usdRate, mpFeePercent, fixedUsd, margenExtraPercent, margenPorCategoria }
+    let pricingCfg = null
+    if (pricing && pricing.esCosto) {
+      pricingCfg = {
+        esCosto: true,
+        usdRate: Number(pricing.usdRate) || Number(process.env.USD_ARS_RATE) || 1200,
+        mpFeePercent: pricing.mpFeePercent != null ? Number(pricing.mpFeePercent) : (Number(process.env.MP_FEE_PERCENT) || 6.5),
+        fixedUsd: pricing.fixedUsd != null ? Number(pricing.fixedUsd) : 100,
+        margenExtraPercent: pricing.margenExtraPercent != null ? Number(pricing.margenExtraPercent) : 0,
+        margenPorCategoria: pricing.margenPorCategoria || null,
+      }
+    }
+    const marcaForzada = req.body?.marca && ['technostore','futurohard'].includes(String(req.body.marca).toLowerCase()) ? String(req.body.marca).toLowerCase() : null
+    const { borrador, errores, pricingDetalle } = await handleNormalizeCatalogFile({ buffer, fileName, mime: mimeType || '', origen: 'archivo', pricing: pricingCfg, marca: marcaForzada })
+    res.status(201).json({ ok: true, borradorId: borrador.id, resumen: borrador.resumen, errores: errores.slice(0, 8), pricingDetalle: pricingDetalle || null, pricing: pricingCfg })
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
+})
+
+app.get('/api/borradores', auth, async (req, res) => {
+  try { res.json(await listBorradores({ estado: req.query.estado })) } catch (e) { res.status(503).json({ error: e.message }) }
+})
+app.get('/api/borradores/:id', auth, async (req, res) => {
+  try {
+    const b = await getBorrador(req.params.id)
+    if (!b) return res.status(404).json({ error: 'Borrador no encontrado' })
+    res.json(b)
+  } catch (e) { res.status(503).json({ error: e.message }) }
+})
+app.post('/api/borradores', auth, async (req, res) => {
+  try {
+    const { origen = 'scraping', archivoNombre = null, fuenteId = null, propuestas } = req.body || {}
+    if (!Array.isArray(propuestas) || !propuestas.length) return res.status(400).json({ error: 'propuestas debe ser array no vacío' })
+    if (!['archivo', 'scraping'].includes(origen)) return res.status(400).json({ error: 'origen debe ser archivo | scraping' })
+    const b = await createBorradorGeneric({ origen, archivoNombre, fuenteId, propuestas })
+    res.status(201).json({ ok: true, borradorId: b.id, resumen: b.resumen })
+  } catch (e) { res.status(500).json({ error: e.message }) }
+})
+app.post('/api/borradores/:id/aplicar', auth, async (req, res) => {
+  try {
+    const skus = Array.isArray(req.body?.skus) ? req.body.skus : null
+    const b = await aplicarBorrador({ id: req.params.id, skusAprobados: skus, aprobadoPor: req.headers['x-admin-user'] || 'admin' })
+    res.json({ ok: true, borrador: b })
+  } catch (e) { res.status(400).json({ error: e.message }) }
+})
+app.post('/api/borradores/:id/descartar', auth, async (req, res) => {
+  try {
+    const b = await descartarBorrador({ id: req.params.id, por: req.headers['x-admin-user'] || 'admin' })
+    res.json({ ok: true, borrador: b })
+  } catch (e) { res.status(400).json({ error: e.message }) }
+})
+// Recalcular precios de un borrador pendiente si el archivo era de costo y querés ajustar margen
+app.post('/api/borradores/:id/recalcular', auth, async (req, res) => {
+  try {
+    const { pricing } = req.body || {}
+    if (!pricing || !pricing.esCosto) return res.status(400).json({ error: 'Falta pricing.esCosto' })
+    const b = await getBorrador(req.params.id)
+    if (!b) return res.status(404).json({ error: 'Borrador no encontrado' })
+    if (b.estado !== 'pendiente') return res.status(400).json({ error: 'Solo borradores pendientes se pueden recalcular' })
+    // Revertir a costo si existe _costo_original, si no asumir precio actual como costo
+    const propuestasCosto = b.propuestas.map(p => {
+      const costo = p.especificaciones?._costo_original ?? p.costo_original ?? p.precio
+      return { ...p, precio: costo, costo_original: costo }
+    })
+    const pricingCfg = {
+      esCosto: true,
+      usdRate: Number(pricing.usdRate) || 1200,
+      mpFeePercent: pricing.mpFeePercent != null ? Number(pricing.mpFeePercent) : 6.5,
+      fixedUsd: pricing.fixedUsd != null ? Number(pricing.fixedUsd) : 100,
+      margenExtraPercent: pricing.margenExtraPercent != null ? Number(pricing.margenExtraPercent) : 0,
+      margenPorCategoria: pricing.margenPorCategoria || null,
+    }
+    const { productos, detalle } = applyPricing(propuestasCosto, pricingCfg)
+    // Actualizar borrador en Firestore/mock: re-crear diff
+    const { computeDiff } = await import('./ingesta/borradores.js')
+    const { getFirestoreDb } = await import('./firebase.js')
+    const { mockStore } = await import('./mock-store.js')
+    // Intentar Firestore, fallback mock
+    let updated
+    try {
+      const db = getFirestoreDb()
+      const ref = db.collection('borradores_catalogo').doc(String(req.params.id))
+      const { resumirIngesta } = await import('../packages/catalog-schema/index.js')
+      const existentes = [] // para recalcular resumen basta con propuestas
+      // usar computeDiff con lista vacía no sirve, usamos resumir
+      // recalculamos resumen simple
+      const diff = computeDiff({ existentes: [], normalizados: productos })
+      await ref.update({
+        propuestas: productos,
+        resumen: diff.resumen,
+        altas: diff.altas,
+        bajas: diff.bajas,
+        modificaciones: diff.modificaciones,
+        llmMeta: { ...(b.llmMeta || {}), pricing: { ...pricingCfg, detalle } },
+        'log': [...(b.log || []), { accion: 'recalculo_precio', en: new Date().toISOString(), pricing: pricingCfg }],
+      })
+      const snap = await ref.get()
+      updated = { id: snap.id, ...snap.data() }
+    } catch (e) {
+      if (String(e.message||'').includes('FIREBASE_NO_CONFIG')) {
+        const bb = mockStore.getBorrador(req.params.id)
+        const { resumirIngesta } = await import('../packages/catalog-schema/index.js')
+        // recalcular diff mock simple
+        const diff = { resumen: { altas: productos.length, bajas: 0, cambiosPrecio: 0, sinCambios: 0 }, altas: productos, bajas: [], modificaciones: [] }
+        bb.propuestas = productos
+        bb.resumen = diff.resumen
+        bb.altas = diff.altas
+        bb.llmMeta = { ...(bb.llmMeta||{}), pricing: { ...pricingCfg, detalle } }
+        bb.log.push({ accion: 'recalculo_precio', en: new Date().toISOString(), pricing: pricingCfg })
+        updated = bb
+      } else throw e
+    }
+    res.json({ ok: true, borrador: updated, detalle })
+  } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
 /* ---------------- Consultas (encargo WhatsApp) ---------------- */
@@ -174,8 +305,9 @@ app.patch('/api/orders/:id', auth, async (req, res) => {
   }
 })
 
-/* ---------------- MercadoPago ---------------- */
-
+/* ---------------- MercadoPago (legacy, kept for reference) ---------------- */
+/* The following endpoints are kept but not used in the new flow.
+   They remain for possible future use or backward compatibility. */
 app.post('/api/mp/create-preference', async (req, res) => {
   try {
     const { code } = req.body || {}
@@ -230,6 +362,66 @@ app.post('/api/mp/webhook', async (req, res) => {
     console.error('[mp webhook]', e.message)
   }
   res.sendStatus(200)
+})
+
+/* ---------------- Checkout (Mercado Pago) ---------------- */
+
+app.post('/api/checkout/crear-preferencia', async (req, res) => {
+  try {
+    const { customer, items } = req.body || {}
+    const { items: prefItems, external_reference: code } = await createPreference({ customer, items })
+    const base = `${req.protocol}://${req.get('host')}`
+    const preferenceData = {
+      items: prefItems,
+      external_reference: code,
+      back_urls: {
+        success: `${base}/gracias?pedido=${code}&estado=success`,
+        pending: `${base}/gracias?pedido=${code}&estado=pending`,
+        failure: `${base}/gracias?pedido=${code}&estado=failure`,
+      },
+      auto_return: 'approved',
+    }
+    // Mock mode: sin token MP devuelve init_point local para probar flujo sin MercadoPago
+    if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
+      return res.json({
+        init_point: `${base}/gracias?pedido=${code}&estado=success&mock=1`,
+        sandbox_init_point: `${base}/gracias?pedido=${code}&estado=success&mock=1`,
+        id: `mock-${code}`,
+        code,
+        mock: true,
+      })
+    }
+    const mpResp = await fetch('https://api.mercadopago.com/checkout/preferences', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.MERCADOPAGO_ACCESS_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(preferenceData),
+    })
+    const prefResult = await mpResp.json()
+    if (!mpResp.ok) {
+      throw new Error(prefResult.message || 'Error al crear preferencia de MercadoPago')
+    }
+    res.json({
+      init_point: prefResult.init_point,
+      sandbox_init_point: prefResult.sandbox_init_point,
+      id: prefResult.id,
+      code,
+    })
+  } catch (e) {
+    console.error('[checkout/create-preference]', e.message)
+    res.status(500).json({ error: e.message })
+  }
+})
+
+app.post('/api/checkout/webhook', async (req, res) => {
+  try {
+    const result = await handleWebhook(req.body)
+    // Always respond 200 to Mercado Pago to avoid retries
+    res.json({ ok: true, ...result })
+  } catch (e) {
+    console.error('[checkout/webhook]', e.message)
+    // Still respond 200 to avoid retries, but include error in body for debugging
+    res.status(200).json({ ok: false, error: e.message })
+  }
 })
 
 /* ---------------- Static: admin + build de producción ---------------- */

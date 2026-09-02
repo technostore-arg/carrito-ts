@@ -28,9 +28,12 @@ export default function Hero({ onExplore, onServicios }) {
           </div>
         </div>
         <div className="hero-media" style={{ borderColor: 'rgba(168,85,247,0.18)' }}>
-          <video autoPlay muted loop playsInline preload="metadata" poster={posterSrc}>
+          <video autoPlay muted loop playsInline preload="metadata" poster={posterSrc}
+            onError={e => { e.target.style.display = 'none'; e.target.nextElementSibling && (e.target.nextElementSibling.style.display = 'block') }}
+          >
             <source src={videoSrc} type="video/mp4" />
           </video>
+          <div className="hero-fallback" style={{ display: 'none', backgroundImage: `url(${posterSrc})` }} />
         </div>
       </section>
       <div className="diagonal-break" aria-hidden />

@@ -29,16 +29,19 @@ export default function Hero({ onExplore }) {
         </div>
 
         <div className="hero-media">
-          <video autoPlay muted loop playsInline preload="metadata" poster={posterSrc}>
+          <video autoPlay muted loop playsInline preload="metadata" poster={posterSrc}
+            onError={e => { e.target.style.display = 'none'; e.target.nextElementSibling && (e.target.nextElementSibling.style.display = 'block') }}
+          >
             <source src={videoSrc} type="video/mp4" />
           </video>
+          <div className="hero-fallback" style={{ display: 'none', backgroundImage: `url(${posterSrc})` }} />
         </div>
       </section>
 
       <div className="diagonal-break" aria-hidden />
       <div className="marquee" aria-hidden="true">
         <div className="marquee-track">
-          {['Envío gratis desde $300.000','Hasta 12 cuotas','Garantía oficial','Soporte real','Diagnóstico sin cargo'].flatMap(x=>[x,x]).map((item,i)=>(
+          {['Envío gratis desde $300.000','Garantía oficial','Productos nuevos y originales','15 años de experiencia'].flatMap(x=>[x,x,x]).map((item,i)=>(
             <span key={i}>{item} <i>◆</i></span>
           ))}
         </div>

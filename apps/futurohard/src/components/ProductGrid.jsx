@@ -1,6 +1,9 @@
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import ProductCard from "./ProductCard"
 import { StaggerGrid, RevealCard } from "../hooks/motion"
+
+const PAGE_SIZE = 24
 
 function SkeletonCard() {
   return (
@@ -18,7 +21,10 @@ function SkeletonCard() {
   )
 }
 
-export default function ProductGrid({ products, totalLabel, onReset }) {
+export default function ProductGrid({ products, totalLabel, onReset, onDetail }) {
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  useEffect(() => { setVisibleCount(PAGE_SIZE) }, [products])
+
   if (!products) {
     return (
       <>
@@ -47,18 +53,29 @@ export default function ProductGrid({ products, totalLabel, onReset }) {
     )
   }
 
+  const shown = products.slice(0, visibleCount)
+  const hasMore = visibleCount < products.length
+
   return (
     <>
       <p className="grid-count mono" style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 12 }}>
         {totalLabel}
       </p>
       <StaggerGrid className="product-grid">
-        {products.map((p, i) => (
+        {shown.map((p, i) => (
           <RevealCard key={p.sku} index={i}>
-            <ProductCard producto={p} />
+            <ProductCard producto={p} onDetail={onDetail} />
           </RevealCard>
         ))}
       </StaggerGrid>
+      {hasMore && (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "8px 0 32px" }}>
+          <span className="muted" style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 11 }}>Mostrando {shown.length} de {products.length}</span>
+          <button className="btn-ghost" onClick={() => setVisibleCount(c => Math.min(c + PAGE_SIZE, products.length))}>
+            Cargar más ({products.length - shown.length} restantes)
+          </button>
+        </div>
+      )}
     </>
   )
 }

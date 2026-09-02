@@ -16,7 +16,6 @@ export default function CheckoutModal({ onClose }) {
     cvv: '',
   })
   const [order, setOrder] = useState(null)
-  const [mpMock, setMpMock] = useState(false)
   const [redirecting, setRedirecting] = useState(null)
   const [error, setError] = useState(null)
   const [sending, setSending] = useState(false)
@@ -28,7 +27,7 @@ export default function CheckoutModal({ onClose }) {
     setError(null)
     setSending(true)
     try {
-      const res = await fetch('/api/orders', {
+      const res = await fetch('/api/checkout/crear-preferencia', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -44,30 +43,41 @@ export default function CheckoutModal({ onClose }) {
         }),
       })
       const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data.error || 'Error al procesar el pedido')
+      if (!res.ok) throw new Error(data.error || 'Error al crear preferencia de pago')
 
       if (form.pago === 'mercadopago') {
-        const mpRes = await fetch('/api/mp/create-preference', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code: data.code }),
-        })
-        const mpData = await mpRes.json().catch(() => ({}))
-        if (!mpRes.ok) throw new Error(mpData.error || 'Error conectando con MercadoPago')
-
-        if (mpData.init_point) {
-          setRedirecting({ url: mpData.init_point, code: data.code })
+        if (data.init_point) {
+          setRedirecting({ url: data.init_point, code: data.code })
           clearCart()
           setTimeout(() => {
-            window.location.href = mpData.init_point
+            window.location.href = data.init_point
           }, 1600)
           return
         }
-        setMpMock(true)
+        // Fallback if no init_point (should not happen)
+        setError('No se obtuvo URL de pago de MercadoPago')
+      } else {
+        // For other payment methods, we still create an order via the legacy endpoint (simulated)
+        const orderRes = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer: {
+              name: form.nombre,
+              email: form.email,
+              phone: form.telefono,
+              city: form.ciudad,
+              address: form.direccion,
+              paymentMethod: form.pago,
+            },
+            items: detailed.map(p => ({ id: p.id, qty: p.qty })),
+          }),
+        })
+        const orderData = await orderRes.json().catch(() => ({}))
+        if (!orderRes.ok) throw new Error(orderData.error || 'Error al crear pedido')
+        setOrder({ code: orderData.code })
+        clearCart()
       }
-
-      setOrder({ code: data.code })
-      clearCart()
     } catch (err) {
       setError(
         err.message === 'Failed to fetch'
@@ -106,14 +116,6 @@ export default function CheckoutModal({ onClose }) {
             <div className="order-code">
               Orden: <code>{order.code}</code>
             </div>
-            {mpMock && (
-              <p className="mp-mock">
-                💡 Pago online aún no activado: configurá{' '}
-                <code>MERCADOPAGO_ACCESS_TOKEN</code> en el servidor y te redirigiremos
-                automáticamente a MercadoPago. Tu pedido quedó como <b>pendiente</b> — coordinamos
-                el pago por WhatsApp.
-              </p>
-            )}
             <div className="summary">
               <div className="row">
                 <span>Método de pago</span>
