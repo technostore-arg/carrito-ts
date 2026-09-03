@@ -18,6 +18,7 @@ import {
 } from './db.js'
 import { handleNormalizeCatalogFile } from './ingesta/handler.js'
 import { listBorradores, getBorrador, aplicarBorrador, descartarBorrador, createBorradorGeneric } from './ingesta/borradores.js'
+import { scrapeAll as scrapeInsumosAcuario, normalizeForStore as normIA, diff as diffIA } from './ingesta/scrapers/insumosacuario.js'
 import { createPreference, handleWebhook } from './checkout.js'
 import { applyPricing } from './ingesta/pricing.js'
 
@@ -459,6 +460,43 @@ app.get(/^\/admin(\/.*)?$/, (req, res) => {
 })
 app.use('/admin', express.static(ADMIN_DIST))
 app.use('/admin', express.static(ADMIN_LEGACY_DIR))
+
+/* ---------------- Scraping: Insumos Acuario ---------------- */
+const SCRAPE_INTERVAL_MS = 6 * 60 * 60 * 1000
+let lastScrapeResult = null
+
+async function runScrapeInsumosAcuario() {
+  console.log('[scrape] Starting Insumos Acuario scrape...')
+  try {
+    const scraped = await scrapeInsumosAcuario()
+    const normalized = normIA(scraped)
+    const allProducts = await getProducts()
+    const existing = allProducts.filter(p => p.fuente_origen === 'scraping_insumosacuario' || p.marca === 'insumosacuario')
+    const changes = diffIA(existing, normalized)
+    let created = 0, updated = 0
+    for (const p of changes.news) {
+      createProduct({ sku: p.sku, nombre: p.nombre, precio: p.precio, marca: 'insumosacuario', categoria: p.categoria, stock: p.stock, tipo_venta: 'directa', descripcion: p.descripcion, imagenes: p.imagenes, fuente_origen: 'scraping_insumosacuario' })
+      created++
+    }
+    for (const c of changes.priceChanges) { const p = existing.find(x => x.sku === c.sku); if (p) { updateProduct(p.id, { precio: c.new }); updated++ } }
+    for (const c of changes.stockChanges) { const p = existing.find(x => x.sku === c.sku); if (p) { updateProduct(p.id, { stock: c.newStock }); updated++ } }
+    lastScrapeResult = { ts: new Date().toISOString(), scraped: scraped.length, created, updated, priceChanges: changes.priceChanges.length, stockChanges: changes.stockChanges.length, removed: changes.removed.length }
+    console.log(`[scrape] Done: ${created} new, ${updated} updated, ${changes.priceChanges.length} price, ${changes.stockChanges.length} stock`)
+    return lastScrapeResult
+  } catch (e) {
+    console.error('[scrape] Error:', e.message)
+    lastScrapeResult = { ts: new Date().toISOString(), error: e.message }
+    return lastScrapeResult
+  }
+}
+setInterval(() => { runScrapeInsumosAcuario().catch(() => {}) }, SCRAPE_INTERVAL_MS)
+
+app.get('/api/scrape/insumosacuario', auth, async (req, res) => {
+  try { const r = await runScrapeInsumosAcuario(); res.json({ ok: true, ...r }) } catch (e) { res.status(500).json({ error: e.message }) }
+})
+app.get('/api/scrape/status', auth, (req, res) => {
+  res.json({ lastResult: lastScrapeResult, intervalHours: SCRAPE_INTERVAL_MS / 3600000 })
+})
 
 const MAIN_DIST = existsSync(TS_DIST) ? TS_DIST : FALLBACK_DIST
 app.use(express.static(MAIN_DIST, { setHeaders: noCacheHtml }))
