@@ -118,27 +118,33 @@ const IMAGE_BY_MODEL = [
   { test: /S25\b/i, url: '/images/celulares/samsung-galaxy-s25-fe.jpg' },
   { test: /S24 FE/i, url: '/images/celulares/samsung-galaxy-s24-fe-5g.jpg' },
   // Samsung Galaxy A series
-  { test: /SAMSUNG A07/i, url: '/images/celulares/samsung-galaxy-a07.jpg' },
-  { test: /SAMSUNG A06/i, url: '/images/celulares/samsung-galaxy-a06-5g.jpg' },
-  { test: /SAMSUNG A05S/i, url: '/images/celulares/samsung-galaxy-a05s.jpg' },
-  { test: /SAMSUNG A04S/i, url: '/images/celulares/samsung-galaxy-a04s.jpg' },
-  { test: /SAMSUNG A04E/i, url: '/images/celulares/samsung-galaxy-a04e.jpg' },
-  { test: /SAMSUNG A04\b/i, url: '/images/celulares/samsung-galaxy-a04.jpg' },
-  { test: /SAMSUNG A03 CORE/i, url: '/images/celulares/samsung-galaxy-a03-core.jpg' },
-  { test: /SAMSUNG A03/i, url: '/images/celulares/samsung-galaxy-a03.jpg' },
-  { test: /SAMSUNG A14/i, url: '/images/celulares/samsung-galaxy-a14-5g.jpg' },
-  { test: /SAMSUNG A12/i, url: '/images/celulares/samsung-galaxy-a12-nacho.jpg' },
-  { test: /SAMSUNG/i, url: '/images/celulares/samsung-galaxy-a14-5g.jpg' },
+  { test: /SAMSUNG\s+A07/i, url: '/images/celulares/samsung-galaxy-a07.jpg' },
+  { test: /SAMSUNG\s+A06/i, url: '/images/celulares/samsung-galaxy-a06-5g.jpg' },
+  { test: /SAMSUNG\s+A05S/i, url: '/images/celulares/samsung-galaxy-a05s.jpg' },
+  { test: /SAMSUNG\s+A04S/i, url: '/images/celulares/samsung-galaxy-a04s.jpg' },
+  { test: /SAMSUNG\s+A04E/i, url: '/images/celulares/samsung-galaxy-a04e.jpg' },
+  { test: /SAMSUNG\s+A04\b/i, url: '/images/celulares/samsung-galaxy-a04.jpg' },
+  { test: /SAMSUNG\s+A03\s+CORE/i, url: '/images/celulares/samsung-galaxy-a03-core.jpg' },
+  { test: /SAMSUNG\s+A03/i, url: '/images/celulares/samsung-galaxy-a03.jpg' },
+  { test: /SAMSUNG\s+A14/i, url: '/images/celulares/samsung-galaxy-a14-5g.jpg' },
+  { test: /SAMSUNG\s+A12/i, url: '/images/celulares/samsung-galaxy-a12-nacho.jpg' },
+  { test: /SAMSUNG\s+A\d+/i, url: '/images/celulares/samsung-galaxy-a14-5g.jpg' },
 ]
 
 const DEFAULT_PHONE_IMG = '/images/celulares/xiaomi-redmi-note-13-pro.jpg'
 
-function fixImage(sku, imagenes, nombre = '') {
-  // Always try to match by name first for better accuracy
+function fixImage(sku, imagenes, nombre = '', categoria = '') {
   const n = String(nombre || sku || '')
-  for (const { test, url } of IMAGE_BY_MODEL) {
-    if (test.test(n)) return [url]
+  const cat = String(categoria || '').toLowerCase()
+
+  // Only apply phone image rules to phone-related categories
+  const isPhone = cat === 'celulares' || cat === 'phones' || /celular|phone|xiaomi|samsung|poco|redmi|iphone|motorola|nothing/i.test(n)
+  if (isPhone) {
+    for (const { test, url } of IMAGE_BY_MODEL) {
+      if (test.test(n)) return [url]
+    }
   }
+
   // If no name match, keep existing valid images
   const hasValid = Array.isArray(imagenes) && imagenes.length && imagenes[0] && String(imagenes[0]).length > 10
   if (hasValid) return imagenes
@@ -324,7 +330,7 @@ export const mockStore = {
       const precio = Number(p.precio ?? p.price ?? 0)
       const marca = p.marca || p.brand || 'technostore'
       const categoria = (p.categoria || p.category || 'accesorios').toLowerCase()
-      const imagenes = fixImage(p.sku, Array.isArray(p.imagenes) ? p.imagenes : p.image ? [p.image] : [], nombre)
+      const imagenes = fixImage(p.sku, Array.isArray(p.imagenes) ? p.imagenes : p.image ? [p.image] : [], nombre, categoria)
       const especificaciones = p.especificaciones || (Array.isArray(p.specs) ? Object.fromEntries(p.specs.map(s => [s, s])) : {})
       const cleanSpecs = Object.fromEntries(Object.entries(especificaciones).filter(([k]) => !k.startsWith('_')))
       const descripcion = (p.descripcion && p.descripcion.length > 20 && !p.descripcion.toUpperCase().includes(nombre.toUpperCase().substring(0, 10))) ? p.descripcion : genDescripcion(nombre, categoria, cleanSpecs)

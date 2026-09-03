@@ -16,6 +16,6 @@
     <line x1="10" y1="90" x2="10" y2="102" stroke="url(#fhgrad)" stroke-width="3"/>
     <line x1="54" y1="90" x2="54" y2="102" stroke="url(#fhgrad)" stroke-width="3"/>
   </g>
-  <text x="82" y="65" font-family="Space Grotesk, Inter, sans-serif" font-weight="700" font-size="40" fill="#F5F5F7" letter-spacing="0.5">FUTURO</text>
+  <text x="82" y="65" font-family="Space Grotesk, Inter, sans-serif" font-weight="700" font-size="40" fill="#1d1d1f" letter-spacing="0.5">FUTURO</text>
   <text x="82" y="100" font-family="Space Grotesk, Inter, sans-serif" font-weight="700" font-size="40" fill="url(#fhgrad)" letter-spacing="0.5">HARD</text>
 </svg>
