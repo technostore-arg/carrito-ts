@@ -1,8 +1,14 @@
 const CATEGORIAS = [
   { id: "todos", label: "Todos" },
   { id: "celulares", label: "Celulares" },
-  { id: "notebooks", label: "Notebooks" },
-  { id: "computadoras", label: "Computadoras" },
+  { id: "gpus", label: "Placas de Video" },
+  { id: "procesadores", label: "Procesadores" },
+  { id: "ram", label: "RAM" },
+  { id: "coolers", label: "Coolers" },
+  { id: "ssd-nvme", label: "SSD NVMe" },
+  { id: "ssd-sata", label: "SSD SATA" },
+  { id: "gabinetes", label: "Gabinetes" },
+  { id: "watercooling", label: "Watercooling" },
   { id: "accesorios", label: "Accesorios" },
 ]
 

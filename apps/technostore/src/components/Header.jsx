@@ -2,9 +2,11 @@ import { useState } from "react"
 
 const NAV = [
   { id: "celulares", label: "Celulares" },
-  { id: "notebooks", label: "Notebooks" },
-  { id: "computadoras", label: "Computadoras" },
-  { id: "accesorios", label: "Accesorios" },
+  { id: "gpus", label: "Placas de Video" },
+  { id: "procesadores", label: "Procesadores" },
+  { id: "ram", label: "RAM" },
+  { id: "coolers", label: "Coolers" },
+  { id: "accesorios", label: "Ver todo" },
 ]
 
 export default function Header({ search, onSearchChange, onSelectCategory, activeCategory, cartCount = 0, onCart }) {
@@ -15,7 +17,7 @@ export default function Header({ search, onSearchChange, onSelectCategory, activ
     <header className="header">
       <div className="header-inner">
         <button className="logo-link" onClick={() => onSelectCategory("todos")} aria-label="TechnoStore inicio">
-          <img src="/logo.png" alt="TechnoStore" className="logo-img" />
+          <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="TechnoStore" className="logo-img" />
         </button>
 
         <nav className="nav nav--desktop">

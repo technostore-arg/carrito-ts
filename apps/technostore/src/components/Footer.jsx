@@ -1,15 +1,17 @@
 export default function Footer({ onSelectCategory }) {
   const cats = [
     ['celulares', 'Celulares'],
-    ['notebooks', 'Notebooks'],
-    ['computadoras', 'Computadoras'],
-    ['accesorios', 'Accesorios'],
+    ['gpus', 'Placas de Video'],
+    ['procesadores', 'Procesadores'],
+    ['ram', 'RAM / SSD'],
+    ['coolers', 'Coolers'],
+    ['accesorios', 'Ver todo'],
   ]
   return (
     <footer className="footer">
       <div className="container footer-grid">
         <div>
-          <div className="footer-logo"><img src="/logo.png" alt="TechnoStore" style={{ height: 24 }} /> TechnoStore</div>
+          <div className="footer-logo"><img src={`${import.meta.env.BASE_URL}logo.svg`} alt="TechnoStore" style={{ height: 24 }} /> TechnoStore</div>
           <p>Electrónica y hardware con garantía oficial. Av. Santa Fe 2844, Palermo.</p>
           <div className="pay-chips"><span>MercadoPago</span><span>VISA</span><span>Mastercard</span></div>
         </div>
