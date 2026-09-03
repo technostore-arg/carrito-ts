@@ -9,7 +9,7 @@ export default function ProductDetail({ producto, onClose, onAddToCart }) {
     return () => { document.body.classList.remove("locked"); window.removeEventListener("keydown", h) }
   }, [onClose])
   if (!producto) return null
-  const { nombre, descripcion, categoria, tipo_venta, precio, stock, especificaciones, imagenes, sku, marca } = producto
+  const { nombre, descripcion, categoria, tipo_venta, stock, especificaciones, imagenes, sku, marca, precio_transferencia, precio_mercadopago } = producto
   const foto = imagenes?.[0]
   const esEncargo = tipo_venta === "encargo"
   const waHref = esEncargo ? waLink(`Hola, quiero consultar por ${nombre} (SKU: ${sku})`) : null
@@ -47,12 +47,30 @@ export default function ProductDetail({ producto, onClose, onAddToCart }) {
             </div>
           )
         })()}
-        <div style={{ borderTop: "1px solid var(--border-light)", paddingTop: 14, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-          <div>
-            {esEncargo ? <span className="price price--encargo">A consultar</span> : <><span className="price">{ars(precio)}</span><span className="price-note" style={{ marginLeft: 6 }}>IVA incl.</span></>}
-            {!esEncargo && stock != null && <span style={{ fontSize: 11, color: stock <= 4 ? "var(--amber)" : "var(--muted)", marginLeft: 10 }}>{stock <= 4 ? `Últimas ${stock}` : `Stock: ${stock}`}</span>}
-          </div>
-          {esEncargo ? <a className="add-btn" href={waHref} target="_blank" rel="noreferrer">Consultar por WhatsApp</a> : <button className="add-btn" onClick={() => { onAddToCart?.(producto); onClose() }}>Agregar al carrito</button>}
+        <div style={{ borderTop: "1px solid var(--border-light)", paddingTop: 14 }}>
+          {esEncargo ? (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+              <span className="price price--encargo">A consultar</span>
+              <a className="add-btn" href={waHref} target="_blank" rel="noreferrer">Consultar por WhatsApp</a>
+            </div>
+          ) : (
+            <>
+              <div style={{ display: "flex", gap: 16, marginBottom: 12, flexWrap: "wrap" }}>
+                <div style={{ flex: 1, minWidth: 140, padding: "10px 14px", borderRadius: 10, border: "2px solid var(--accent)", background: "#f0f7ff" }}>
+                  <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--accent)", marginBottom: 4 }}>Transferencia</div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text)" }}>{ars(precio_transferencia)}</div>
+                </div>
+                <div style={{ flex: 1, minWidth: 140, padding: "10px 14px", borderRadius: 10, border: "1px solid var(--border)", background: "#fafafa" }}>
+                  <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--muted)", marginBottom: 4 }}>MercadoPago</div>
+                  <div style={{ fontSize: 17, fontWeight: 600, color: "var(--muted)" }}>{ars(precio_mercadopago)}</div>
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 11, color: stock <= 4 ? "var(--amber)" : "var(--muted)" }}>{stock <= 4 ? `Últimas ${stock} unidades` : `Stock: ${stock} unidades`}</span>
+                <button className="add-btn" onClick={() => { onAddToCart?.(producto); onClose() }}>Agregar al carrito</button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -79,18 +79,25 @@ async function scrapeAll() {
 }
 
 function normalizeForStore(products) {
-  return products.map(p => ({
-    sku: p.sku,
-    nombre: p.name,
-    precio: p.price,
-    marca: 'insumosacuario',
-    categoria: CAT_MAP[p.category] || 'accesorios',
-    stock: p.inStock ? 10 : 0,
-    tipo_venta: p.inStock ? 'directa' : 'directa',
-    descripcion: p.name,
-    imagenes: p.image ? [p.image] : [],
-    fuente_origen: 'scraping_insumosacuario'
-  }))
+  return products.map(p => {
+    const costo = p.price || 0
+    const transferencia = Math.round(costo * 1.20)
+    const mercadopago = Math.round(transferencia * 1.16)
+    return {
+      sku: p.sku,
+      nombre: p.name,
+      precio: transferencia,
+      precio_transferencia: transferencia,
+      precio_mercadopago: mercadopago,
+      marca: 'insumosacuario',
+      categoria: CAT_MAP[p.category] || 'accesorios',
+      stock: p.inStock ? 10 : 0,
+      tipo_venta: 'directa',
+      descripcion: p.name,
+      imagenes: p.image ? [p.image] : [],
+      fuente_origen: 'scraping_insumosacuario'
+    }
+  })
 }
 
 function diff(existingProducts, scrapedProducts) {

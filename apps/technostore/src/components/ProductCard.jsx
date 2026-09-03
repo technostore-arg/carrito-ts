@@ -1,7 +1,7 @@
 import { ars, waLink } from "../utils/format"
 
 export default function ProductCard({ producto, onAddToCart, onDetail }) {
-  const { nombre, categoria, tipo_venta, precio, stock, imagenes, sku } = producto
+  const { nombre, categoria, tipo_venta, stock, imagenes, sku, precio_transferencia, precio_mercadopago } = producto
   const foto = imagenes?.[0]
   const esEncargo = tipo_venta === "encargo"
   const waHref = esEncargo ? waLink(`Hola, quiero consultar por ${nombre} (SKU: ${sku})`) : null
@@ -20,9 +20,20 @@ export default function ProductCard({ producto, onAddToCart, onDetail }) {
       <div className="card-body">
         <span className="brand">{sku}</span>
         <h3 title={nombre}>{nombre}</h3>
-        <div className="price-row">
-          {esEncargo ? <span className="price price--encargo">A consultar</span> : <><span className="price">{ars(precio)}</span><span className="price-note">IVA incl.</span></>}
-        </div>
+        {esEncargo ? (
+          <div className="price-row"><span className="price price--encargo">A consultar</span></div>
+        ) : (
+          <div className="price-dual">
+            <div className="price-transfer">
+              <span className="price-label">Transferencia</span>
+              <span className="price">{ars(precio_transferencia)}</span>
+            </div>
+            <div className="price-mp">
+              <span className="price-label">MercadoPago</span>
+              <span className="price price--mp">{ars(precio_mercadopago)}</span>
+            </div>
+          </div>
+        )}
         <div className="card-actions">
           {esEncargo ? (
             <a className="add-btn" href={waHref} target="_blank" rel="noreferrer" onClick={e => { e.stopPropagation(); handleEncargo() }}>Consultar</a>

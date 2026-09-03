@@ -247,7 +247,12 @@ a { color: inherit; text-decoration: none; }
 .price-row { margin-top: auto; display: flex; align-items: baseline; gap: 6px; padding-top: 8px; }
 .price { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
 .price--encargo { font-size: 13px; font-weight: 500; color: var(--muted); }
+.price--mp { font-size: 13px; font-weight: 600; color: var(--muted); }
 .price-note { font-size: 11px; color: var(--muted); }
+.price-dual { margin-top: auto; padding-top: 8px; display: flex; flex-direction: column; gap: 2px; }
+.price-dual .price-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-right: 6px; }
+.price-dual .price-transfer { display: flex; align-items: baseline; gap: 4px; }
+.price-dual .price-mp { display: flex; align-items: baseline; gap: 4px; }
 .card-actions { display: flex; gap: 8px; margin-top: 12px; }
 .card-actions .add-btn { flex: 1; }
 .add-btn {

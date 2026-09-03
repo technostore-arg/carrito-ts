@@ -1,5 +1,6 @@
 import express from 'express'
 import path from 'node:path'
+import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { randomBytes, timingSafeEqual } from 'node:crypto'
 import { existsSync } from 'node:fs'
@@ -27,7 +28,7 @@ const PORT = process.env.PORT || 3001
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'technostore2026'
 const MP_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN || ''
 
-const CATEGORIES = ['celulares', 'notebooks', 'computadoras', 'gpus', 'memorias', 'workstations', 'accesorios']
+const CATEGORIES = ['celulares', 'notebooks', 'computadoras', 'gpus', 'memorias', 'workstations', 'accesorios', 'coolers', 'ram', 'ram-sodimm', 'ssd-nvme', 'ssd-sata', 'gabinetes', 'watercooling', 'procesadores']
 
 const app = express()
 app.use(express.json({ limit: '20mb' }))
@@ -422,6 +423,56 @@ app.post('/api/checkout/webhook', async (req, res) => {
     console.error('[checkout/webhook]', e.message)
     // Still respond 200 to avoid retries, but include error in body for debugging
     res.status(200).json({ ok: false, error: e.message })
+  }
+})
+
+/* ---------------- Comprobantes de transferencia ---------------- */
+const COMPROBANTES_DIR = path.join(__dirname, '.comprobantes')
+if (!fs.existsSync(COMPROBANTES_DIR)) fs.mkdirSync(COMPROBANTES_DIR, { recursive: true })
+
+app.post('/api/comprobantes', async (req, res) => {
+  try {
+    // Handle both JSON (base64) and FormData
+    let orderCode, customerName, comprobanteData
+
+    if (req.body instanceof Buffer) {
+      // Raw body - try to parse as multipart
+      const bodyStr = req.body.toString('utf8')
+      const orderMatch = bodyStr.match(/orderCode["\s:]+([^\n\r]+)/)
+      const nameMatch = bodyStr.match(/customerName["\s:]+([^\n\r]+)/)
+      orderCode = orderMatch?.[1]?.trim()
+      customerName = nameMatch?.[1]?.trim()
+    } else {
+      orderCode = req.body.orderCode
+      customerName = req.body.customerName
+      comprobanteData = req.body.comprobanteData
+    }
+
+    if (!orderCode) return res.status(400).json({ error: 'orderCode requerido' })
+
+    console.log(`[comprobante] Recibido para pedido ${orderCode} de ${customerName || 'unknown'}`)
+
+    // Save comprobante reference
+    const comprobante = {
+      orderCode,
+      customerName: customerName || 'unknown',
+      timestamp: new Date().toISOString(),
+      hasFile: !!comprobanteData,
+    }
+
+    // If base64 data provided, save to file
+    if (comprobanteData) {
+      const fileName = `${orderCode}_${Date.now()}.jpg`
+      const filePath = path.join(COMPROBANTES_DIR, fileName)
+      const buffer = Buffer.from(comprobanteData, 'base64')
+      fs.writeFileSync(filePath, buffer)
+      comprobante.filePath = filePath
+      console.log(`[comprobante] Archivo guardado: ${fileName}`)
+    }
+
+    res.json({ ok: true, comprobante })
+  } catch (e) {
+    res.status(500).json({ error: e.message })
   }
 })
 

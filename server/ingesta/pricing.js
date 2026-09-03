@@ -1,106 +1,96 @@
 /**
- * server/ingesta/pricing.js — Cálculo de precio de venta a partir de costo
- * Aplica: +100 USD para celulares/computadoras/notebooks + comisión MercadoPago siempre + margen extra opcional
- * Mantiene costo_original en especificaciones para auditoría y preview.
+ * server/ingesta/pricing.js — Dual pricing: transferencia + MercadoPago
+ *
+ * Reglas:
+ *  - InsumosAcuario: costo × 1.20 = transferencia, transferencia × 1.16 = MP
+ *  - Celulares/Notebooks/Computadoras: (costo + 100 USD × 1200) = transferencia, transferencia × 1.16 = MP
+ *  - Otros (GPU, RAM, SSD, etc): costo = transferencia, transferencia × 1.16 = MP
  */
 
-const DEFAULT_USD_RATE = Number(process.env.USD_ARS_RATE) || 1200 // ARS por USD, editable desde UI
-const DEFAULT_MP_FEE = Number(process.env.MP_FEE_PERCENT) || 6.5 // %
+const DEFAULT_USD_RATE = Number(process.env.USD_ARS_RATE) || 1200
+const DEFAULT_MP_FEE = Number(process.env.MP_FEE_PERCENT) || 6.5
 const DEFAULT_FIXED_USD = 100
+const MP_MARKUP = 0.16 // 16% extra for MercadoPago
 
 const FIXED_CATEGORIES = new Set(['celulares', 'computadoras', 'notebooks'])
+const SCRAPE_SOURCES = new Set(['scraping_insumosacuario'])
 
 export function getDefaultPricing() {
   return {
     esCosto: false,
     usdRate: DEFAULT_USD_RATE,
     mpFeePercent: DEFAULT_MP_FEE,
-    fixedUsd: DEFAULT_FIXED_USD, // USD fijos para celulares/computadoras
-    margenExtraPercent: 0, // margen global extra, configurable por usuario
+    fixedUsd: DEFAULT_FIXED_USD,
+    margenExtraPercent: 0,
   }
 }
 
 /**
- * Aplica pricing a una lista de productos normalizados.
- * @param {any[]} productos - array de Producto (con precio = costo si esCosto)
- * @param {object} opts
- * @param {boolean} opts.esCosto
- * @param {number} opts.usdRate
- * @param {number} opts.mpFeePercent - ej 6.5
- * @param {number} opts.fixedUsd - USD fijos para categorías premium
- * @param {number} opts.margenExtraPercent - % extra global (ej 10 = 10%)
- * @param {Record<string,number>} opts.margenPorCategoria - opcional, sobrescribe por categoría
- * @returns {{productos: any[], detalle: any[]}}
+ * Calculate dual pricing for a product.
+ * @returns {{ transferencia: number, mercadopago: number }}
+ */
+function calcDualPrecio(costo, categoria, fuente_origen) {
+  const cat = String(categoria || '').toLowerCase()
+  const fuente = String(fuente_origen || '').toLowerCase()
+
+  let transferencia = 0
+
+  if (SCRAPE_SOURCES.has(fuente)) {
+    // InsumosAcuario: +20% over scraped price
+    transferencia = Math.round(costo * 1.20)
+  } else if (FIXED_CATEGORIES.has(cat)) {
+    // Celulares/Notebooks/Computadoras: +100 USD fixed
+    transferencia = Math.round(costo + DEFAULT_FIXED_USD * DEFAULT_USD_RATE)
+  } else {
+    // GPU, RAM, SSD, etc: cost = transferencia
+    transferencia = Math.round(costo)
+  }
+
+  const mercadopago = Math.round(transferencia * (1 + MP_MARKUP))
+
+  return { transferencia, mercadopago }
+}
+
+/**
+ * Apply dual pricing to a list of normalized products.
  */
 export function applyPricing(productos, opts = {}) {
   const cfg = { ...getDefaultPricing(), ...opts }
-  // Si no es costo, no tocar
   if (!cfg.esCosto) return { productos, detalle: [] }
 
-  const mpFee = Number(cfg.mpFeePercent) / 100
-  const margenExtra = Number(cfg.margenExtraPercent) / 100
   const usdRate = Number(cfg.usdRate) || DEFAULT_USD_RATE
-  const fixedUsd = Number(cfg.fixedUsd) || 0
-
   const detalle = []
 
   const out = productos.map(p => {
-    // encargo sin precio no se toca
     if (p.tipo_venta === 'encargo' || Number(p.precio) <= 0) {
-      detalle.push({ sku: p.sku, costo: p.precio, precioFinal: p.precio, nota: 'encargo sin margen' })
-      return p
+      detalle.push({ sku: p.sku, costo: p.precio, transferencia: p.precio, mercadopago: p.precio, nota: 'encargo sin margen' })
+      return { ...p, precio_transferencia: p.precio, precio_mercadopago: p.precio }
     }
+
     const costo = Number(p.precio) || 0
-    const categoria = String(p.categoria || '').toLowerCase()
-    const aplicaFijo = FIXED_CATEGORIES.has(categoria)
-    const fijoArs = aplicaFijo ? fixedUsd * usdRate : 0
-
-    // margen por categoría si viene
-    let margenCat = 0
-    if (cfg.margenPorCategoria && typeof cfg.margenPorCategoria === 'object') {
-      const v = cfg.margenPorCategoria[categoria]
-      if (v != null) margenCat = Number(v) / 100
-    }
-
-    const base = costo + fijoArs
-    // Gross-up MP: si MP cobra 6.5%, para recibir base necesitás base / (1 - 0.065)
-    const conMP = mpFee > 0 && mpFee < 0.9 ? base / (1 - mpFee) : base
-    const conMargenExtra = conMP * (1 + margenExtra)
-    const conMargenCat = conMargenExtra * (1 + margenCat)
-    const precioFinal = Math.round(conMargenCat)
+    const { transferencia, mercadopago } = calcDualPrecio(costo, p.categoria, p.fuente_origen)
 
     detalle.push({
       sku: p.sku,
-      categoria,
+      categoria: p.categoria,
+      fuente_origen: p.fuente_origen,
       costo,
-      fijoUsd: aplicaFijo ? fixedUsd : 0,
-      fijoArs,
-      base,
-      conMP: Math.round(conMP),
-      precioFinal,
+      transferencia,
+      mercadopago,
       usdRate,
-      mpFeePercent: cfg.mpFeePercent,
     })
 
-    // Guardar auditoría en especificaciones sin romper schema
     const especificaciones = {
       ...(p.especificaciones || {}),
       _costo_original: costo,
-      _pricing: {
-        esCosto: true,
-        costo,
-        fijoUsd: aplicaFijo ? fixedUsd : 0,
-        usdRate,
-        mpFeePercent: cfg.mpFeePercent,
-        margenExtraPercent: cfg.margenExtraPercent,
-        precioFinal,
-      },
+      _pricing: { costo, transferencia, mercadopago, usdRate },
     }
 
     return {
       ...p,
-      precio: precioFinal,
-      costo_original: costo, // campo no canónico pero útil para preview, se ignora en validación
+      precio: transferencia,
+      precio_transferencia: transferencia,
+      precio_mercadopago: mercadopago,
       especificaciones,
     }
   })
@@ -108,15 +98,9 @@ export function applyPricing(productos, opts = {}) {
   return { productos: out, detalle }
 }
 
-/**
- * Calcula pricing inverso para mostrar en preview: cuánto es costo vs precio final
- */
 export function explainPricing(detalle) {
   return detalle.map(d => {
-    if (d.costo === d.precioFinal) return `${d.sku}: $${d.costo} (encargo/sin margen)`
-    const partes = [`costo $${d.costo}`]
-    if (d.fijoArs) partes.push(`+ $${d.fijoArs} (USD ${d.fijoUsd} × ${d.usdRate})`)
-    partes.push(`+ MP ${d.mpFeePercent}% → $${d.precioFinal}`)
-    return `${d.sku}: ${partes.join(' ')}`
+    if (d.costo === d.transferencia) return `${d.sku}: $${d.costo} (transfer) / $${d.mercadopago} (MP)`
+    return `${d.sku}: costo $${d.costo} → transfer $${d.transferencia} / MP $${d.mercadopago}`
   })
 }

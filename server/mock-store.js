@@ -34,6 +34,44 @@ let products = saved?.products ?? [...seed]
 let orders = saved?.orders ?? []
 let consultas = saved?.consultas ?? []
 let borradores = saved?.borradores ?? []
+
+// Recalculate dual pricing for all products on startup
+const SCRAPE_SOURCES = new Set(['scraping_insumosacuario'])
+const FIXED_CATEGORIES = new Set(['celulares', 'computadoras', 'notebooks'])
+const USD_RATE = 1200, FIXED_USD = 100, MP_MARKUP = 0.16
+
+function recalcDualPricing() {
+  // Check if pricing already applied (skip if all products have both fields)
+  const allHavePricing = products.length > 0 && products.every(p => p.precio_transferencia != null && p.precio_mercadopago != null)
+  if (allHavePricing) return
+
+  for (const p of products) {
+    if (p.tipo_venta === 'encargo' || Number(p.precio) <= 0) {
+      p.precio_transferencia = p.precio || 0
+      p.precio_mercadopago = p.precio || 0
+      continue
+    }
+    // Use the raw precio as the base cost (before any markup)
+    const costo = Number(p.precio) || 0
+    const fuente = String(p.fuente_origen || '').toLowerCase()
+    const cat = String(p.categoria || '').toLowerCase()
+    let transferencia = 0
+    if (SCRAPE_SOURCES.has(fuente)) {
+      // InsumosAcuario: +20% over scraped price
+      transferencia = Math.round(costo * 1.20)
+    } else if (FIXED_CATEGORIES.has(cat)) {
+      // Celulares/Notebooks/Computadoras: +100 USD fixed
+      transferencia = Math.round(costo + FIXED_USD * USD_RATE)
+    } else {
+      // GPU, RAM, SSD, etc: cost = transferencia
+      transferencia = Math.round(costo)
+    }
+    p.precio_transferencia = transferencia
+    p.precio_mercadopago = Math.round(transferencia * (1 + MP_MARKUP))
+  }
+  persist()
+}
+recalcDualPricing()
 let pending = new Map()
 let mpPay = []
 
@@ -334,7 +372,13 @@ export const mockStore = {
       const especificaciones = p.especificaciones || (Array.isArray(p.specs) ? Object.fromEntries(p.specs.map(s => [s, s])) : {})
       const cleanSpecs = Object.fromEntries(Object.entries(especificaciones).filter(([k]) => !k.startsWith('_')))
       const descripcion = (p.descripcion && p.descripcion.length > 20 && !p.descripcion.toUpperCase().includes(nombre.toUpperCase().substring(0, 10))) ? p.descripcion : genDescripcion(nombre, categoria, cleanSpecs)
-      return { ...p, nombre, name: nombre, precio, price: precio, marca, brand: marca, categoria, category: categoria, imagenes, image: imagenes[0] || null, especificaciones: cleanSpecs, specs: Object.values(cleanSpecs), tipo_venta: p.tipo_venta || 'directa', stock: p.tipo_venta === 'encargo' ? null : Number(p.stock ?? 0), descripcion, estado: p.estado || 'activo', moneda: p.moneda || 'ARS', fuente_origen: p.fuente_origen || 'manual' }
+      // Dual pricing: transferencia and MercadoPago
+      const precioBase = Number(p.precio ?? p.price ?? 0)
+      const pt = Number(p.precio_transferencia) || 0
+      const pm = Number(p.precio_mercadopago) || 0
+      const precio_transferencia = pt || precioBase || 0
+      const precio_mercadopago = pm || precioBase || 0
+      return { ...p, nombre, name: nombre, precio: precio_transferencia, price: precio_transferencia, precio_transferencia, precio_mercadopago, marca, brand: marca, categoria, category: categoria, imagenes, image: imagenes[0] || null, especificaciones: cleanSpecs, specs: Object.values(cleanSpecs), tipo_venta: p.tipo_venta || 'directa', stock: p.tipo_venta === 'encargo' ? null : Number(p.stock ?? 0), descripcion, estado: p.estado || 'activo', moneda: p.moneda || 'ARS', fuente_origen: p.fuente_origen || 'manual' }
     })
   },
   getProductById(id) {
@@ -353,6 +397,8 @@ export const mockStore = {
       sku: data.sku ? String(data.sku).toUpperCase() : `TS-${genId().slice(0,6).toUpperCase()}`,
       nombre, name: nombre,
       precio, price: precio,
+      precio_transferencia: Number(data.precio_transferencia) || precio,
+      precio_mercadopago: Number(data.precio_mercadopago) || precio,
       marca, brand: marca,
       categoria, category: categoria,
       tipo_venta: data.tipo_venta || 'directa',
