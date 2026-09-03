@@ -1,5 +1,3 @@
-import { CountUp } from '../hooks/motion'
-
 const POSTER = 'assets/video/technostore-poster.jpg'
 const VIDEO = 'assets/video/technostore-hero.mp4'
 
@@ -12,41 +10,28 @@ export default function Hero({ onExplore }) {
       <section className="hero container">
         <div className="hero-copy">
           <span className="hero-tag">Nueva colección 2026</span>
-          <h1>
-            Tecnología que <span className="grad-text">impulsa</span> tu mundo
-          </h1>
-          <p className="hero-sub">
-            Celulares, notebooks y hardware con precios imbatibles,
-            envío gratis y garantía oficial.
-          </p>
+          <h1>Tecnología que <em>impulsa</em> tu mundo</h1>
+          <p className="hero-sub">Celulares, notebooks y hardware con precios imbatibles, envío gratis y garantía oficial.</p>
           <div className="hero-actions">
             <button className="btn-primary" onClick={onExplore}>Ver catálogo</button>
             <button className="btn-ghost" onClick={onExplore}>Ver ofertas</button>
           </div>
-          <div className="hero-proof">
-            <span className="proof-stars">★★★★★</span> 4.9 · +15.000 clientes
-          </div>
+          <div className="hero-proof"><span className="proof-stars">★★★★★</span> 4.9 · +15.000 clientes</div>
         </div>
-
         <div className="hero-media">
-          <video autoPlay muted loop playsInline preload="metadata" poster={posterSrc}
-            onError={e => { e.target.style.display = 'none'; e.target.nextElementSibling && (e.target.nextElementSibling.style.display = 'block') }}
-          >
+          <video autoPlay muted loop playsInline preload="metadata" poster={posterSrc} onError={e => { e.target.style.display = 'none'; e.target.nextElementSibling && (e.target.nextElementSibling.style.display = 'block') }}>
             <source src={videoSrc} type="video/mp4" />
           </video>
           <div className="hero-fallback" style={{ display: 'none', backgroundImage: `url(${posterSrc})` }} />
         </div>
       </section>
-
-      <div className="diagonal-break" aria-hidden />
       <div className="marquee" aria-hidden="true">
         <div className="marquee-track">
-          {['Envío gratis desde $300.000','Garantía oficial','Productos nuevos y originales','15 años de experiencia'].flatMap(x=>[x,x,x]).map((item,i)=>(
-            <span key={i}>{item} <i>◆</i></span>
+          {['Samsung','Xiaomi','Apple','Motorola','Lenovo','HP','Dell','ASUS','Samsung','Xiaomi','Apple','Motorola','Lenovo','HP','Dell','ASUS','Samsung','Xiaomi','Apple','Motorola','Lenovo','HP','Dell','ASUS','Samsung','Xiaomi','Apple','Motorola','Lenovo','HP','Dell','ASUS'].map((item,i)=>(
+            <span key={i}>{item} <i>·</i></span>
           ))}
         </div>
       </div>
-      <div className="diagonal-break--alt" aria-hidden />
     </>
   )
 }

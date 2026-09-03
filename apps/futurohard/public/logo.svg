@@ -1,6 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 44" width="320" height="44">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#5E5CE6"/><stop offset="100%" stop-color="#0A84FF"/></linearGradient></defs>
-  <rect x="2" y="6" width="32" height="32" rx="9" fill="none" stroke="url(#g)" stroke-width="3.2"/>
-  <rect x="10" y="14" width="16" height="16" rx="4" fill="url(#g)"/>
-  <text x="48" y="30" font-family="JetBrains Mono, monospace" font-size="20" font-weight="700" letter-spacing="-0.03em" fill="#F5F5F7">FUTURO<tspan fill="#8E8E93">_</tspan>HARD</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 120">
+  <defs>
+    <linearGradient id="fhgrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#22D3EE"/>
+    </linearGradient>
+  </defs>
+  <g>
+    <rect x="2" y="30" width="60" height="60" rx="14" fill="none" stroke="url(#fhgrad)" stroke-width="4"/>
+    <rect x="18" y="46" width="28" height="28" rx="5" fill="url(#fhgrad)"/>
+    <line x1="32" y1="12" x2="32" y2="30" stroke="url(#fhgrad)" stroke-width="3"/>
+    <line x1="32" y1="90" x2="32" y2="108" stroke="url(#fhgrad)" stroke-width="3"/>
+    <line x1="0" y1="60" x2="-14" y2="60" stroke="url(#fhgrad)" stroke-width="3" opacity="0"/>
+    <line x1="10" y1="30" x2="10" y2="18" stroke="url(#fhgrad)" stroke-width="3"/>
+    <line x1="54" y1="30" x2="54" y2="18" stroke="url(#fhgrad)" stroke-width="3"/>
+    <line x1="10" y1="90" x2="10" y2="102" stroke="url(#fhgrad)" stroke-width="3"/>
+    <line x1="54" y1="90" x2="54" y2="102" stroke="url(#fhgrad)" stroke-width="3"/>
+  </g>
+  <text x="82" y="65" font-family="Space Grotesk, Inter, sans-serif" font-weight="700" font-size="40" fill="#F5F5F7" letter-spacing="0.5">FUTURO</text>
+  <text x="82" y="100" font-family="Space Grotesk, Inter, sans-serif" font-weight="700" font-size="40" fill="url(#fhgrad)" letter-spacing="0.5">HARD</text>
 </svg>

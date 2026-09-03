@@ -1,66 +1,58 @@
-import { motion, useReducedMotion } from "framer-motion"
-import { ars, waLink } from "@technostore/ui/src/format"
-import Badge from "@technostore/ui/src/Badge"
+import { ars, waLink } from "../utils/format"
 
-function SpecChips({ especificaciones }) {
-  const entries = Object.entries(especificaciones || {}).filter(([k]) => !k.startsWith('_')).slice(0, 3)
-  if (entries.length === 0) return null
-  return (
-    <div className="spec-chips">
-      {entries.map(([k, v]) => (
-        <span key={k} className="spec-chip">
-          <strong>{k}:</strong> {String(v)}
-        </span>
-      ))}
-    </div>
-  )
-}
-
-export default function ProductCard({ producto, onDetail }) {
-  const shouldReduce = useReducedMotion()
-  const { nombre, descripcion, categoria, tipo_venta, precio, stock, especificaciones, imagenes, sku } = producto
+export default function ProductCard({ producto, onAddToCart, onDetail }) {
+  const { nombre, categoria, tipo_venta, precio, stock, imagenes, sku, price, name, emoji } = producto
+  const isLegacy = !producto.sku
+  const displayName = nombre || name
+  const displayPrice = precio ?? price
   const foto = imagenes?.[0]
   const esEncargo = tipo_venta === "encargo"
 
+  const handleEncargo = () => {
+    try { fetch("/api/consultas", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sku, nombre: displayName, marca: producto.marca, mensaje: `Hola, quiero consultar por ${displayName} (SKU: ${sku})`, origen: "whatsapp" }) }).catch(() => {}) } catch {}
+  }
+
+  if (isLegacy) {
+    return (
+      <article className="card" onClick={() => onDetail?.(producto)} style={{ cursor: "pointer" }}>
+        <div className="card-media" style={{ fontSize: 48 }}>{emoji || "📦"}</div>
+        <div className="card-body">
+          <span className="brand">{producto.id}</span>
+          <h3 title={displayName}>{displayName}</h3>
+          <div className="price-row"><span className="price">{ars(displayPrice)}</span></div>
+          <div className="card-actions">
+            <button className="add-btn" onClick={e => { e.stopPropagation(); onAddToCart?.(producto) }}>Agregar</button>
+            <button className="add-btn add-btn--ghost" onClick={e => { e.stopPropagation(); onDetail?.(producto) }}>Detalle</button>
+          </div>
+        </div>
+      </article>
+    )
+  }
+
+  const waHref = esEncargo ? waLink(`Hola, quiero consultar por ${displayName} (SKU: ${sku})`) : null
+
   return (
-    <motion.article
-      className="card card--fh"
-      whileHover={shouldReduce ? undefined : { y: -4 }}
-      transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
-      style={{ willChange: "transform", cursor: "pointer" }}
-      onClick={() => onDetail?.(producto)}
-    >
+    <article className="card" onClick={() => onDetail?.(producto)} style={{ cursor: "pointer" }}>
       <div className="card-media">
-        {foto ? <img src={foto} alt={nombre} loading="lazy" /> : <div className="fallback" aria-hidden />}
-        <Badge deal={false}>{categoria}</Badge>
-        {esEncargo && <span className="badge badge--encargo" style={{ left: "auto", right: 12 }}>A pedido</span>}
+        {foto ? <img src={foto} alt={displayName} loading="lazy" decoding="async" /> : <div className="fallback" aria-hidden>○</div>}
+        <span className={`badge ${esEncargo ? "badge--encargo" : ""}`}>{esEncargo ? "A pedido" : categoria}</span>
         {!esEncargo && stock != null && stock <= 3 && <span className="stock-warn">Últimas {stock}</span>}
       </div>
-
       <div className="card-body">
-        <span className="brand mono">{sku}</span>
-        <h3 title={nombre}>{nombre}</h3>
-        {descripcion && <p className="card-desc">{descripcion}</p>}
-        <SpecChips especificaciones={especificaciones} />
-        <div className="price-row" style={{ marginTop: 12 }}>
-          {esEncargo ? <span className="price price--encargo">A consultar</span> : <><span className="price">{ars(precio)}</span><span className="price-note">IVA incl.</span></>}
+        <span className="brand">{sku}</span>
+        <h3 title={displayName}>{displayName}</h3>
+        <div className="price-row">
+          {esEncargo ? <span className="price price--encargo">A consultar</span> : <><span className="price">{ars(displayPrice)}</span><span className="price-note">IVA incl.</span></>}
         </div>
-
-        <div className="card-actions" style={{ display: "flex", gap: 8, marginTop: 12 }}>
-          <motion.button whileTap={{ scale: 0.97 }} transition={{ duration: 0.15 }} className="add-btn add-btn--ghost" style={{ flex: 1 }} onClick={e => { e.stopPropagation(); onDetail?.(producto) }}>
-            Ver detalle
-          </motion.button>
+        <div className="card-actions">
           {esEncargo ? (
-            <motion.a whileTap={{ scale: 0.97 }} transition={{ duration: 0.15 }} className="add-btn" style={{ flex: 1, textAlign: "center" }} href={waLink(nombre, sku)} target="_blank" rel="noreferrer" onClick={e => { e.stopPropagation(); try { fetch("/api/consultas", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sku, nombre, marca: producto.marca, mensaje: `Hola, quiero consultar por ${nombre} (SKU: ${sku})`, origen: "whatsapp" }) }).catch(() => {}) } catch {} }} aria-label={`Consultar por ${nombre} vía WhatsApp`}>
-              WhatsApp
-            </motion.a>
+            <a className="add-btn" href={waHref} target="_blank" rel="noreferrer" onClick={e => { e.stopPropagation(); handleEncargo() }}>Consultar</a>
           ) : (
-            <motion.button whileTap={{ scale: 0.97 }} transition={{ duration: 0.15 }} className="add-btn" style={{ flex: 1 }} onClick={e => { e.stopPropagation(); onDetail?.(producto) }}>
-              Ver precio
-            </motion.button>
+            <button className="add-btn" onClick={e => { e.stopPropagation(); onAddToCart?.(producto) }}>Agregar</button>
           )}
+          <button className="add-btn add-btn--ghost" onClick={e => { e.stopPropagation(); onDetail?.(producto) }}>Detalle</button>
         </div>
       </div>
-    </motion.article>
+    </article>
   )
 }

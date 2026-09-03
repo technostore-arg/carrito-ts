@@ -1,5 +1,3 @@
-import { motion } from "framer-motion"
-
 const CATEGORIAS = [
   { id: "todos", label: "Todos" },
   { id: "celulares", label: "Celulares" },
@@ -40,65 +38,37 @@ export default function FilterBar({ categoria, marca, rango, orden, onCategoria,
           <span className="filter-label">Categoría</span>
           <div className="pill-row" role="tablist">
             {CATEGORIAS.map(c => (
-              <motion.button
-                key={c.id}
-                role="tab"
-                aria-selected={categoria === c.id}
-                className={`pill ${categoria === c.id ? "active" : ""}`}
-                onClick={() => onCategoria(c.id)}
-                whileTap={{ scale: 0.96 }}
-                transition={{ duration: 0.14, ease: [0.25, 0.1, 0.25, 1] }}
-              >
+              <button key={c.id} role="tab" aria-selected={categoria === c.id} className={`pill ${categoria === c.id ? "active" : ""}`} onClick={() => onCategoria(c.id)}>
                 {c.label} <em>{counts[c.id] ?? 0}</em>
-              </motion.button>
+              </button>
             ))}
           </div>
         </div>
       </div>
-
-      <div className="filter-row filter-row--secondary">
+      <div className="filter-row">
         <label className="filter-select">
           <span>Marca</span>
           <select value={marca} onChange={e => onMarca(e.target.value)}>
             <option value="todos">Todas las marcas</option>
-            {marcasDisponibles.map(m => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
+            {marcasDisponibles.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
         </label>
-
         <label className="filter-select">
           <span>Precio</span>
           <select value={rango} onChange={e => onRango(e.target.value)}>
-            {RANGOS.map(r => (
-              <option key={r.id} value={r.id}>
-                {r.label}
-              </option>
-            ))}
+            {RANGOS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
           </select>
         </label>
-
         <label className="filter-select">
           <span>Ordenar</span>
           <select value={orden} onChange={e => onOrden(e.target.value)}>
-            {ORDENES.map(o => (
-              <option key={o.id} value={o.id}>{o.label}</option>
-            ))}
+            {ORDENES.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
           </select>
         </label>
       </div>
-
       <div className="filter-meta">
-        <span className="filter-count">
-          {totalVisibles === totalAll
-            ? `${totalAll} productos`
-            : `${totalVisibles} de ${totalAll} productos`}
-        </span>
-        {hasFiltros && (
-          <button className="filter-clear" onClick={onLimpiar}>✕ Limpiar filtros</button>
-        )}
+        <span className="filter-count">{totalVisibles === totalAll ? `${totalAll} productos` : `${totalVisibles} de ${totalAll} productos`}</span>
+        {hasFiltros && <button className="filter-clear" onClick={onLimpiar}>Limpiar filtros</button>}
       </div>
     </div>
   )

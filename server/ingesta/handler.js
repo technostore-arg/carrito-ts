@@ -90,7 +90,10 @@ function heuristicTextToRows(text) {
       const idx = line.indexOf(priceMatch[0])
       if (idx > 3) nombre = line.slice(0, idx).trim()
     }
-    nombre = nombre.replace(/^[\-\*\•\d\.\)\s]+/, '').trim().slice(0, 80)
+    nombre = nombre.replace(/^[\-\*\•\d\.\)\s]+/, '').trim()
+    // Sacar el indicador de moneda que queda pegado al final (ej. "... RAM – U$S", "... 128GB - USD")
+    nombre = nombre.replace(/[\-–—:]?\s*(U\s*\$\s*S|USD|ARS|\$)\s*$/i, '').trim()
+    nombre = nombre.slice(0, 80)
     if (nombre.length < 3) nombre = line.slice(0, 40)
 
     // Saltar líneas que son headers/separadores sin precio (ej. "LISTADO COMPLETO XIAOMI", "REDMI🔴", "---")

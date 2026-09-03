@@ -1,90 +1,63 @@
 import { useEffect } from "react"
-import { motion } from "framer-motion"
-import { ars, waLink } from "@technostore/ui/src/format"
+import { ars, waLink } from "../utils/format"
 
-export default function ProductDetail({ producto, onClose }) {
-  useEffect(() => { document.body.classList.add("locked"); return () => document.body.classList.remove("locked") }, [])
+export default function ProductDetail({ producto, onClose, onAddToCart }) {
+  useEffect(() => {
+    document.body.classList.add("locked")
+    const h = e => { if (e.key === "Escape") onClose() }
+    window.addEventListener("keydown", h)
+    return () => { document.body.classList.remove("locked"); window.removeEventListener("keydown", h) }
+  }, [onClose])
   if (!producto) return null
-  const { nombre, descripcion, categoria, tipo_venta, precio, stock, especificaciones, imagenes, sku, marca } = producto
+  const { nombre, descripcion, categoria, tipo_venta, precio, stock, especificaciones, imagenes, sku, marca, name, price } = producto
+  const displayName = nombre || name
+  const displayPrice = precio ?? price
   const foto = imagenes?.[0]
   const esEncargo = tipo_venta === "encargo"
-  const waHref = esEncargo ? waLink(nombre, sku) : null
+  const waHref = esEncargo ? waLink(`Hola, quiero consultar por ${displayName} (SKU: ${sku})`) : null
+  const isLegacy = !producto.sku
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <motion.div
-        className="modal"
-        onClick={e => e.stopPropagation()}
-        initial={{ opacity: 0, y: 10, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-      >
+      <div className="modal" onClick={e => e.stopPropagation()}>
         <button className="close icon-btn" onClick={onClose} aria-label="Cerrar">✕</button>
-
-        {foto && (
-          <div style={{ width: "100%", height: 320, borderRadius: 14, overflow: "hidden", marginBottom: 20, background: "#0f141f", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <img src={foto} alt={nombre} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+        {foto ? (
+          <div style={{ width: "100%", height: 320, borderRadius: 12, overflow: "hidden", marginBottom: 16, background: "#f5f5f7", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+            <img src={foto} alt={displayName} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
           </div>
-        )}
-
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-          <span className="brand mono" style={{ fontFamily: "JetBrains Mono, monospace" }}>{sku}</span>
-          {marca && <span style={{ fontSize: 11, color: "var(--muted)", background: "var(--glass)", padding: "2px 8px", borderRadius: 6 }}>{marca}</span>}
+        ) : isLegacy && producto.emoji ? <div style={{ fontSize: 64, textAlign: "center", padding: 24 }}>{producto.emoji}</div> : null}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+          <span className="brand">{sku || producto.id}</span>
+          {marca && <span style={{ fontSize: 11, color: "var(--muted)", background: "#f5f5f7", padding: "2px 8px", borderRadius: 6 }}>{marca}</span>}
           <span className={`badge ${esEncargo ? "badge--encargo" : ""}`} style={{ position: "static" }}>{esEncargo ? "A pedido" : categoria}</span>
         </div>
-
-        <h2 className="modal-title" style={{ marginBottom: 12 }}>{nombre}</h2>
-
-        {descripcion && (
-          <p style={{ fontSize: 14, color: "var(--muted)", lineHeight: 1.6, marginBottom: 16 }}>{descripcion}</p>
-        )}
-
+        <h2 className="modal-title" style={{ marginBottom: 10 }}>{displayName}</h2>
+        {descripcion && <p style={{ fontSize: 13.5, color: "var(--muted)", lineHeight: 1.6, marginBottom: 14 }}>{descripcion}</p>}
         {especificaciones && Object.keys(especificaciones).length > 0 && (() => {
-          const cleanSpecs = Object.entries(especificaciones).filter(([k]) => !k.startsWith('_'))
-          if (cleanSpecs.length === 0) return null
+          const clean = Object.entries(especificaciones).filter(([k]) => !k.startsWith('_'))
+          if (clean.length === 0) return null
           return (
             <div style={{ marginBottom: 16 }}>
-              <h4 style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 10 }}>Ficha técnica</h4>
+              <h4 style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 8 }}>Ficha técnica</h4>
               <div style={{ display: "grid", gap: 6 }}>
-                {cleanSpecs.map(([k, v]) => (
-                  <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", fontSize: 13 }}>
-                    <span style={{ color: "var(--muted)", fontWeight: 600 }}>{k}</span>
-                    <span style={{ fontFamily: "JetBrains Mono, monospace" }}>{String(v)}</span>
+                {clean.map(([k, v]) => (
+                  <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", borderRadius: 8, background: "#f5f5f7", fontSize: 12.5 }}>
+                    <span style={{ color: "var(--muted)", fontWeight: 500 }}>{k}</span>
+                    <span>{String(v)}</span>
                   </div>
                 ))}
               </div>
             </div>
           )
         })()}
-
-        <div style={{ borderTop: "1px solid var(--border)", paddingTop: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <div style={{ borderTop: "1px solid var(--border-light)", paddingTop: 14, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <div>
-            {esEncargo ? (
-              <span className="price price--encargo">A consultar</span>
-            ) : (
-              <>
-                <span className="price">{ars(precio)}</span>
-                <span className="price-note" style={{ marginLeft: 8 }}>IVA incl.</span>
-              </>
-            )}
-            {!esEncargo && stock != null && (
-              <span style={{ fontSize: 12, color: stock <= 3 ? "var(--amber)" : "var(--muted)", marginLeft: 12 }}>
-                {stock <= 3 ? `Últimas ${stock} unidades` : `Stock: ${stock}`}
-              </span>
-            )}
+            {esEncargo ? <span className="price price--encargo">A consultar</span> : <><span className="price">{ars(displayPrice)}</span><span className="price-note" style={{ marginLeft: 6 }}>IVA incl.</span></>}
+            {!esEncargo && stock != null && <span style={{ fontSize: 11, color: stock <= 3 ? "var(--amber)" : "var(--muted)", marginLeft: 10 }}>{stock <= 3 ? `Últimas ${stock}` : `Stock: ${stock}`}</span>}
           </div>
-
-          {esEncargo ? (
-            <a className="add-btn" href={waHref} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
-              Consultar por WhatsApp
-            </a>
-          ) : (
-            <button className="add-btn" onClick={onClose}>
-              Cerrar
-            </button>
-          )}
+          {esEncargo ? <a className="add-btn" href={waHref} target="_blank" rel="noreferrer">Consultar por WhatsApp</a> : <button className="add-btn" onClick={() => { onAddToCart?.(producto); onClose() }}>{isLegacy ? "Agregar al carrito" : "Agregar al carrito"}</button>}
         </div>
-      </motion.div>
+      </div>
     </div>
   )
 }

@@ -41,30 +41,35 @@ function genId() { return randomBytes(6).toString('hex') }
 
 // Imágenes locales por modelo — descargadas en public/images/celulares/
 const IMAGE_BY_MODEL = [
+  // POCO F series
   { test: /POCO F7 ULTRA/i, url: '/images/celulares/xiaomi-poco-f7-ultra.jpg' },
   { test: /POCO F8 ULTRA/i, url: '/images/celulares/xiaomi-poco-f8-ultra.jpg' },
   { test: /POCO F8 PRO/i, url: '/images/celulares/xiaomi-poco-f8-pro.jpg' },
   { test: /POCO F5 PRO/i, url: '/images/celulares/xiaomi-poco-f5-pro-2.jpg' },
-  { test: /POCO F7 PRO/i, url: '/images/celulares/xiaomi-poco-f7-pro.jpg' },
+  { test: /POCO F7 PRO/i, url: '/images/celulares/xiaomi-poco-f7.jpg' },
   { test: /POCO F7\b/i, url: '/images/celulares/xiaomi-poco-f7.jpg' },
   { test: /POCO F5\b/i, url: '/images/celulares/xiaomi-poco-f5-2.jpg' },
   { test: /POCO F1/i, url: '/images/celulares/xiaomi-pocophone-f1-.jpg' },
+  // POCO X series
   { test: /POCO X8 PRO MAX/i, url: '/images/celulares/xiaomi-poco-x8-pro.jpg' },
   { test: /POCO X8 PRO/i, url: '/images/celulares/xiaomi-poco-x8-pro.jpg' },
   { test: /POCO X7 PRO/i, url: '/images/celulares/xiaomi-poco-x7-pro.jpg' },
   { test: /POCO X7\b/i, url: '/images/celulares/xiaomi-poco-x7.jpg' },
   { test: /POCO X6 PRO/i, url: '/images/celulares/xiaomi-poco-x6-pro.jpg' },
   { test: /POCO X4 PRO/i, url: '/images/celulares/xiaomi-poco-x4-pro.jpg' },
-  { test: /POCO X3 GT/i, url: '/images/celulares/xiaomi-poco-x3.jpg' },
+  { test: /POCO X3/i, url: '/images/celulares/xiaomi-poco-x3.jpg' },
+  // POCO M series
   { test: /POCO M8 PRO/i, url: '/images/celulares/xiaomi-poco-m8-pro.jpg' },
   { test: /POCO M8\b/i, url: '/images/celulares/xiaomi-poco-m8.jpg' },
   { test: /POCO M7 PRO/i, url: '/images/celulares/xiaomi-poco-m7-pro-5g.jpg' },
   { test: /POCO M7\b/i, url: '/images/celulares/xiaomi-poco-m7-5g.jpg' },
   { test: /POCO M6\b/i, url: '/images/celulares/xiaomi-poco-m6-pro-5g.jpg' },
   { test: /POCO M3/i, url: '/images/celulares/xiaomi-poco-m3.jpg' },
+  // POCO C series
   { test: /POCO C85/i, url: '/images/celulares/xiaomi-poco-c85.jpg' },
   { test: /POCO C71/i, url: '/images/celulares/xiaomi-poco-c71.jpg' },
   { test: /POCO C65/i, url: '/images/celulares/xiaomi-poco-c65.jpg' },
+  // Xiaomi Mi numbered (flagship)
   { test: /MI 17 ULTRA/i, url: '/images/celulares/xiaomi-17-ultra.jpg' },
   { test: /MI 17T PRO/i, url: '/images/celulares/xiaomi-17t-pro.jpg' },
   { test: /MI 17T\b/i, url: '/images/celulares/xiaomi-17t.jpg' },
@@ -75,9 +80,9 @@ const IMAGE_BY_MODEL = [
   { test: /MI 13 LITE/i, url: '/images/celulares/xiaomi-13-lite.jpg' },
   { test: /MI 12 LITE/i, url: '/images/celulares/xiaomi-12-lite-5g.jpg' },
   { test: /MIX FLIP/i, url: '/images/celulares/xiaomi-mix-flip.jpg' },
+  // Xiaomi Redmi Note series
   { test: /NOTE 15 PRO PLUS/i, url: '/images/celulares/xiaomi-redmi-note-15-pro-plus-5g.jpg' },
   { test: /NOTE 15 PRO/i, url: '/images/celulares/xiaomi-redmi-note-15-pro-5g.jpg' },
-  { test: /XIAOMI NOTE 15 PRO PLUS/i, url: '/images/celulares/xiaomi-redmi-note-15-pro-plus-5g.jpg' },
   { test: /NOTE 14 PRO PLUS/i, url: '/images/celulares/xiaomi-redmi-note-14-pro-plus-5g.jpg' },
   { test: /NOTE 14 PRO/i, url: '/images/celulares/xiaomi-redmi-note-14-pro-5g.jpg' },
   { test: /NOTE 14S/i, url: '/images/celulares/xiaomi-redmi-note-14-5g.jpg' },
@@ -85,24 +90,34 @@ const IMAGE_BY_MODEL = [
   { test: /NOTE 13 PRO PLUS/i, url: '/images/celulares/xiaomi-redmi-note-13-pro-plus.jpg' },
   { test: /NOTE 13 PRO/i, url: '/images/celulares/xiaomi-redmi-note-13-pro.jpg' },
   { test: /NOTE 12 PRO PLUS/i, url: '/images/celulares/xiaomi-redmi-note-12-pro-plus.jpg' },
-  { test: /NOTE 12 PRO/i, url: '/images/celulares/xiaomi-redmi-note-12-pro.jpg' },
+  { test: /NOTE 12 PRO/i, url: '/images/celulares/xiaomi-redmi-note-12-pro-plus.jpg' },
   { test: /NOTE 12\b/i, url: '/images/celulares/xiaomi-redmi-note-12-5g.jpg' },
-  { test: /NOTE 11S 5G/i, url: '/images/celulares/xiaomi-redmi-note-11s-5g.jpg' },
+  { test: /NOTE 11S/i, url: '/images/celulares/xiaomi-redmi-note-11s-5g.jpg' },
   { test: /NOTE 11\b/i, url: '/images/celulares/xiaomi-redmi-note-11-4g.jpg' },
   { test: /NOTE 9S/i, url: '/images/celulares/xiaomi-redmi-note-9-pro.jpg' },
+  // Xiaomi Redmi numbered series
   { test: /REDMI A5/i, url: '/images/celulares/xiaomi-redmi-a5-4g.jpg' },
-  { test: /REDMI 1[45]C/i, url: '/images/celulares/xiaomi-redmi-14c.jpg' },
+  { test: /REDMI A3/i, url: '/images/celulares/xiaomi-redmi-a3.jpg' },
+  { test: /REDMI A7/i, url: '/images/celulares/xiaomi-redmi-a3.jpg' },
+  { test: /REDMI 17\b/i, url: '/images/celulares/xiaomi-redmi-13.jpg' },
+  { test: /REDMI 15C/i, url: '/images/celulares/xiaomi-poco-c85.jpg' },
+  { test: /REDMI 15\b/i, url: '/images/celulares/xiaomi-redmi-13.jpg' },
+  { test: /REDMI 14C/i, url: '/images/celulares/xiaomi-redmi-14c.jpg' },
   { test: /REDMI 13\b/i, url: '/images/celulares/xiaomi-redmi-13.jpg' },
-  { test: /XIAOMI A7 PRO/i, url: '/images/celulares/xiaomi-redmi-a3.jpg' },
   { test: /REDMI/i, url: '/images/celulares/xiaomi-redmi-14c.jpg' },
+  // Samsung Galaxy Z foldables
+  { test: /Z FOLD 8 ULTRA/i, url: '/images/celulares/samsung-galaxy-z-fold7.jpg' },
+  { test: /Z FOLD 8\b/i, url: '/images/celulares/samsung-galaxy-z-fold6.jpg' },
+  { test: /Z FOLD/i, url: '/images/celulares/samsung-galaxy-z-fold6.jpg' },
+  // Samsung Galaxy S series
   { test: /S26 ULTRA/i, url: '/images/celulares/samsung-galaxy-s26-ultra.jpg' },
   { test: /S26 PLUS/i, url: '/images/celulares/samsung-galaxy-s26-plus.jpg' },
   { test: /S26\b/i, url: '/images/celulares/samsung-galaxy-s26.jpg' },
   { test: /S25 ULTRA/i, url: '/images/celulares/samsung-galaxy-s25-ultra-sm-s938.jpg' },
   { test: /S25 FE/i, url: '/images/celulares/samsung-galaxy-s25-fe.jpg' },
+  { test: /S25\b/i, url: '/images/celulares/samsung-galaxy-s25-fe.jpg' },
   { test: /S24 FE/i, url: '/images/celulares/samsung-galaxy-s24-fe-5g.jpg' },
-  { test: /Z FOLD 8 ULTRA/i, url: '/images/celulares/samsung-galaxy-z-fold7.jpg' },
-  { test: /Z FOLD 8\b/i, url: '/images/celulares/samsung-galaxy-z-fold6.jpg' },
+  // Samsung Galaxy A series
   { test: /SAMSUNG A07/i, url: '/images/celulares/samsung-galaxy-a07.jpg' },
   { test: /SAMSUNG A06/i, url: '/images/celulares/samsung-galaxy-a06-5g.jpg' },
   { test: /SAMSUNG A05S/i, url: '/images/celulares/samsung-galaxy-a05s.jpg' },
@@ -119,14 +134,15 @@ const IMAGE_BY_MODEL = [
 const DEFAULT_PHONE_IMG = '/images/celulares/xiaomi-redmi-note-13-pro.jpg'
 
 function fixImage(sku, imagenes, nombre = '') {
-  const hasValid = Array.isArray(imagenes) && imagenes.length && imagenes[0] && String(imagenes[0]).length > 10
-  if (hasValid) return imagenes
-  // Buscar por nombre del producto
+  // Always try to match by name first for better accuracy
   const n = String(nombre || sku || '')
   for (const { test, url } of IMAGE_BY_MODEL) {
     if (test.test(n)) return [url]
   }
-  // Fallback para celulares sin match específico
+  // If no name match, keep existing valid images
+  const hasValid = Array.isArray(imagenes) && imagenes.length && imagenes[0] && String(imagenes[0]).length > 10
+  if (hasValid) return imagenes
+  // Fallback for phones without specific match
   if (/celulares/i.test(n) || /REDMI|POCO|MI |XIAOMI|SAMSUNG/i.test(n)) return [DEFAULT_PHONE_IMG]
   return Array.isArray(imagenes) && imagenes.length ? imagenes : [DEFAULT_PHONE_IMG]
 }
@@ -136,27 +152,112 @@ function genDescripcion(nombre, categoria, specs) {
   const n = nombre.toUpperCase()
   const s = specs || {}
 
-  // Helper: extract storage/RAM from name
   const storageMatch = n.match(/(\d+)\s*(GB|TB)/i)
   const storage = storageMatch ? storageMatch[0] : ''
   const ramMatch = n.match(/(\d+)\s*GB\s*RAM/i)
   const ram = ramMatch ? ramMatch[0] : ''
 
   if (categoria === 'celulares') {
-    const brand = n.includes('SAMSUNG') ? 'Samsung' : n.includes('POCO') ? 'POCO' : n.includes('MI ') || n.includes('XIAOMI') ? 'Xiaomi' : n.includes('IPHONE') ? 'Apple' : n.includes('PIXEL') ? 'Google' : n.includes('MOTO') ? 'Motorola' : ''
     const model = n.replace(/-/g, ' ').replace(/\s+/g, ' ').trim()
-    if (n.includes('PIXEL')) return `${brand} ${model}. Android puro con Tensor G3, cámara computacional líder en la industria y 7 años de actualizaciones. Experiencia Google pura.`
-    if (n.includes('ULTRA')) return `${brand} ${model}. Cámara premium con zoom óptico, pantalla AMOLED de alto rendimiento y batería de larga duración. Rendimiento tope de gama.`
-    if (n.includes('PRO')) return `${brand} ${model}. Procesador de alta gama, cámara mejorada con IA y diseño premium. Potencia y estilo en un solo dispositivo.`
-    if (n.includes('FOLD') || n.includes('FLIP')) return `${brand} ${model}. Diseño plegable innovador, pantalla flexible y rendimiento premium. La convergencia entre teléfono y tablet.`
-    if (n.includes('A14') || n.includes('A15') || n.includes('A16') || n.includes('A25') || n.includes('A35') || n.includes('A55')) return `${brand} ${model}. Excelente relación precio-calidad, pantalla grande, batería de larga duración y cámara confiable para el día a día.`
-    if (n.includes('POCO F')) return `${brand} ${model}. Flagship killer: procesador potente, pantalla AMOLED 120Hz, carga rápida y cámara triple. Rendimiento de gama alta a precio competitivo.`
-    if (n.includes('MI 1') || n.includes('MI 2')) return `${brand} ${model}. Cámara Leica, pantalla AMOLED LTPO, carga ultrarrápida y diseño elegante. Tecnología puntera con sellos de calidad.`
-    if (n.includes('REDMI NOTE')) return `${brand} ${model}. Pantalla grande, batería 5000mAh+, cámara de alta resolución y rendimiento fluido. Ideal para uso intensivo.`
-    if (n.includes('REDMI')) return `${brand} ${model}. Batería de larga duración, pantalla amplia y rendimiento confiable. Calidad Xiaomi a precio accesible.`
-    if (n.includes('MOTO G')) return `${brand} ${model}. Pantalla AMOLED, batería de larga duración, cámara con IA y experiencia Android pura. Diseño elegante y rendimiento fluido.`
-    if (n.includes('MOTO E')) return `${brand} ${model}. Batería extra-large, pantalla grande y rendimiento básico confiable. Ideal como segundo celular o para uso esencial.`
-    return `${brand} ${model}. Dispositivo con especificaciones destacadas, pantalla de alta calidad y rendimiento confiable.`
+
+    // Samsung Galaxy Z foldables
+    if (n.includes('Z FOLD') && n.includes('ULTRA')) return `Samsung ${model}. Plegable premium con S Pen integrado, pantalla Dynamic AMOLED 2X expandible y rendimiento tope de gama. La productividad sin compromisos.`
+    if (n.includes('Z FOLD')) return `Samsung ${model}. Plegable premium con pantalla Dynamic AMOLED 2X expandible, multitarea avanzada y rendimiento insuperable.`
+    if (n.includes('Z FLIP')) return `Samsung ${model}. Plegable compacto con pantalla externa interactiva, diseño premium y cámaras de alta calidad. Estilo y funcionalidad.`
+    // Samsung Galaxy S Ultra
+    if (n.includes('SAMSUNG') && n.includes('ULTRA')) return `Samsung ${model}. Cámara principal de 200MP con zoom óptico 5x, pantalla Dynamic AMOLED 2X de 6.8", S Pen integrado y batería de larga duración. El flagship definitivo.`
+    // Samsung Galaxy S+
+    if (n.includes('SAMSUNG') && (n.includes('S26 PLUS') || n.includes('S25 PLUS') || n.includes('S24 PLUS'))) return `Samsung ${model}. Pantalla Dynamic AMOLED 2X de 6.7", cámara triple con IA, rendimiento flagship y batería de mayor capacidad que el modelo base.`
+    // Samsung Galaxy S base
+    if (n.includes('SAMSUNG') && (n.includes('S26') || n.includes('S25 5G') || n.includes('S24 5G'))) return `Samsung ${model}. Pantalla Dynamic AMOLED 2X, procesador Snapdragon de última generación, cámara con IA y diseño premium.`
+    // Samsung Galaxy FE
+    if (n.includes('SAMSUNG') && n.includes(' FE')) return `Samsung ${model}. Experiencia flagship a precio accesible: pantalla AMOLED, cámara principal de alta resolución, rendimiento potente y actualizaciones garantizadas.`
+    // Samsung Galaxy A series
+    if (n.includes('SAMSUNG') && n.includes('A0')) return `Samsung ${model}. Smartphone entry-level con pantalla grande, batería de larga duración y rendimiento confiable para el día a día.`
+    if (n.includes('SAMSUNG') && n.includes('A1')) return `Samsung ${model}. Excelente relación precio-calidad con pantalla grande, batería de larga duración y cámara confiable.`
+    if (n.includes('SAMSUNG') && (n.includes('A2') || n.includes('A3') || n.includes('A5'))) return `Samsung ${model}. Gama media con pantalla AMOLED, cámara múltiple y rendimiento fluido para uso intensivo.`
+
+    // Xiaomi Mi numbered series (flagships with Leica)
+    if (n.includes('MI 17 ULTRA')) return `Xiaomi ${model}. Flagship Absoluto: cámara Leica cuádriple con sensor 1", pantalla LTPO AMOLED 2K, Snapdragon 8 Elite, carga de 90W y diseño premium.`
+    if (n.includes('MI 17T PRO')) return `Xiaomi ${model}. Flagship camera-phone con Leica, sensor principal de 50MP con estabilización OIS, pantalla AMOLED LTPO 120Hz y carga ultrarrápida.`
+    if (n.includes('MI 17T')) return `Xiaomi ${model}. Cámara Leica con sensor de alta resolución, pantalla AMOLED LTPO 120Hz, rendimiento flagship y diseño elegante.`
+    if (n.includes('MI 17')) return `Xiaomi ${model}. Procesador Snapdragon de última generación, cámara Leica, pantalla AMOLED LTPO y carga ultrarrápida.`
+    if (n.includes('MI 15T PRO')) return `Xiaomi ${model}. Cámara Leica con óptica premium, pantalla AMOLED LTPO, carga de 90W y diseño sofisticado.`
+    if (n.includes('MI 15T')) return `Xiaomi ${model}. Cámara Leica, pantalla AMOLED LTPO 120Hz, batería de alta capacidad y rendimiento fluido.`
+    if (n.includes('MI 13T PRO')) return `Xiaomi ${model}. Cámara Leica con sensor Sony IMX906, pantalla AMOLED 144Hz, carga de 120W y procesador Dimensity 9200+.`
+    if (n.includes('MI 12 LITE') || n.includes('MI 13 LITE')) return `Xiaomi ${model}. Diseño delgado y liviano, pantalla AMOLED 120Hz, cámara de alta resolución y carga rápida. Estilo accesible.`
+
+    // Xiaomi Mix Flip
+    if (n.includes('MIX FLIP')) return `Xiaomi ${model}. Plegable tipo clamshell con pantalla externa grande, cámara Leica y rendimiento flagship en formato compacto.`
+
+    // Poco F series (flagship killers)
+    if (n.includes('POCO F8 ULTRA')) return `POCO ${model}. El flagship killer definitivo: Snapdragon 8 Elite, pantalla AMOLED 2K 120Hz, cámara Sony de 50MP con OIS, carga de 120W y acabados premium.`
+    if (n.includes('POCO F8 PRO')) return `POCO ${model}. Procesador Dimensity 9400, pantalla AMOLED 120Hz, cámara principal de 50MP y carga ultrarrápida de 90W.`
+    if (n.includes('POCO F7 ULTRA')) return `POCO ${model}. Snapdragon 8 Elite, pantalla AMOLED 2K, cámara triple con OIS, carga de 120W y diseño renovado.`
+    if (n.includes('POCO F7')) return `POCO ${model}. Procesador Dimensity 8400, pantalla AMOLED 120Hz, cámara de 50MP y batería de 6000mAh con carga rápida.`
+    if (n.includes('POCO F5 PRO')) return `POCO ${model}. Snapdragon 8+ Gen 1, pantalla AMOLED 120Hz, cámara de 64MP con OIS y carga de 67W. Rendimiento de gama alta.`
+    if (n.includes('POCO F5')) return `POCO ${model}. Snapdragon 7+ Gen 2, pantalla AMOLED 120Hz, cámara de 64MP y batería de 5000mAh. Potencia sin precio premium.`
+    if (n.includes('POCO F1')) return `POCO ${model}. El original flagship killer: Snapdragon 845, pantalla IPS 6.18", cámara dual y rendimiento que desafió a los premiums.`
+
+    // Poco X series (upper mid-range)
+    if (n.includes('POCO X8 PRO')) return `POCO ${model}. Pantalla AMOLED 120Hz, procesador Dimensity, cámara de 50MP con OIS y carga rápida. Gama media-alta con gran relación valor/precio.`
+    if (n.includes('POCO X7 PRO')) return `POCO ${model}. Procesador Dimensity 8400, pantalla AMOLED 120Hz, cámara de 50MP con OIS y carga de 90W.`
+    if (n.includes('POCO X7')) return `POCO ${model}. Pantalla AMOLED 120Hz, cámara de 50MP, batería de 5110mAh y carga de 45W. Rendimiento fluido en gama media.`
+    if (n.includes('POCO X6 PRO')) return `POCO ${model}. Procesador Dimensity 8300, pantalla AMOLED 120Hz, cámara de 64MP con OIS y carga de 67W.`
+    if (n.includes('POCO X4 PRO')) return `POCO ${model}. Pantalla AMOLED 120Hz, cámara de 108MP, carga de 67W y diseño premium en gama media.`
+    if (n.includes('POCO X3')) return `POCO ${model}. Pantalla IPS 120Hz, Snapdragon 732G, cámara de 64MP y batería de 5160mAh. Rendimiento sólido.`
+
+    // Poco M series (mid-range)
+    if (n.includes('POCO M8 PRO')) return `POCO ${model}. Pantalla AMOLED, cámara de 108MP, batería de 5000mAh y carga de 33W. Calidad de imagen superior en gama media.`
+    if (n.includes('POCO M8')) return `POCO ${model}. Pantalla grande, cámara de alta resolución, batería de larga duración y rendimiento confiable.`
+    if (n.includes('POCO M7 PRO')) return `POCO ${model}. Pantalla AMOLED, cámara de 50MP con OIS, batería de 5110mAh y carga de 45W.`
+    if (n.includes('POCO M7')) return `POCO ${model}. Pantalla IPS, procesador Dimensity, cámara de 50MP y batería de 5160mAh. Gama media confiable.`
+    if (n.includes('POCO M6')) return `POCO ${model}. Pantalla IPS, cámara de 64MP, batería de 5000mAh y diseño elegante. Gama media accesible.`
+    if (n.includes('POCO M3')) return `POCO ${model}. Batería masiva de 6000mAh, pantalla IPS 6.53" y cámara de 48MP. AutonomíaExceptional para uso intensivo.`
+
+    // Poco C series (entry-level)
+    if (n.includes('POCO C85')) return `POCO ${model}. Entry-level con pantalla grande IPS, cámara confiable y batería de larga duración. Ideal como primer smartphone.`
+    if (n.includes('POCO C71')) return `POCO ${model}. Smartphone entry-level con pantalla de 6.88", batería de 5160mAh y rendimiento básico confiable.`
+    if (n.includes('POCO C65')) return `POCO ${model}. Pantalla IPS 6.74", cámara de 50MP y batería de 5000mAh. Entry-level con buena autonomía.`
+
+    // Redmi Note series (mid-range)
+    if (n.includes('XIAOMI NOTE 15 PRO PLUS') || n.includes('NOTE 15 PRO PLUS')) return `Xiaomi ${model}. Cámara principal de 200MP con OIS, pantalla AMOLED 1.5K 120Hz, Snapdragon 7s Gen 3, batería de 5110mAh y carga de 90W.`
+    if (n.includes('NOTE 15 PRO')) return `Xiaomi ${model}. Cámara de 200MP con OIS, pantalla AMOLED 1.5K 120Hz, procesador Dimensity 8400 Ultra y carga de 90W.`
+    if (n.includes('NOTE 15 5G')) return `Xiaomi ${model}. Pantalla AMOLED 120Hz, cámara de 108MP, conectividad 5G y batería de 5110mAh. Gama media con 5G.`
+    if (n.includes('NOTE 15')) return `Xiaomi ${model}. Pantalla AMOLED 120Hz, cámara de alta resolución, batería de 5110mAh y rendimiento fluido.`
+    if (n.includes('NOTE 14 PRO PLUS')) return `Xiaomi ${model}. Cámara de 200MP con OIS, pantalla AMOLED 1.5K 120Hz, Snapdragon 7s Gen 2 y carga de 90W.`
+    if (n.includes('NOTE 14 PRO')) return `Xiaomi ${model}. Cámara de 50MP con OIS, pantalla AMOLED 120Hz, procesador Dimensity 7300 Ultra y carga de 45W.`
+    if (n.includes('NOTE 14S')) return `Xiaomi ${model}. Pantalla AMOLED 120Hz, cámara de 108MP, batería de 5000mAh y carga de 33W. Gama media equilibrada.`
+    if (n.includes('NOTE 14')) return `Xiaomi ${model}. Pantalla AMOLED 90Hz, cámara de 50MP, batería de 5500mAh y diseño actualizado.`
+    if (n.includes('NOTE 13 PRO PLUS')) return `Xiaomi ${model}. Cámara de 200MP con OIS, pantalla AMOLED 1.5K 120Hz, IP68 resistencia al agua y carga de 120W.`
+    if (n.includes('NOTE 13 PRO')) return `Xiaomi ${model}. Cámara de 200MP con OIS, pantalla AMOLED 120Hz, procesador Dimensity 7200 y carga de 67W.`
+    if (n.includes('NOTE 13')) return `Xiaomi ${model}. Pantalla AMOLED 120Hz, cámara de 108MP, batería de 5000mAh y diseño delgado.`
+    if (n.includes('NOTE 12 PRO PLUS')) return `Xiaomi ${model}. Cámara de 108MP con OIS, pantalla AMOLED 120Hz, carga de 120W y procesador Dimensity 900.`
+    if (n.includes('NOTE 12 PRO')) return `Xiaomi ${model}. Cámara de 108MP, pantalla AMOLED 120Hz, batería de 5000mAh y carga de 67W.`
+    if (n.includes('NOTE 12')) return `Xiaomi ${model}. Pantalla AMOLED 120Hz, cámara de 50MP, batería de 5000mAh y conectividad 5G.`
+    if (n.includes('NOTE 11S')) return `Xiaomi ${model}. Cámara de 108MP, pantalla AMOLED 90Hz, batería de 5000mAh y carga de 33W.`
+    if (n.includes('NOTE 11')) return `Xiaomi ${model}. Pantalla AMOLED 90Hz, Snapdragon 680, cámara de 50MP y batería de 5000mAh.`
+    if (n.includes('NOTE 9S')) return `Xiaomi ${model}. Pantalla IPS 6.67" FHD+, Snapdragon 720G, cámara cuádruple de 48MP y batería de 5020mAh.`
+
+    // Redmi numbered series (budget to mid-range)
+    if (n.includes('REDMI 17')) return `Xiaomi ${model}. Pantalla IPS grande, procesador Snapdragon de gama media, cámara de alta resolución y batería de larga duración.`
+    if (n.includes('REDMI 15C')) return `Xiaomi ${model}. Pantalla IPS 6.88", procesador Helio G81, cámara de 50MP y batería de 5160mAh. Entry-level con pantalla amplia.`
+    if (n.includes('REDMI 15')) return `Xiaomi ${model}. Pantalla IPS 6.88", procesador Snapdragon 4 Gen 2, cámara de 108MP y batería de 5160mAh.`
+    if (n.includes('REDMI 14C')) return `Xiaomi ${model}. Pantalla IPS 6.88", procesador Helio G81, cámara de 50MP y batería de 5160mAh. Entry-level confiable.`
+    if (n.includes('REDMI 13')) return `Xiaomi ${model}. Pantalla IPS 6.79" FHD+, procesador Helio G88, cámara de 108MP y batería de 5030mAh.`
+    if (n.includes('A7 PRO')) return `Xiaomi ${model}. Entry-level con pantalla IPS, procesador Helio, cámara mejorada y batería de larga duración.`
+    if (n.includes('REDMI A7')) return `Xiaomi ${model}. Entry-level con pantalla IPS, procesador Helio, cámara básica y batería de larga duración. Funcional y accesible.`
+    if (n.includes('REDMI A5')) return `Xiaomi ${model}. Smartphone entry-level con pantalla IPS 6.88", conectividad 5G, cámara de 13MP y batería de 5160mAh. Accesible y funcional.`
+    if (n.includes('REDMI')) return `Xiaomi ${model}. Pantalla amplia, batería de larga duración y rendimiento confiable. Calidad Xiaomi a precio accesible.`
+
+    // Samsung Galaxy S series (standalone without SAMSUNG prefix patterns)
+    if (n.includes('S26 ULTRA') || n.includes('S25 ULTRA')) return `Samsung ${model}. Cámara de 200MP con zoom óptico 5x, pantalla Dynamic AMOLED 2X de 6.8", S Pen y batería todo el día.`
+    if (n.includes('S26 PLUS') || n.includes('S25 PLUS')) return `Samsung ${model}. Pantalla Dynamic AMOLED 2X de 6.7", cámara triple con IA, rendimiento flagship y mayor batería.`
+    if (n.includes('S26') || n.includes('S25 5G')) return `Samsung ${model}. Pantalla Dynamic AMOLED 2X, Snapdragon 8 Elite, cámara con IA y diseño premium compacto.`
+    if (n.includes('S24 FE')) return `Samsung ${model}. Experiencia flagship accesible: pantalla AMOLED 6.7", Exynos 2400e, cámara de 50MP y 7 años de actualizaciones.`
+
+    // Fallback
+    return `Smartphone con especificaciones ver ficha técnica.`
   }
 
   if (categoria === 'notebooks') {
