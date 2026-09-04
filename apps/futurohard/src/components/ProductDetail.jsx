@@ -67,7 +67,7 @@ export default function ProductDetail({ producto, onClose, onAddToCart }) {
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 11, color: stock <= 3 ? "var(--amber)" : "var(--muted)" }}>{stock <= 3 ? `Últimas ${stock} unidades` : `Stock: ${stock} unidades`}</span>
+                <p style={{ fontSize: 11, color: "var(--amber)", margin: 0, fontWeight: 500 }}>Recomendamos consultar stock antes de comprar</p>
                 <button className="add-btn" onClick={() => { onAddToCart?.(producto); onClose() }}>Agregar al carrito</button>
               </div>
             </>

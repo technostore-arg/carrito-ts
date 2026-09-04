@@ -278,6 +278,17 @@ app.post('/api/orders', async (req, res) => {
       return res.status(400).json({ error: 'El carrito está vacío' })
     }
     const result = await createOrder({ customer, items })
+    
+    // Send WhatsApp notification to admin
+    try {
+      const WhatsAppNumber = '5491127650658'
+      const itemsList = items.map(i => `• ${i.nombre || i.id} x${i.qty}`).join('%0A')
+      const adminMsg = `🛒 *NUEVO PEDIDO*%0A%0ACódigo: *${result.code}*%0ACliente: ${customer.name}%0ATel: ${customer.phone || 'N/A'}%0A%0AItems:%0A${itemsList}%0A%0AMétodo: ${customer.paymentMethod || 'No especificado'}`
+      const adminUrl = `https://wa.me/${WhatsAppNumber}?text=${adminMsg}`
+      // Fire-and-forget notification log
+      fetch(adminUrl).catch(() => {})
+    } catch {}
+    
     res.status(201).json({ ok: true, ...result })
   } catch (e) {
     res.status(400).json({ error: e.message })

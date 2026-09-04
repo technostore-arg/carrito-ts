@@ -15,11 +15,11 @@ export default function ProductCard({ producto, onAddToCart, onDetail }) {
       <div className="card-media">
         {foto ? <img src={foto} alt={nombre} loading="lazy" decoding="async" /> : <div className="fallback" aria-hidden>○</div>}
         <span className={`badge ${esEncargo ? "badge--encargo" : ""}`}>{esEncargo ? "A pedido" : categoria}</span>
-        {!esEncargo && stock != null && stock <= 4 && <span className="stock-warn">Últimas {stock}</span>}
       </div>
       <div className="card-body">
         <span className="brand">{sku}</span>
         <h3 title={nombre}>{nombre}</h3>
+        {!esEncargo && <p style={{ fontSize: 11, color: "var(--amber)", margin: "0 0 8px", fontWeight: 500 }}>Recomendamos consultar stock antes de comprar</p>}
         {esEncargo ? (
           <div className="price-row"><span className="price price--encargo">A consultar</span></div>
         ) : (

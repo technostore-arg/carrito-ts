@@ -6,6 +6,7 @@ import ProductGrid from "./components/ProductGrid"
 import ProductDetail from "./components/ProductDetail"
 import CartPage from "./components/CartPage"
 import Footer from "./components/Footer"
+import WhatsAppFloat from "./components/WhatsAppFloat"
 import { useCart } from "./context/CartContext"
 
 function getBrand(p) {
@@ -173,6 +174,7 @@ export default function App() {
       )}
 
       <Footer onSelectCategory={handleSelectCategory} />
+      <WhatsAppFloat />
       {selectedProduct && <ProductDetail producto={selectedProduct} onClose={() => setSelectedProduct(null)} onAddToCart={addToCart} />}
       {toast && <div className="toast">{toast}</div>}
     </div>
