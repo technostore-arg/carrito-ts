@@ -1,14 +1,24 @@
+// Categorías de componentes que agrupa la vista virtual "Hardware"
+const HARDWARE_CATS = ["gpus", "procesadores", "ram", "ram-sodimm", "memorias", "ssd", "ssd-nvme", "ssd-sata", "coolers", "gabinetes", "watercooling", "workstations"]
+const isHardware = c => HARDWARE_CATS.includes(String(c || "").toLowerCase())
+
 const CATEGORIAS = [
   { id: "todos", label: "Todos" },
   { id: "celulares", label: "Celulares" },
+  { id: "notebooks", label: "Notebooks" },
+  { id: "hardware", label: "Hardware" },
   { id: "gpus", label: "Placas de Video" },
   { id: "procesadores", label: "Procesadores" },
   { id: "ram", label: "RAM" },
-  { id: "coolers", label: "Coolers" },
+  { id: "ram-sodimm", label: "RAM SODIMM" },
+  { id: "memorias", label: "Memorias" },
+  { id: "ssd", label: "SSD" },
   { id: "ssd-nvme", label: "SSD NVMe" },
   { id: "ssd-sata", label: "SSD SATA" },
+  { id: "coolers", label: "Coolers" },
   { id: "gabinetes", label: "Gabinetes" },
   { id: "watercooling", label: "Watercooling" },
+  { id: "workstations", label: "Workstations" },
   { id: "accesorios", label: "Accesorios" },
 ]
 
@@ -36,7 +46,7 @@ const ORDENES = [
   { id: "nombre-asc", label: "A — Z" },
 ]
 
-export default function FilterBar({ categoria, marca, rango, orden, onCategoria, onMarca, onRango, onOrden, marcasDisponibles, counts, totalVisibles, totalAll, hasFiltros, onLimpiar }) {
+export default function FilterBar({ categoria, marca, rango, orden, cpu, ram, ssd, onCategoria, onMarca, onRango, onOrden, onCpu, onRam, onSsd, marcasDisponibles, cpuOptions, ramOptions, ssdOptions, counts, totalVisibles, totalAll, hasFiltros, onLimpiar }) {
   return (
     <div className="filter-bar">
       <div className="filter-row">
@@ -71,6 +81,27 @@ export default function FilterBar({ categoria, marca, rango, orden, onCategoria,
             {ORDENES.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
           </select>
         </label>
+        <label className="filter-select">
+          <span>Procesador</span>
+          <select value={cpu} onChange={e => onCpu(e.target.value)}>
+            <option value="">Todos</option>
+            {cpuOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+          </select>
+        </label>
+        <label className="filter-select">
+          <span>Memoria RAM</span>
+          <select value={ram} onChange={e => onRam(e.target.value)}>
+            <option value="">Toda</option>
+            {ramOptions.map(gb => <option key={gb} value={gb}>{gb >= 1024 ? `${gb / 1024}TB` : `${gb}GB`}</option>)}
+          </select>
+        </label>
+        <label className="filter-select">
+          <span>Disco</span>
+          <select value={ssd} onChange={e => onSsd(e.target.value)}>
+            <option value="">Todo</option>
+            {ssdOptions.map(gb => <option key={gb} value={gb}>{gb >= 1024 ? `${gb / 1024}TB` : `${gb}GB`}</option>)}
+          </select>
+        </label>
       </div>
       <div className="filter-meta">
         <span className="filter-count">{totalVisibles === totalAll ? `${totalAll} productos` : `${totalVisibles} de ${totalAll} productos`}</span>
@@ -80,4 +111,4 @@ export default function FilterBar({ categoria, marca, rango, orden, onCategoria,
   )
 }
 
-export { rangoMatch, ORDENES }
+export { rangoMatch, ORDENES, HARDWARE_CATS, isHardware, CATEGORIAS }

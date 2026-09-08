@@ -8,12 +8,14 @@ import CartPage from "./components/CartPage"
 import Footer from "./components/Footer"
 import WhatsAppFloat from "./components/WhatsAppFloat"
 import { useCart } from "./context/CartContext"
+import { matchCpu, matchRam, matchSsd, specOptions, fmtCap } from "./utils/specs"
 
 const CATS = [
   { id: "todos", label: "Todos" },
   { id: "gpus", label: "GPUs" },
   { id: "memorias", label: "RAM / SSD" },
   { id: "workstations", label: "Workstations" },
+  { id: "notebooks", label: "Notebooks" },
 ]
 
 export default function App() {
@@ -22,6 +24,9 @@ export default function App() {
   const [page, setPage] = useState(() => (typeof window !== "undefined" && window.location.pathname.includes("carrito") ? "cart" : "home"))
   const [categoria, setCategoria] = useState("todos")
   const [q, setQ] = useState("")
+  const [cpu, setCpu] = useState("")
+  const [ram, setRam] = useState("")
+  const [ssd, setSsd] = useState("")
   const [products, setProducts] = useState(null)
   const [selectedProduct, setSelectedProduct] = useState(null)
 
@@ -71,15 +76,19 @@ export default function App() {
   const source = products === null ? null : products
   const allProducts = source ?? []
   const counts = useMemo(() => { const c = { todos: allProducts.length }; for (const p of allProducts) c[p.categoria] = (c[p.categoria] || 0) + 1; return c }, [allProducts])
+  const specOpts = useMemo(() => specOptions(allProducts), [allProducts])
   const visibles = useMemo(() => {
     if (source === null) return []
     const query = q.trim().toLowerCase()
     return allProducts.filter(p => {
       if (categoria !== "todos" && p.categoria !== categoria) return false
+      if (!matchCpu(p, cpu)) return false
+      if (!matchRam(p, ram)) return false
+      if (!matchSsd(p, ssd)) return false
       if (query) { const hay = p.nombre.toLowerCase().includes(query) || p.descripcion.toLowerCase().includes(query) || Object.entries(p.especificaciones || {}).some(([k, v]) => `${k} ${v}`.toLowerCase().includes(query)); if (!hay) return false }
       return true
     })
-  }, [categoria, q, source, allProducts])
+  }, [categoria, q, cpu, ram, ssd, source, allProducts])
 
   const scrollToCatalog = () => document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth" })
   const scrollToServicios = () => {
@@ -130,8 +139,43 @@ export default function App() {
                   </button>
                 ))}
               </div>
+              <div className="filter-row">
+                <label className="filter-select">
+                  <span>Procesador</span>
+                  <select value={cpu} onChange={e => setCpu(e.target.value)}>
+                    <option value="">Todos</option>
+                    {specOpts.cpus.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+                  </select>
+                </label>
+                <label className="filter-select">
+                  <span>Memoria RAM</span>
+                  <select value={ram} onChange={e => setRam(e.target.value)}>
+                    <option value="">Toda</option>
+                    {specOpts.rams.map(gb => <option key={gb} value={gb}>{fmtCap(gb)}</option>)}
+                  </select>
+                </label>
+                <label className="filter-select">
+                  <span>Disco</span>
+                  <select value={ssd} onChange={e => setSsd(e.target.value)}>
+                    <option value="">Todo</option>
+                    {specOpts.ssds.map(gb => <option key={gb} value={gb}>{fmtCap(gb)}</option>)}
+                  </select>
+                </label>
+                {(cpu || ram || ssd) && (
+                  <button className="pill clear-btn" onClick={() => { setCpu(""); setRam(""); setSsd("") }}>
+                    Limpiar specs
+                  </button>
+                )}
+              </div>
+              {(cpu || ram || ssd) && (
+                <div className="filter-meta">
+                  <span className="filter-count">
+                    {[cpu && specOpts.cpus.find(o => o.id === cpu)?.label, ram && `${fmtCap(Number(ram))} RAM`, ssd && `${fmtCap(Number(ssd))} SSD`].filter(Boolean).join(" · ")}
+                  </span>
+                </div>
+              )}
             </div>
-            <ProductGrid products={source === null ? null : visibles} totalLabel={`${(source === null ? 0 : visibles.length)} productos`} onReset={() => { setCategoria("todos"); setQ("") }} onDetail={setSelectedProduct} onAddToCart={addToCart} />
+            <ProductGrid products={source === null ? null : visibles} totalLabel={`${(source === null ? 0 : visibles.length)} productos`} onReset={() => { setCategoria("todos"); setQ(""); setCpu(""); setRam(""); setSsd("") }} onDetail={setSelectedProduct} onAddToCart={addToCart} />
           </section>
           <section className="container" style={{ marginTop: 8 }}>
             <div style={{ padding: "12px 16px", border: "1px dashed #e8e8ed", borderRadius: 12, background: "#f5f0ff", fontSize: 12, color: "#6e6e73" }}>

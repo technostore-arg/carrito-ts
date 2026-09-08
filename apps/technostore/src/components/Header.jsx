@@ -2,11 +2,13 @@ import { useState } from "react"
 
 const NAV = [
   { id: "celulares", label: "Celulares" },
+  { id: "notebooks", label: "Notebooks" },
+  { id: "hardware", label: "Hardware" },
   { id: "gpus", label: "Placas de Video" },
   { id: "procesadores", label: "Procesadores" },
   { id: "ram", label: "RAM" },
   { id: "coolers", label: "Coolers" },
-  { id: "accesorios", label: "Ver todo" },
+  { id: "todos", label: "Ver todo" },
 ]
 
 export default function Header({ search, onSearchChange, onSelectCategory, activeCategory, cartCount = 0, onCart }) {

@@ -1,8 +1,10 @@
 import { ars, waLink } from "../utils/format"
+import { specChips } from "../utils/specs"
 
 export default function ProductCard({ producto, onAddToCart, onDetail }) {
   const { nombre, categoria, tipo_venta, stock, imagenes, sku, precio_transferencia, precio_mercadopago } = producto
   const foto = imagenes?.[0]
+  const chips = specChips(producto)
   const esEncargo = tipo_venta === "encargo"
   const waHref = esEncargo ? waLink(`Hola, quiero consultar por ${nombre} (SKU: ${sku})`) : null
 
@@ -19,6 +21,13 @@ export default function ProductCard({ producto, onAddToCart, onDetail }) {
       <div className="card-body">
         <span className="brand">{sku}</span>
         <h3 title={nombre}>{nombre}</h3>
+        {chips.length > 0 && (
+          <div style={{ display: "flex", gap: 4, flexWrap: "wrap", margin: "0 0 8px" }}>
+            {chips.map((c, i) => (
+              <span key={i} style={{ fontSize: 10.5, fontWeight: 600, color: "var(--text)", background: "#f0f4ff", border: "1px solid #dbe4ff", padding: "2px 7px", borderRadius: 6, whiteSpace: "nowrap" }}>{c}</span>
+            ))}
+          </div>
+        )}
         {!esEncargo && <p style={{ fontSize: 11, color: "var(--amber)", margin: "0 0 8px", fontWeight: 500 }}>Recomendamos consultar stock antes de comprar</p>}
         {esEncargo ? (
           <div className="price-row"><span className="price price--encargo">A consultar</span></div>

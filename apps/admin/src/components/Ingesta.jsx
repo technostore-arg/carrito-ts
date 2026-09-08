@@ -8,8 +8,8 @@ function BorradorCard({ borrador, onApproved, onDiscarded, token, onRecalcular }
   const [recalcOpen, setRecalcOpen] = useState(false)
   const [margenExtra, setMargenExtra] = useState(String(borrador.llmMeta?.pricing?.margenExtraPercent ?? 0))
   const [mpFee, setMpFee] = useState(String(borrador.llmMeta?.pricing?.mpFeePercent ?? 6.5))
-  const [usdRate, setUsdRate] = useState(String(borrador.llmMeta?.pricing?.usdRate ?? 1200))
-  const [fixedUsd, setFixedUsd] = useState(String(borrador.llmMeta?.pricing?.fixedUsd ?? 100))
+  const [usdRate, setUsdRate] = useState(String(borrador.llmMeta?.pricing?.usdRate ?? 1550))
+  const [fixedUsd, setFixedUsd] = useState(borrador.llmMeta?.pricing?.fixedUsd != null ? String(borrador.llmMeta.pricing.fixedUsd) : '')
   const all = borrador.propuestas || []
   const allChecked = skus.size === all.length && all.length > 0
   const pricing = borrador.llmMeta?.pricing || null
@@ -52,7 +52,7 @@ function BorradorCard({ borrador, onApproved, onDiscarded, token, onRecalcular }
       const r = await fetch(`/api/borradores/${borrador.id}/recalcular`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ pricing: { esCosto: true, usdRate: Number(usdRate), mpFeePercent: Number(mpFee), fixedUsd: Number(fixedUsd), margenExtraPercent: Number(margenExtra) } })
+        body: JSON.stringify({ pricing: { esCosto: true, usdRate: Number(usdRate), mpFeePercent: Number(mpFee), fixedUsd: fixedUsd === '' ? null : Number(fixedUsd), margenExtraPercent: Number(margenExtra) } })
       })
       const d = await r.json()
       if (!r.ok) throw new Error(d.error || 'Error al recalcular')
@@ -71,7 +71,7 @@ function BorradorCard({ borrador, onApproved, onDiscarded, token, onRecalcular }
           <b>{borrador.archivoNombre || borrador.fuenteId || 'scraping'}</b> <span className={`pill ${borrador.origen}`}>{borrador.origen}</span> <span className={`pill ${borrador.estado}`}>{borrador.estado}</span>
           {esCosto && <span className="pill" style={{ background: 'rgba(251,191,36,.18)', color: '#fbbf24' }}>costo → venta</span>}
           <div className="muted" style={{ fontSize: '.82rem' }}>{new Date(borrador.creadoEn).toLocaleString('es-AR')} · {borrador.resumen?.altas ?? 0} altas · {borrador.resumen?.cambiosPrecio ?? borrador.modificaciones?.length ?? 0} cambios · {borrador.resumen?.bajas ?? 0} bajas</div>
-          {borrador.llmMeta && <small className="muted">LLM: {borrador.llmMeta.usedLLM ? `${borrador.llmMeta.provider || '?'}/${borrador.llmMeta.model || ''}` : borrador.llmMeta.reason || 'reglas'}{esCosto && ` · pricing: +${pricing.fixedUsd}USD×${pricing.usdRate} + MP ${pricing.mpFeePercent}%${Number(pricing.margenExtraPercent)? ` + margen ${pricing.margenExtraPercent}%`:''}`}</small>}
+          {borrador.llmMeta && <small className="muted">LLM: {borrador.llmMeta.usedLLM ? `${borrador.llmMeta.provider || '?'}/${borrador.llmMeta.model || ''}` : borrador.llmMeta.reason || 'reglas'}{esCosto && ` · pricing: +${pricing.fixedUsd != null ? `${pricing.fixedUsd}USD` : 'tramo 50/80/100'}×${pricing.usdRate} + MP ${pricing.mpFeePercent}%${Number(pricing.margenExtraPercent)? ` + margen ${pricing.margenExtraPercent}%`:''}`}</small>}
           {esCosto && pricing?.detalle && <details style={{ marginTop: 6 }}><summary style={{ fontSize: '.78rem', cursor: 'pointer' }}>Ver detalle pricing (costo → venta)</summary><pre style={{ fontSize: '.72rem', whiteSpace: 'pre-wrap', marginTop: 6 }}>{pricing.detalle.slice(0, 8).map(d => `${d.sku}: costo $${d.costo} + fijo $${d.fijoArs || 0} → base $${d.base} → con MP $${d.conMP} → final $${d.precioFinal}`).join('\n')}</pre></details>}
         </div>
         {borrador.estado === 'pendiente' && (
@@ -131,7 +131,7 @@ function BorradorCard({ borrador, onApproved, onDiscarded, token, onRecalcular }
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginTop: 8 }}>
             <label style={{ fontSize: '.82rem' }}>USD/ARS <input type="number" value={usdRate} onChange={e => setUsdRate(e.target.value)} style={{ width: '100%', marginTop: 4 }} /></label>
             <label style={{ fontSize: '.82rem' }}>MP % <input type="number" step="0.1" value={mpFee} onChange={e => setMpFee(e.target.value)} style={{ width: '100%', marginTop: 4 }} /></label>
-            <label style={{ fontSize: '.82rem' }}>Fijo USD (cel/comput) <input type="number" value={fixedUsd} onChange={e => setFixedUsd(e.target.value)} style={{ width: '100%', marginTop: 4 }} /></label>
+            <label style={{ fontSize: '.82rem' }}>Fijo USD manual (vacío = tramos 50/80/100) <input type="number" value={fixedUsd} onChange={e => setFixedUsd(e.target.value)} style={{ width: '100%', marginTop: 4 }} placeholder="Auto" /></label>
             <label style={{ fontSize: '.82rem' }}>Margen extra % <input type="number" step="0.5" value={margenExtra} onChange={e => setMargenExtra(e.target.value)} style={{ width: '100%', marginTop: 4 }} /></label>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
@@ -150,9 +150,9 @@ export default function Ingesta({ token }) {
   const [borradores, setBorradores] = useState([])
   const [msg, setMsg] = useState('')
   const [esCosto, setEsCosto] = useState(false)
-  const [usdRate, setUsdRate] = useState('1200')
+  const [usdRate, setUsdRate] = useState('1550')
   const [mpFee, setMpFee] = useState('6.5')
-  const [fixedUsd, setFixedUsd] = useState('100')
+  const [fixedUsd, setFixedUsd] = useState('')
   const [margenExtra, setMargenExtra] = useState('0')
   const [marca, setMarca] = useState('technostore')
   const [loadErr, setLoadErr] = useState('')
@@ -186,7 +186,7 @@ export default function Ingesta({ token }) {
         r.onerror = reject
         r.readAsDataURL(file)
       })
-      const pricing = esCosto ? { esCosto: true, usdRate: Number(usdRate), mpFeePercent: Number(mpFee), fixedUsd: Number(fixedUsd), margenExtraPercent: Number(margenExtra) } : null
+      const pricing = esCosto ? { esCosto: true, usdRate: Number(usdRate), mpFeePercent: Number(mpFee), fixedUsd: fixedUsd === '' ? null : Number(fixedUsd), margenExtraPercent: Number(margenExtra) } : null
       const r = await fetch('/api/ingesta/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -230,26 +230,26 @@ export default function Ingesta({ token }) {
           {esCosto ? (
             <div style={{ marginTop: 10 }}>
               <p className="muted" style={{ fontSize: '.82rem', margin: '0 0 8px' }}>
-                La IA te consulta: ¿qué margen aplico? Por defecto celulares/notebooks/computadoras <b>+{fixedUsd} USD</b> + <b>MP {mpFee}%</b> (gross-up). Resto solo MP. Podés ajustar antes de subir o <b>recalcular</b> después sin resubir.
+                La IA te consulta: ¿qué margen aplico? Celulares/notebooks/computadoras por tramo de costo: <b>&lt;U$S 250 → +50</b> · <b>U$S 250–400 → +80</b> · <b>&gt;U$S 400 → +100</b> + <b>MP {mpFee}%</b> (gross-up). Resto solo MP. Podés fijar un monto manual o <b>recalcular</b> después sin resubir.
               </p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 }}>
                 <label style={{ fontSize: '.82rem' }}>Cotización USD (ARS)
-                  <input type="number" value={usdRate} onChange={e => setUsdRate(e.target.value)} style={{ width: '100%', marginTop: 4 }} placeholder="1200" />
+                  <input type="number" value={usdRate} onChange={e => setUsdRate(e.target.value)} style={{ width: '100%', marginTop: 4 }} placeholder="1550" />
                 </label>
                 <label style={{ fontSize: '.82rem' }}>Comisión MP %
                   <input type="number" step="0.1" value={mpFee} onChange={e => setMpFee(e.target.value)} style={{ width: '100%', marginTop: 4 }} placeholder="6.5" />
                 </label>
-                <label style={{ fontSize: '.82rem' }}>Fijo USD (cel/comput)
-                  <input type="number" value={fixedUsd} onChange={e => setFixedUsd(e.target.value)} style={{ width: '100%', marginTop: 4 }} placeholder="100" />
+                <label style={{ fontSize: '.82rem' }}>Fijo USD manual (vacío = tramos 50/80/100)
+                  <input type="number" value={fixedUsd} onChange={e => setFixedUsd(e.target.value)} style={{ width: '100%', marginTop: 4 }} placeholder="Auto" />
                 </label>
                 <label style={{ fontSize: '.82rem' }}>Margen extra global %
                   <input type="number" step="0.5" value={margenExtra} onChange={e => setMargenExtra(e.target.value)} style={{ width: '100%', marginTop: 4 }} placeholder="0" />
                 </label>
               </div>
-              <small className="muted" style={{ display: 'block', marginTop: 6, fontSize: '.75rem' }}>Fórmula: <code>(costo + fijoARS) / (1 - MP%) × (1 + margenExtra%)</code> — fijoARS = {fixedUsd}×{usdRate} = {fmt(Number(fixedUsd)*Number(usdRate))} solo para celulares/notebooks/computadoras. El resto: <code>costo / (1 - MP%)</code>.</small>
+              <small className="muted" style={{ display: 'block', marginTop: 6, fontSize: '.75rem' }}>Fórmula: <code>(costo + fijoARS) / (1 - MP%) × (1 + margenExtra%)</code> — fijo por tramo{fixedUsd !== '' ? ` (manual: ${fixedUsd}×${usdRate} = ${fmt(Number(fixedUsd)*Number(usdRate))})` : ' (<250:+50 · 250–400:+80 · >400:+100 USD)'} solo para celulares/notebooks/computadoras. El resto: <code>costo / (1 - MP%)</code>.</small>
             </div>
           ) : (
-            <small className="muted" style={{ display: 'block', marginTop: 6, fontSize: '.82rem' }}>Si tildás “costo”, la IA sumará +{fixedUsd} USD para celulares/computadoras + MP siempre. Si no, se toma el precio tal cual.</small>
+            <small className="muted" style={{ display: 'block', marginTop: 6, fontSize: '.82rem' }}>Si tildás “costo”, sumará fijo por tramo (50/80/100 USD según costo) para celulares/computadoras + MP siempre. Si no, se toma el precio tal cual.</small>
           )}
         </div>
 

@@ -9,6 +9,12 @@ server/*.db-*
 .env.*
 !.env.example
 server/.mock-data.json
+server/.mock-data.json.bak-*
+server/.mock-data-backup.json
+tmp-products.json
 firebase-service-account.json
+*-firebase-adminsdk-*.json
 firebase-config.js
 .DS_Store
+
+.vercel

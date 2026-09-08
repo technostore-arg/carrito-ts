@@ -6,11 +6,11 @@ export function buildPrompt({ rawText, fileName, mime, pricing = null }) {
 IMPORTANTE — PRECIOS DE COSTO:
 Los valores numéricos en el archivo son PRECIOS DE COSTO, no de venta.
 Para calcular el precio de venta por producto:
-- Si categoria es celulares, notebooks o computadoras: precio_venta = (costo + ${pricing.fixedUsd || 100} USD × tipo_cambio ${pricing.usdRate || 1200} ARS) gross-up MercadoPago ${pricing.mpFeePercent || 6.5}% → fórmula: (costo + fijo) / (1 - ${((pricing.mpFeePercent||6.5)/100).toFixed(3)})
+- Si categoria es celulares, notebooks o computadoras: precio_venta = (costo + fijo USD × tipo_cambio ${pricing.usdRate || 1550} ARS) gross-up MercadoPago ${pricing.mpFeePercent || 6.5}% → fórmula: (costo + fijo) / (1 - ${((pricing.mpFeePercent||6.5)/100).toFixed(3)}). Fijo por tramo de costo en USD: <250 → +50${pricing.fixedUsd != null && pricing.fixedUsd !== '' ? ` (override manual: +${pricing.fixedUsd})` : ''} | 250–400 → +80 | >400 → +100
 - Para otras categorías (gpus, memorias, workstations, accesorios): precio_venta = costo gross-up MP ${pricing.mpFeePercent || 6.5}% → costo / (1 - fee)
 - Si margenExtraPercent ${pricing.margenExtraPercent || 0}% >0, aplicar al final: × (1 + margenExtra)
 - Devolvé precio_venta redondeado en ARS y guardá costo original en especificaciones._costo_original
-- Si no tenés tipo de cambio, usá ${pricing.usdRate || 1200} ARS por USD.
+- Si no tenés tipo de cambio, usá ${pricing.usdRate || 1550} ARS por USD.
 CONSULTA: Si no estás seguro del margen, devolvé el array con precio=costo y agregá en la respuesta un campo _consulta_margen con tu duda para que el humano confirme.
 `
     : ''

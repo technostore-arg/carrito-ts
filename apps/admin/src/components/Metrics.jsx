@@ -8,12 +8,13 @@ export default function Metrics() {
   useEffect(() => { getMetricas().then(setData) }, [])
   if (!data) return <p className="muted">Cargando métricas…</p>
 
-  const { vistas, abiertas, ventasPeriodo, totalVentas, porMarca, totalConsultas, totalPedidos } = data
+  const { vistas, abiertas, ventasPeriodo, totalVentas, porMarca, totalConsultas, totalPedidos, pendingVerificacion } = data
 
   return (
     <div className="stack">
       <div className="kpi-grid">
         <div className="kpi"><span>Ventas del período</span><b>{fmt(totalVentas)}</b><small>{totalPedidos} pedidos · {ventasPeriodo.filter(o => o.status === 'pagado' || o.status === 'entregado').length} pagados</small></div>
+        {pendingVerificacion > 0 && <div className="kpi" style={{ borderLeft: '3px solid #f59e0b' }}><span>Pagos pendientes revisión</span><b style={{ color: '#f59e0b' }}>{pendingVerificacion}</b><small>Comprobantes de transferencia esperando aprobación</small></div>}
         <div className="kpi"><span>Consultas sin cierre</span><b>{abiertas.length}</b><small>de {totalConsultas} totales · {totalConsultas - abiertas.length} cerradas</small></div>
         <div className="kpi"><span>Tasa de cierre WhatsApp</span><b>{totalConsultas ? Math.round((data.totalConsultas - abiertas.length) / totalConsultas * 100) : 0}%</b><small>{abiertas.length} abiertas pendientes</small></div>
         <div className="kpi"><span>Vistas top 1</span><b>{vistas[0]?.vistas ?? 0}</b><small>{vistas[0]?.nombre ?? '—'}</small></div>

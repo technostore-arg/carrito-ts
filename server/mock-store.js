@@ -38,7 +38,15 @@ let borradores = saved?.borradores ?? []
 // Recalculate dual pricing for all products on startup
 const SCRAPE_SOURCES = new Set(['scraping_insumosacuario'])
 const FIXED_CATEGORIES = new Set(['celulares', 'computadoras', 'notebooks'])
-const USD_RATE = 1200, FIXED_USD = 100, MP_MARKUP = 0.16
+const USD_RATE = Number(process.env.USD_ARS_RATE) || 1550, MP_MARKUP = 0.16
+
+// Fijo USD por tramo de costo en USD: <250 → 50 | 250–400 → 80 | >400 → 100
+function fixedUsdFor(usdCost) {
+  const u = Number(usdCost) || 0
+  if (u < 250) return 50
+  if (u <= 400) return 80
+  return 100
+}
 
 function recalcDualPricing() {
   // Check if pricing already applied (skip if all products have both fields)
@@ -60,8 +68,8 @@ function recalcDualPricing() {
       // InsumosAcuario: +20% over scraped price
       transferencia = Math.round(costo * 1.20)
     } else if (FIXED_CATEGORIES.has(cat)) {
-      // Celulares/Notebooks/Computadoras: +100 USD fixed
-      transferencia = Math.round(costo + FIXED_USD * USD_RATE)
+      // Celulares/Notebooks/Computadoras: +fijo USD por tramo de costo
+      transferencia = Math.round(costo + fixedUsdFor(costo / USD_RATE) * USD_RATE)
     } else {
       // GPU, RAM, SSD, etc: cost = transferencia
       transferencia = Math.round(costo)
@@ -475,6 +483,12 @@ export const mockStore = {
     const o = orders.find(x=> String(x.id)===String(id))
     if (!o) return false
     o.status = status
+    return true
+  },
+  updateOrderPatch(id, patch) {
+    const o = orders.find(x=> String(x.id)===String(id))
+    if (!o) return false
+    Object.assign(o, patch)
     return true
   },
   createConsulta(data) {

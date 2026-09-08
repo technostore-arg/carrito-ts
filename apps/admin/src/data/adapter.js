@@ -5,11 +5,10 @@
  * reemplazar el cuerpo de cada función por llamadas a Firestore/REST
  * manteniendo la misma firma.
  */
-import { mockPedidos, mockConsultas, mockVistas } from './mockData.js'
+import { mockConsultas, mockVistas } from './mockData.js'
 
 const delay = (ms = 180) => new Promise(r => setTimeout(r, ms))
 
-let pedidos = [...mockPedidos]
 let consultas = [...mockConsultas]
 
 function authHeader() {
@@ -83,20 +82,33 @@ export async function deleteProducto(id) {
   if (!r.ok) throw new Error((await r.json()).error || 'No se pudo eliminar')
 }
 
+export async function uploadProductImage(sku, imageBase64, index = 0) {
+  const r = await fetch('/api/upload/product-image', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
+    body: JSON.stringify({ sku, imageBase64, index }),
+  })
+  if (!r.ok) throw new Error((await r.json()).error || 'No se pudo subir imagen')
+  return r.json()
+}
+
 export async function listPedidos({ status } = {}) {
-  await delay()
-  let out = [...pedidos]
-  if (status) out = out.filter(o => o.status === status)
-  out.sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)))
-  return out
+  const params = status ? `?status=${encodeURIComponent(status)}` : ''
+  const r = await fetch(`/api/orders${params}`, { headers: { ...authHeader() } })
+  if (!r.ok) throw new Error(`No se pudieron listar pedidos (${r.status})`)
+  const rows = await r.json()
+  rows.sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))
+  return rows
 }
 
 export async function updatePedido(id, patch) {
-  await delay()
-  const i = pedidos.findIndex(o => o.id === id)
-  if (i === -1) throw new Error('Pedido no encontrado')
-  pedidos[i] = { ...pedidos[i], ...patch }
-  return pedidos[i]
+  const r = await fetch(`/api/orders/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
+    body: JSON.stringify(patch),
+  })
+  if (!r.ok) throw new Error((await r.json()).error || 'No se pudo actualizar pedido')
+  return r.json()
 }
 
 export async function listConsultas({ estado_cierre } = {}) {
@@ -124,8 +136,13 @@ export async function getMetricas() {
   await delay(80)
   const vistas = [...mockVistas].sort((a, b) => b.vistas - a.vistas)
   const abiertas = consultas.filter(c => c.estado_cierre === 'abierta')
-  const ventasPeriodo = pedidos.filter(o => o.status !== 'cancelado')
+  let ventasPeriodo = []
+  try {
+    const r = await fetch('/api/orders', { headers: { ...authHeader() } })
+    if (r.ok) ventasPeriodo = (await r.json()).filter(o => o.status !== 'cancelado')
+  } catch {}
   const totalVentas = ventasPeriodo.reduce((s, o) => s + (o.total || 0), 0)
+  const pendingVerificacion = ventasPeriodo.filter(o => o.status === 'pendiente_verificacion' || o.estadoPago === 'pendiente_verificacion').length
   let productosReales = []
   try { productosReales = await listProductos() } catch { productosReales = [] }
   const porMarca = {
@@ -142,7 +159,7 @@ export async function getMetricas() {
   }).length
   porMarca.futurohard.ventas = correctFHVentas
   porMarca.technostore.ventas = ventasPeriodo.length - correctFHVentas
-  return { vistas, abiertas, ventasPeriodo, totalVentas, porMarca, totalConsultas: consultas.length, totalPedidos: pedidos.length }
+  return { vistas, abiertas, ventasPeriodo, totalVentas, porMarca, totalConsultas: consultas.length, totalPedidos: ventasPeriodo.length, pendingVerificacion }
 }
 
 export async function listBorradores({ estado } = {}) {
@@ -158,7 +175,5 @@ export async function aplicarBorrador(id, skus) {
 }
 
 export function resetMocks() {
-  // productos now come from API — nothing to reset locally
-  pedidos = [...mockPedidos]
   consultas = [...mockConsultas]
 }

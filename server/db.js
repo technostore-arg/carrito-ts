@@ -23,15 +23,24 @@ function useMock(err) {
 
 /* ---------------- Traducción doc <-> forma API ---------------- */
 
-// Firestore doc -> objeto que devuelve la API (forma legacy, estable)
+// Firestore doc -> objeto que devuelve la API (forma bilingüe: legacy EN + ES).
+// Los frontends consumen los campos ES (nombre, marca, precio_transferencia,
+// imagenes, especificaciones, tipo_venta...), así que se pasan tal cual.
 export function docToProduct(doc) {
   const d = doc.data()
+  const imagenes = Array.isArray(d.imagenes) ? d.imagenes : d.image ? [d.image] : []
   return {
     id: doc.id,
-    name: d.name,
-    brand: d.brand ?? d.fabricante ?? '',
+    name: d.name ?? d.nombre ?? '',
+    nombre: d.nombre ?? d.name ?? '',
+    brand: d.brand ?? d.fabricante ?? d.marca ?? '',
+    marca: d.marca ?? d.brand ?? 'technostore',
     category: d.category ?? d.categoria ?? '',
+    categoria: String(d.categoria ?? d.category ?? '').toLowerCase(),
     price: d.price ?? d.precio ?? 0,
+    precio: d.precio ?? d.price ?? 0,
+    precio_transferencia: d.precio_transferencia ?? d.precio ?? d.price ?? 0,
+    precio_mercadopago: d.precio_mercadopago ?? d.precio ?? d.price ?? 0,
     oldPrice: d.oldPrice ?? undefined,
     rating: d.rating ?? 4.5,
     reviews: d.reviews ?? 0,
@@ -43,24 +52,43 @@ export function docToProduct(doc) {
       : d.especificaciones && typeof d.especificaciones === 'object'
         ? Object.values(d.especificaciones)
         : [],
+    especificaciones: d.especificaciones && typeof d.especificaciones === 'object' ? d.especificaciones : {},
     active: d.active === undefined ? d.estado !== 'pausado' && d.estado !== 'agotado' : !!d.active,
+    estado: d.estado ?? 'activo',
     vram: d.vram ?? null,
     cuda: d.cuda ?? null,
     tflops: d.tflops ?? null,
     frameworks: Array.isArray(d.frameworks) ? d.frameworks : [],
-    image: d.image ?? (Array.isArray(d.imagenes) ? d.imagenes[0] : null),
+    image: d.image ?? imagenes[0] ?? null,
+    imagenes,
+    descripcion: d.descripcion ?? d.description ?? '',
+    description: d.description ?? d.descripcion ?? '',
+    sku: d.sku ? String(d.sku).toUpperCase() : '',
+    tipo_venta: d.tipo_venta ?? 'directa',
+    moneda: d.moneda ?? 'ARS',
+    subcategoria: d.subcategoria ?? '',
+    fuente_origen: d.fuente_origen ?? 'manual',
   }
 }
 
-// Objeto de entrada (API/form) -> doc Firestore (incluye campos canonical del schema)
+// Objeto de entrada (API/form, forma EN o ES) -> doc Firestore (canonical + ES)
 export function productToDoc(p) {
+  const nombre = String(p.nombre ?? p.name ?? '').trim()
+  const marca = String(p.marca ?? p.brand ?? '').trim()
+  const categoria = String(p.categoria ?? p.category ?? '').trim().toLowerCase()
+  const precio = Number(p.precio ?? p.price) || 0
   return {
-    name: String(p.name ?? '').trim(),
-    brand: String(p.brand ?? '').trim(),
-    fabricante: String(p.brand ?? '').trim(), // manufacturer en schema
-    categoria: String(p.category ?? '').trim().toLowerCase(),
-    category: String(p.category ?? '').trim().toLowerCase(),
-    price: Number(p.price) || 0,
+    name: nombre,
+    nombre,
+    brand: marca,
+    fabricante: marca, // manufacturer en schema
+    marca: marca || 'technostore',
+    categoria,
+    category: categoria,
+    price: precio,
+    precio,
+    precio_transferencia: Number(p.precio_transferencia ?? precio) || 0,
+    precio_mercadopago: Number(p.precio_mercadopago ?? precio) || 0,
     oldPrice: p.oldPrice ? Number(p.oldPrice) : null,
     rating: Number(p.rating) || 4.5,
     reviews: Number(p.reviews) || 0,
@@ -73,13 +101,19 @@ export function productToDoc(p) {
     cuda: p.cuda ?? null,
     tflops: p.tflops ?? null,
     frameworks: Array.isArray(p.frameworks) ? p.frameworks : [],
-    image: p.image || null,
+    image: p.image || (Array.isArray(p.imagenes) ? p.imagenes[0] : null),
+    imagenes: Array.isArray(p.imagenes) ? p.imagenes : p.image ? [p.image] : [],
+    descripcion: String(p.descripcion ?? p.description ?? ''),
+    description: String(p.description ?? p.descripcion ?? ''),
+    especificaciones: p.especificaciones && typeof p.especificaciones === 'object' ? p.especificaciones : {},
+    subcategoria: p.subcategoria || '',
     // Campos canonical (packages/catalog-schema)
-    sku: p.sku ? String(p.sku).toUpperCase() : `TS-${(String(p.name || 'X').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8))}`,
-    marca: p.marca || 'technostore',
+    sku: p.sku ? String(p.sku).toUpperCase() : `TS-${(nombre || 'X').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8)}`,
+    marca: marca || 'technostore',
     tipo_venta: p.tipo_venta || 'directa',
     moneda: p.moneda || 'ARS',
     estado: p.estado || 'activo',
+    active: p.active === undefined ? (p.estado || 'activo') !== 'pausado' && (p.estado || 'activo') !== 'agotado' : !!p.active,
     fuente_origen: p.fuente_origen || 'manual',
   }
 }
@@ -191,6 +225,7 @@ export async function createOrder({ customer, items }) {
         payment_method: ['mercadopago', 'transferencia', 'tarjeta'].includes(customer.paymentMethod)
           ? customer.paymentMethod
           : 'mercadopago',
+        tipo_entrega: ['envio', 'retiro'].includes(customer.tipoEntrega) ? customer.tipoEntrega : 'envio',
         subtotal,
         shipping,
         total,
@@ -258,6 +293,20 @@ export async function updateOrderStatus(id, status) {
     return true
   } catch (e) {
     if (useMock(e)) return mockStore.updateOrderStatus(id, status)
+    throw e
+  }
+}
+
+export async function updateOrderPatch(id, patch) {
+  try {
+    const db = getFirestoreDb()
+    const ref = db.collection(ORDERS).doc(String(id))
+    const existing = await ref.get()
+    if (!existing.exists) return false
+    await ref.update(patch)
+    return true
+  } catch (e) {
+    if (useMock(e)) return mockStore.updateOrderPatch(id, patch)
     throw e
   }
 }

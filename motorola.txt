@@ -1,0 +1,53 @@
+*LISTA MOTOROLA*
+E13 64 *$140* Blue
+E15 2+64 *$140* Purple/Blue
+E22 4+64 *$145* Blue
+G04s 4+256 *$180* Green/Blue
+G06 4+256 *$210* Blue
+G05 4+128 *$175* Green
+G05 4+256 *$190* Red
+G06 256GB *$200* Blue/Green
+G06 Power 256 *$180* Blue
+G14 4+128 *$180* Gris Acero
+G15 128GB *$190* Gray
+G15 256GB *$200* Grey
+G15 4+512 *$210* Blue
+G15 Power 8+256 S/CARG *$210* Green
+G17 4+128 *$200* Celeste/Rosa/Arandano
+G17 4+256 *$220* Celeste/Arandano
+G7 Power 5G 256 *$280* Brown/Blue/LightBlue/Arandano
+G23 128GB *$165* White
+G24 128GB *280* Charcoal/Lavanda
+G32 6+128 *$200* plata
+G35 5G 4+128 S/CARG *$195* Black
+G35 5G 4+256 *$220* Black/Green/Orange
+G47 8+128 *$245* Blue
+G56 5G 8+256 *$260* Blue/Gray
+G57 Power 5G 12+256 *$315* Cyan
+G67 5G 4+256 *$335* Gris/Lima
+G75 5G 8+256 *$275* Blue
+G77 5G 8+256 *$365* Cafe/Esmeralda
+G86 8+256 *$295* Pink/Blue
+G86 8+512 *$330* golden
+G86 Power 5G 8+256 *$305* Green/Cereza
+G86 Power 5G 8+512 *$380* Pink/DarkBlue/Green
+G96 5G 8+128 *$285* Azul/Rosa
+Edge 30 5G 9+256 *$320* Gray
+Edge 30 Pro 5G 8+256 *$380* Gray
+Edge 50 Fusion 8+256 S/CARG *$275* Green
+Edge 50 5G 12+512 *$345* Gris
+Edge 50 Pro 5G 12+512 *$480* Lavander
+Edge 60 5G 8+256 S/CARG *$315* Blue
+Edge 60 5G 12+512 *$400* Blue
+Edge 60 Fusion 5G 8+256 *$310* Blue/Pink
+Edge 60 Neo 5G 8+256 S/CARG *$375* Red
+Edge 60 Pro 5G 12+256 *$415* Shadow
+Edge 60 Pro 5G 12+512 *$500* Uva/Gray
+Edge 70 Fusion 5G 8+256 *$470* Celeste
+Edge 70 5G 8+256 *$480* Green/Gray
+Edge 70 5G 12+512 S/CARG *$530* Gris
+
+Adapter 20w + Cable *$40*
+Adapter 125w + Cable *$50*
+
+LOS EQUIPOS TIENEN 30 DIAS DE GARANTÍA POR FALLAS DE FÁBRICA. LA MISMA NO CUBRE FALLAS EN DISPLAY/PANTALLA/MODULOS/PLACA HUMEDAD ETC.

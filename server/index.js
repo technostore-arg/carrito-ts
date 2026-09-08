@@ -13,6 +13,7 @@ import {
   getOrders,
   getOrderById,
   updateOrderStatus,
+  updateOrderPatch,
   getOrderByCode,
   logMpPayment,
   createConsulta,
@@ -22,6 +23,7 @@ import { listBorradores, getBorrador, aplicarBorrador, descartarBorrador, create
 import { scrapeAll as scrapeInsumosAcuario, normalizeForStore as normIA, diff as diffIA } from './ingesta/scrapers/insumosacuario.js'
 import { createPreference, handleWebhook } from './checkout.js'
 import { applyPricing } from './ingesta/pricing.js'
+import { getFirestoreDb, COLLECTIONS } from './firebase.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3001
@@ -31,6 +33,31 @@ const MP_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN || ''
 const CATEGORIES = ['celulares', 'notebooks', 'computadoras', 'gpus', 'memorias', 'workstations', 'accesorios', 'coolers', 'ram', 'ram-sodimm', 'ssd-nvme', 'ssd-sata', 'gabinetes', 'watercooling', 'procesadores']
 
 const app = express()
+
+/* ---------------- CORS (configurable via ALLOWED_ORIGINS env var) ---------------- */
+const DEFAULT_ORIGINS = [
+  'https://technostore-arg.vercel.app',
+  'https://futurohard.vercel.app',
+  'https://technostore-arg-futurohard.vercel.app',
+]
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean)
+const ORIGINS = ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS : DEFAULT_ORIGINS
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin
+  if (ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
+  if (req.method === 'OPTIONS') return res.sendStatus(204)
+  next()
+})
+
 app.use(express.json({ limit: '20mb' }))
 
 const sessions = new Map()
@@ -126,6 +153,66 @@ app.delete('/api/products/:id', auth, async (req, res) => {
   }
 })
 
+/* ---------------- Upload: imágenes de producto a Firebase Storage ---------------- */
+
+const IMG_ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp']
+const IMG_ALLOWED_EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }
+const IMG_MAX_BYTES = 5 * 1024 * 1024 // 5 MB per image after resize
+
+app.post('/api/upload/product-image', auth, async (req, res) => {
+  try {
+    const { imageBase64, sku, index } = req.body || {}
+    if (!imageBase64 || typeof imageBase64 !== 'string') {
+      return res.status(400).json({ error: 'imageBase64 requerido' })
+    }
+    if (!sku || typeof sku !== 'string') {
+      return res.status(400).json({ error: 'sku requerido' })
+    }
+
+    const buffer = Buffer.from(imageBase64, 'base64')
+    if (buffer.length > IMG_MAX_BYTES) {
+      return res.status(413).json({ error: 'Imagen supera 5 MB (intenta reducir calidad o tamaño antes de subir)' })
+    }
+
+    // Detect MIME from magic bytes
+    let mime = 'application/octet-stream'
+    if (buffer[0] === 0xFF && buffer[1] === 0xD8) mime = 'image/jpeg'
+    else if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) mime = 'image/png'
+    else if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46) mime = 'image/webp'
+
+    if (!IMG_ALLOWED_MIME.includes(mime)) {
+      return res.status(400).json({ error: 'Tipo no permitido. Solo JPG, PNG o WebP.' })
+    }
+
+    const ext = IMG_ALLOWED_EXT[mime]
+    const ts = Date.now()
+    const idx = typeof index === 'number' ? index : 0
+    const storagePath = `productos/${sku.trim().toUpperCase()}/${ts}-${idx}.${ext}`
+
+    console.log(`[upload] Imagen producto ${sku} → ${storagePath} (${(buffer.length / 1024).toFixed(0)} KB)`)
+
+    let url = null
+    try {
+      const { getStorage } = await import('firebase-admin/storage')
+      const bucket = getStorage().bucket()
+      const file = bucket.file(storagePath)
+      await file.save(buffer, {
+        contentType: mime,
+        metadata: { metadata: { sku: sku.trim().toUpperCase(), index: String(idx) } },
+      })
+      await file.makePublic()
+      url = `https://storage.googleapis.com/${bucket.name}/${storagePath}`
+    } catch (storageErr) {
+      console.error('[upload] Firebase Storage error:', storageErr.message)
+      return res.status(500).json({ error: 'Error al subir imagen a Storage' })
+    }
+
+    res.json({ ok: true, url, storagePath })
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
+})
+
 /* ---------------- Ingesta — borradores_catalogo ---------------- */
 
 app.post('/api/ingesta/upload', auth, async (req, res) => {
@@ -142,9 +229,9 @@ app.post('/api/ingesta/upload', auth, async (req, res) => {
     if (pricing && pricing.esCosto) {
       pricingCfg = {
         esCosto: true,
-        usdRate: Number(pricing.usdRate) || Number(process.env.USD_ARS_RATE) || 1200,
+        usdRate: Number(pricing.usdRate) || Number(process.env.USD_ARS_RATE) || 1550,
         mpFeePercent: pricing.mpFeePercent != null ? Number(pricing.mpFeePercent) : (Number(process.env.MP_FEE_PERCENT) || 6.5),
-        fixedUsd: pricing.fixedUsd != null ? Number(pricing.fixedUsd) : 100,
+        fixedUsd: pricing.fixedUsd != null && pricing.fixedUsd !== '' ? Number(pricing.fixedUsd) : null,
         margenExtraPercent: pricing.margenExtraPercent != null ? Number(pricing.margenExtraPercent) : 0,
         margenPorCategoria: pricing.margenPorCategoria || null,
       }
@@ -204,16 +291,15 @@ app.post('/api/borradores/:id/recalcular', auth, async (req, res) => {
     })
     const pricingCfg = {
       esCosto: true,
-      usdRate: Number(pricing.usdRate) || 1200,
+      usdRate: Number(pricing.usdRate) || Number(process.env.USD_ARS_RATE) || 1550,
       mpFeePercent: pricing.mpFeePercent != null ? Number(pricing.mpFeePercent) : 6.5,
-      fixedUsd: pricing.fixedUsd != null ? Number(pricing.fixedUsd) : 100,
+      fixedUsd: pricing.fixedUsd != null && pricing.fixedUsd !== '' ? Number(pricing.fixedUsd) : null,
       margenExtraPercent: pricing.margenExtraPercent != null ? Number(pricing.margenExtraPercent) : 0,
       margenPorCategoria: pricing.margenPorCategoria || null,
     }
     const { productos, detalle } = applyPricing(propuestasCosto, pricingCfg)
     // Actualizar borrador en Firestore/mock: re-crear diff
     const { computeDiff } = await import('./ingesta/borradores.js')
-    const { getFirestoreDb } = await import('./firebase.js')
     const { mockStore } = await import('./mock-store.js')
     // Intentar Firestore, fallback mock
     let updated
@@ -306,11 +392,21 @@ app.get('/api/orders', auth, async (req, res) => {
 
 app.patch('/api/orders/:id', auth, async (req, res) => {
   try {
-    const allowed = ['pendiente', 'pagado', 'enviado', 'entregado', 'cancelado']
-    if (!allowed.includes(req.body?.status)) {
-      return res.status(400).json({ error: 'Estado inválido' })
+    const validStatuses = ['pendiente', 'pagado', 'preparando', 'enviado', 'entregado', 'cancelado', 'pendiente_verificacion', 'listo_para_retirar', 'retirado']
+    const patch = {}
+    if (req.body.status) {
+      if (!validStatuses.includes(req.body.status)) {
+        return res.status(400).json({ error: 'Estado inválido' })
+      }
+      patch.status = req.body.status
     }
-    const ok = await updateOrderStatus(req.params.id, req.body.status)
+    if (req.body.notes !== undefined) patch.notes = req.body.notes
+    if (req.body.tracking !== undefined) patch.tracking = req.body.tracking
+    if (req.body.estadoPago !== undefined) patch.estadoPago = req.body.estadoPago
+    if (Object.keys(patch).length === 0) {
+      return res.status(400).json({ error: 'Nada que actualizar' })
+    }
+    const ok = await updateOrderPatch(req.params.id, patch)
     if (!ok) return res.status(404).json({ error: 'Pedido no encontrado' })
     res.json({ ok: true })
   } catch (e) {
@@ -438,50 +534,97 @@ app.post('/api/checkout/webhook', async (req, res) => {
 })
 
 /* ---------------- Comprobantes de transferencia ---------------- */
-const COMPROBANTES_DIR = path.join(__dirname, '.comprobantes')
-if (!fs.existsSync(COMPROBANTES_DIR)) fs.mkdirSync(COMPROBANTES_DIR, { recursive: true })
+
+const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
+const ALLOWED_EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'application/pdf': 'pdf' }
+const MAX_BYTES = 8 * 1024 * 1024 // 8 MB
 
 app.post('/api/comprobantes', async (req, res) => {
   try {
-    // Handle both JSON (base64) and FormData
-    let orderCode, customerName, comprobanteData
+    const { orderCode, customerName, comprobanteData } = req.body || {}
 
-    if (req.body instanceof Buffer) {
-      // Raw body - try to parse as multipart
-      const bodyStr = req.body.toString('utf8')
-      const orderMatch = bodyStr.match(/orderCode["\s:]+([^\n\r]+)/)
-      const nameMatch = bodyStr.match(/customerName["\s:]+([^\n\r]+)/)
-      orderCode = orderMatch?.[1]?.trim()
-      customerName = nameMatch?.[1]?.trim()
-    } else {
-      orderCode = req.body.orderCode
-      customerName = req.body.customerName
-      comprobanteData = req.body.comprobanteData
+    if (!orderCode || typeof orderCode !== 'string') {
+      return res.status(400).json({ error: 'orderCode requerido' })
+    }
+    if (!comprobanteData || typeof comprobanteData !== 'string') {
+      return res.status(400).json({ error: 'comprobanteData requerido (base64)' })
     }
 
-    if (!orderCode) return res.status(400).json({ error: 'orderCode requerido' })
-
-    console.log(`[comprobante] Recibido para pedido ${orderCode} de ${customerName || 'unknown'}`)
-
-    // Save comprobante reference
-    const comprobante = {
-      orderCode,
-      customerName: customerName || 'unknown',
-      timestamp: new Date().toISOString(),
-      hasFile: !!comprobanteData,
+    // Decode base64
+    const buffer = Buffer.from(comprobanteData, 'base64')
+    if (buffer.length > MAX_BYTES) {
+      return res.status(413).json({ error: 'El comprobante supera el tamaño máximo de 8 MB' })
     }
 
-    // If base64 data provided, save to file
-    if (comprobanteData) {
-      const fileName = `${orderCode}_${Date.now()}.jpg`
-      const filePath = path.join(COMPROBANTES_DIR, fileName)
-      const buffer = Buffer.from(comprobanteData, 'base64')
-      fs.writeFileSync(filePath, buffer)
-      comprobante.filePath = filePath
-      console.log(`[comprobante] Archivo guardado: ${fileName}`)
+    // Detect MIME from magic bytes
+    let mime = 'application/octet-stream'
+    if (buffer[0] === 0xFF && buffer[1] === 0xD8) mime = 'image/jpeg'
+    else if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) mime = 'image/png'
+    else if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46) mime = 'image/webp'
+    else if (buffer[0] === 0x25 && buffer[1] === 0x50 && buffer[2] === 0x44 && buffer[3] === 0x46) mime = 'application/pdf'
+
+    if (!ALLOWED_MIME.includes(mime)) {
+      return res.status(400).json({ error: 'Tipo de archivo no permitido. Solo se aceptan JPG, PNG, WebP o PDF.' })
     }
 
-    res.json({ ok: true, comprobante })
+    const ext = ALLOWED_EXT[mime]
+    const timestamp = Date.now()
+    const storagePath = `comprobantes/${orderCode}/${timestamp}.${ext}`
+
+    console.log(`[comprobante] Recibido para pedido ${orderCode} de ${customerName || 'unknown'} (${(buffer.length / 1024).toFixed(0)} KB, ${mime})`)
+
+    // Upload to Firebase Storage
+    let comprobanteUrl = null
+    try {
+      const { getStorage } = await import('firebase-admin/storage')
+      const bucket = getStorage().bucket()
+      const file = bucket.file(storagePath)
+      await file.save(buffer, {
+        contentType: mime,
+        metadata: { metadata: { orderCode, customerName: customerName || '' } },
+      })
+      // Make publicly readable (or use a signed URL if you prefer private)
+      await file.makePublic()
+      comprobanteUrl = `https://storage.googleapis.com/${bucket.name}/${storagePath}`
+    } catch (storageErr) {
+      console.error('[comprobante] Firebase Storage error:', storageErr.message)
+      return res.status(500).json({ error: 'Error al subir comprobante a Storage' })
+    }
+
+    // Create/update Firestore document in "pedidos" collection
+    try {
+      const db = getFirestoreDb()
+      const pedidosRef = db.collection(COLLECTIONS.ORDERS)
+      const q = await pedidosRef.where('code', '==', orderCode).limit(1).get()
+
+      if (!q.empty) {
+        const docRef = q.docs[0].ref
+        await docRef.update({
+          comprobanteUrl,
+          comprobanteStoragePath: storagePath,
+          metodoPago: 'transferencia',
+          estadoPago: 'pendiente_verificacion',
+          comprobanteUploadedAt: new Date().toISOString(),
+        })
+      } else {
+        // Order doesn't exist yet (race condition) — create a pending record
+        await pedidosRef.add({
+          code: orderCode,
+          customerName: customerName || 'unknown',
+          metodoPago: 'transferencia',
+          estadoPago: 'pendiente_verificacion',
+          comprobanteUrl,
+          comprobanteStoragePath: storagePath,
+          comprobanteUploadedAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+        })
+      }
+    } catch (fsErr) {
+      console.error('[comprobante] Firestore error:', fsErr.message)
+      // Storage already succeeded — still return ok to frontend
+    }
+
+    res.json({ ok: true, comprobante: { orderCode, customerName, comprobanteUrl, timestamp: new Date().toISOString() } })
   } catch (e) {
     res.status(500).json({ error: e.message })
   }
@@ -537,7 +680,7 @@ async function runScrapeInsumosAcuario() {
     const changes = diffIA(existing, normalized)
     let created = 0, updated = 0
     for (const p of changes.news) {
-      createProduct({ sku: p.sku, nombre: p.nombre, precio: p.precio, marca: 'insumosacuario', categoria: p.categoria, stock: p.stock, tipo_venta: 'directa', descripcion: p.descripcion, imagenes: p.imagenes, fuente_origen: 'scraping_insumosacuario' })
+      createProduct({ sku: p.sku, nombre: p.nombre, precio: p.precio, marca: p.marca && p.marca !== 'insumosacuario' ? p.marca : 'Genérica', categoria: p.categoria, stock: p.stock, tipo_venta: 'directa', descripcion: p.descripcion, imagenes: p.imagenes, fuente_origen: 'scraping_insumosacuario' })
       created++
     }
     for (const c of changes.priceChanges) { const p = existing.find(x => x.sku === c.sku); if (p) { updateProduct(p.id, { precio: c.new }); updated++ } }
@@ -571,7 +714,11 @@ app.get(/^\/(?!api|futurohard|admin).*/, (req, res) => {
   res.status(404).send('Frontend no encontrado')
 })
 
-app.listen(PORT, () => {
-  console.log(`[server] API + admin en http://localhost:${PORT}`)
-  console.log(`[server] Admin password: ${ADMIN_PASSWORD}`)
-})
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`[server] API + admin en http://localhost:${PORT}`)
+    console.log(`[server] Admin password: ${ADMIN_PASSWORD}`)
+  })
+}
+
+export default app

@@ -40,13 +40,14 @@ function heuristicTextToRows(text) {
           }
           const n = Number(raw)
           if (!Number.isNaN(n) && n > 50 && n < 100000000) {
-            // Si es USD y n < 2000, es USD, convertir a ARS con 1200 por defecto (pricing lo reajustará si esCosto)
+            // Si es USD y n < 5000, es USD, convertir a ARS con USD_ARS_RATE (default 1550)
             precio = Math.round(n)
             if (isUSD && n < 5000) {
               // Marcar como USD para que pricing lo convierta; por ahora dejamos n y guardamos flag
               // Guardamos precio en USD, luego si pricing.esCosto lo convertirá; si no, lo dejamos como está pero anotamos
-              // Para heurística sin pricing, convertimos ya a ARS con 1200
-              precio = Math.round(n * 1200)
+              // Para heurística sin pricing, convertimos ya a ARS
+              const RATE = Number(process.env.USD_ARS_RATE) || 1550
+              precio = Math.round(n * RATE)
             }
             priceMatch = m
             lastPriceIdx = m.index ?? line.lastIndexOf(m[0])

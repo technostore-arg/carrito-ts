@@ -4,7 +4,7 @@ import { ars } from '../utils/format'
 
 export default function CheckoutModal({ onClose }) {
   const { detailed, shipping, total, clearCart, metodoPago, setMetodoPago, getPrice } = useCart()
-  const [form, setForm] = useState({ nombre: '', email: '', telefono: '', direccion: '', ciudad: 'CABA' })
+  const [form, setForm] = useState({ nombre: '', email: '', telefono: '', direccion: '', ciudad: 'CABA', tipoEntrega: 'envio' })
   const [comprobante, setComprobante] = useState(null)
   const [order, setOrder] = useState(null)
   const [redirecting, setRedirecting] = useState(null)
@@ -17,7 +17,7 @@ export default function CheckoutModal({ onClose }) {
     setError(null); setSending(true)
     try {
       const payload = {
-        customer: { name: form.nombre, email: form.email, phone: form.telefono, city: form.ciudad, address: form.direccion, paymentMethod: metodoPago },
+        customer: { name: form.nombre, email: form.email, phone: form.telefono, city: form.ciudad, address: form.direccion, paymentMethod: metodoPago, tipoEntrega: form.tipoEntrega },
         items: detailed.map(p => ({ id: p.sku || p.id, qty: p.qty, precio: getPrice(p) })),
       }
 
@@ -71,6 +71,7 @@ export default function CheckoutModal({ onClose }) {
             <div className="order-code">Orden: <code>{order.code}</code></div>
             <div className="summary">
               <div className="row"><span>Método</span><span>{order.metodo === 'mercadopago' ? 'MercadoPago' : order.metodo === 'transferencia' ? 'Transferencia bancaria' : 'Tarjeta'}</span></div>
+              <div className="row"><span>Entrega</span><span>{form.tipoEntrega === 'retiro' ? 'Retiro en local' : 'Envío a domicilio'}</span></div>
               <div className="row total"><span>Total</span><b>{ars(total)}</b></div>
             </div>
             {order.metodo === 'transferencia' && (
@@ -96,15 +97,40 @@ export default function CheckoutModal({ onClose }) {
                   </div>
                 )
               })}
-              <div className="row"><span>Envío</span><span className={shipping === 0 ? 'free' : ''}>{shipping === 0 ? 'Gratis' : ars(shipping)}</span></div>
+              <div className="row"><span>{form.tipoEntrega === 'retiro' ? 'Retiro' : 'Envío'}</span><span className={shipping === 0 || form.tipoEntrega === 'retiro' ? 'free' : ''}>{form.tipoEntrega === 'retiro' ? 'Gratis' : shipping === 0 ? 'Gratis' : ars(shipping)}</span></div>
               <div className="row total"><span>Total</span><b>{ars(total)}</b></div>
             </div>
             <form onSubmit={submit} className="checkout-form">
               <div className="field span2"><label htmlFor="f-nombre">Nombre completo *</label><input id="f-nombre" required minLength={3} value={form.nombre} onChange={e => set('nombre', e.target.value)} placeholder="Juan Pérez" /></div>
               <div className="field span2"><label htmlFor="f-email">Email *</label><input id="f-email" type="email" required value={form.email} onChange={e => set('email', e.target.value)} placeholder="juan@email.com" /></div>
               <div className="field"><label htmlFor="f-tel">WhatsApp / Teléfono *</label><input id="f-tel" type="tel" required value={form.telefono} onChange={e => set('telefono', e.target.value)} placeholder="+54 9 11 5555-5555" /></div>
-              <div className="field"><label htmlFor="f-ciudad">Ciudad *</label><input id="f-ciudad" required value={form.ciudad} onChange={e => set('ciudad', e.target.value)} placeholder="Buenos Aires" /></div>
-              <div className="field span2"><label htmlFor="f-dir">Dirección de envío *</label><input id="f-dir" required minLength={5} value={form.direccion} onChange={e => set('direccion', e.target.value)} placeholder="Av. Santa Fe 2844, Piso 3" /></div>
+              <div className="field span2">
+                <label style={{ display: 'block', marginBottom: 6 }}>Tipo de entrega *</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 8, border: `1px solid ${form.tipoEntrega === 'envio' ? 'var(--accent)' : '#ddd'}`, background: form.tipoEntrega === 'envio' ? '#f0f7ff' : '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>
+                    <input type="radio" name="entrega" checked={form.tipoEntrega === 'envio'} onChange={() => set('tipoEntrega', 'envio')} style={{ accentColor: 'var(--accent)' }} />
+                    🚚 Envío a domicilio
+                  </label>
+                  <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 8, border: `1px solid ${form.tipoEntrega === 'retiro' ? 'var(--accent)' : '#ddd'}`, background: form.tipoEntrega === 'retiro' ? '#f0f7ff' : '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 500 }}>
+                    <input type="radio" name="entrega" checked={form.tipoEntrega === 'retiro'} onChange={() => set('tipoEntrega', 'retiro')} style={{ accentColor: 'var(--accent)' }} />
+                    🏬 Retiro en el local
+                  </label>
+                </div>
+              </div>
+              {form.tipoEntrega === 'envio' ? (
+                <>
+                  <div className="field"><label htmlFor="f-ciudad">Ciudad *</label><input id="f-ciudad" required value={form.ciudad} onChange={e => set('ciudad', e.target.value)} placeholder="Buenos Aires" /></div>
+                  <div className="field span2"><label htmlFor="f-dir">Dirección de envío *</label><input id="f-dir" required minLength={5} value={form.direccion} onChange={e => set('direccion', e.target.value)} placeholder="Av. Santa Fe 2844, Piso 3" /></div>
+                </>
+              ) : (
+                <div className="field span2" style={{ padding: '12px 14px', borderRadius: 10, background: '#f0f7ff', border: '1px solid #b3d9ff' }}>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)', marginBottom: 6, display: 'block' }}>Retirá gratis en nuestro local</label>
+                  <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0, lineHeight: 1.6 }}>
+                    <b>Dirección:</b> Av. Santa Fe 2844, Piso 3, CABA<br />
+                    <b>Horario:</b> Lunes a Viernes 10 a 18hs
+                  </p>
+                </div>
+              )}
               <div className="pay-methods span2">
                 <label className={metodoPago === 'transferencia' ? 'checked' : ''}>
                   <input type="radio" name="pago" checked={metodoPago === 'transferencia'} onChange={() => setMetodoPago('transferencia')} />

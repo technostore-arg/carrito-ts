@@ -183,6 +183,7 @@ export async function handleWebhook(reqBody) {
       city: customer.city || '',
       address: customer.address || '',
       payment_method: customer.paymentMethod || 'mercadopago',
+      tipo_entrega: ['envio', 'retiro'].includes(customer.tipoEntrega) ? customer.tipoEntrega : 'envio',
       subtotal,
       shipping,
       total,

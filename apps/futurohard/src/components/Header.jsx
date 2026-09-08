@@ -4,6 +4,7 @@ const NAV = [
   { id: "gpus", label: "GPUs" },
   { id: "memorias", label: "RAM / SSD" },
   { id: "workstations", label: "Workstations" },
+  { id: "notebooks", label: "Notebooks" },
 ]
 
 export default function Header({ search, onSearchChange, onSelectCategory, onServicios, activeCategory, cartCount = 0, onCart }) {

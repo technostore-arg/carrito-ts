@@ -78,6 +78,33 @@ async function scrapeAll() {
   return [...all.values()]
 }
 
+// Marcas reales de hardware — el proveedor (insumosacuario) NUNCA es marca.
+// Se infiere del nombre del producto; fallback 'Genérica' si no matchea.
+const KNOWN_BRANDS = [
+  'Cooler Master', 'MasterLiquid', 'Thermaltake', 'Corsair', 'Aerocool', 'Cougar', 'MSI',
+  'Patriot', 'SK Hynix', 'Hynix', 'Hikvision', 'Hiksemi', 'Foresse', 'Jalatec', 'Naxido',
+  'Redragon', 'Solarmax', 'Magnum Tech', 'ASUS', 'Gigabyte', 'ASRock', 'Intel', 'AMD',
+  'Kingston', 'Crucial', 'Western Digital', 'Seagate', 'Toshiba', 'Adata', 'XPG', 'HyperX',
+  'Logitech', 'NZXT', 'DeepCool', 'Deep Cool', 'Lian Li', 'Antec', 'EVGA', 'Seasonic',
+  'TeamGroup', 'Team Group', 'Silicon Power', 'Transcend', 'ID-Cooling', 'Be Quiet',
+  'Fractal', 'Phanteks', 'InWin', 'Sentey', 'Nisuta', 'Aureox', 'XFX', 'Zotac', 'PNY',
+  'Sapphire', 'PowerColor', 'XYZ', 'Thermax', 'Airone', 'Lexar', 'Puskill', 'SanDisk',
+  'KingDian', 'WD', 'Verbatim', 'Qbox', 'Ceres', 'CoolerMaster', 'Tt',
+]
+const BRAND_DISPLAY = {
+  MasterLiquid: 'Cooler Master', Thermax: 'XYZ', Airone: 'XYZ', WD: 'WD',
+  Tt: 'Thermaltake', 'Deep Cool': 'DeepCool', 'Team Group': 'TeamGroup',
+}
+
+function inferBrand(nombre) {
+  const nn = ' ' + String(nombre || '').toUpperCase().replace(/[^A-Z0-9 ]/g, ' ').replace(/\s+/g, ' ') + ' '
+  for (const b of KNOWN_BRANDS) {
+    const pat = ' ' + b.toUpperCase().replace(/[^A-Z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim() + ' '
+    if (nn.includes(pat)) return BRAND_DISPLAY[b] || b
+  }
+  return 'Genérica'
+}
+
 function normalizeForStore(products) {
   return products.map(p => {
     const costo = p.price || 0
@@ -89,7 +116,7 @@ function normalizeForStore(products) {
       precio: transferencia,
       precio_transferencia: transferencia,
       precio_mercadopago: mercadopago,
-      marca: 'insumosacuario',
+      marca: inferBrand(p.name),
       categoria: CAT_MAP[p.category] || 'accesorios',
       stock: p.inStock ? 10 : 0,
       tipo_venta: 'directa',
@@ -159,7 +186,7 @@ async function main() {
     if (changes.news.length) {
       for (const p of changes.news) {
         mockStore.createProduct({
-          sku: p.sku, nombre: p.nombre, precio: p.precio, marca: 'insumosacuario',
+          sku: p.sku, nombre: p.nombre, precio: p.precio, marca: p.marca || inferBrand(p.nombre),
           categoria: p.categoria, stock: p.stock, tipo_venta: 'directa',
           descripcion: p.descripcion, imagenes: p.imagenes, fuente_origen: 'scraping_insumosacuario'
         })
@@ -189,4 +216,4 @@ if (isMainModule) {
   main().catch(e => { console.error('[insumosacuario] Fatal:', e); process.exit(1) })
 }
 
-export { scrapeAll, normalizeForStore, diff, BASE, SUBCATS, CAT_MAP }
+export { scrapeAll, normalizeForStore, diff, inferBrand, BASE, SUBCATS, CAT_MAP }
