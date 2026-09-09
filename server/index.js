@@ -94,6 +94,9 @@ app.post('/api/admin/login', (req, res) => {
 app.get('/api/products', async (req, res) => {
   try {
     const rows = await getProducts({ activeOnly: true })
+    // Cache de edge (Vercel CDN): el catálogo cambia poco y cada
+    // lectura son ~950 reads de Firestore. 2 min + stale 10 min.
+    res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=600')
     res.json(rows)
   } catch (e) {
     res.status(503).json({ error: e.message })
@@ -104,6 +107,7 @@ app.get('/api/products/:id', async (req, res) => {
   try {
     const row = await getProductById(req.params.id)
     if (!row) return res.status(404).json({ error: 'Producto no encontrado' })
+    res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=600')
     res.json(row)
   } catch (e) {
     res.status(503).json({ error: e.message })

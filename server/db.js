@@ -120,13 +120,27 @@ export function productToDoc(p) {
 
 /* ---------------- Productos ---------------- */
 
+// Cache en memoria (30s): en serverless sobrevive entre invocaciones tibias
+// y recorta lecturas de Firestore (cada listado son ~950 reads).
+const _productsCache = { ts: 0, active: null, all: null }
+const PRODUCTS_TTL_MS = 30 * 1000
+export function clearProductsCache() { _productsCache.ts = 0; _productsCache.active = null; _productsCache.all = null }
+
 export async function getProducts({ activeOnly = true } = {}) {
   try {
+    const now = Date.now()
+    const key = activeOnly ? 'active' : 'all'
+    if (now - _productsCache.ts < PRODUCTS_TTL_MS && _productsCache[key]) {
+      return _productsCache[key]
+    }
     const db = getFirestoreDb()
     let q = db.collection(PRODUCTS)
     if (activeOnly) q = q.where('active', '==', true)
     const snap = await q.get()
-    return snap.docs.map(docToProduct)
+    const rows = snap.docs.map(docToProduct)
+    _productsCache.ts = now
+    _productsCache[key] = rows
+    return rows
   } catch (e) {
     if (useMock(e)) return mockStore.getProducts({ activeOnly })
     throw e
@@ -153,6 +167,7 @@ export async function createProduct(data) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     })
+    clearProductsCache()
     return docToProduct(await ref.get())
   } catch (e) {
     if (useMock(e)) return mockStore.createProduct(data)
@@ -168,6 +183,7 @@ export async function updateProduct(id, data) {
     if (!existing.exists) return null
     const merged = { ...docToProduct(existing), ...data }
     await ref.set({ ...productToDoc(merged), updatedAt: new Date().toISOString() })
+    clearProductsCache()
     return docToProduct(await ref.get())
   } catch (e) {
     if (useMock(e)) return mockStore.updateProduct(id, data)
@@ -182,6 +198,7 @@ export async function deleteProduct(id) {
     const existing = await ref.get()
     if (!existing.exists) return false
     await ref.delete()
+    clearProductsCache()
     return true
   } catch (e) {
     if (useMock(e)) return mockStore.deleteProduct(id)
