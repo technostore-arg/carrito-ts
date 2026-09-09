@@ -15,19 +15,8 @@ export const mockProductos = [
 
 export const mockPedidos = []
 
-export const mockConsultas = [
-  { id: 'c1', sku: 'FH-RTX3090-24G-RFB', nombre: 'RTX 3090 24GB (Premium Refurb)', marca: 'futurohard', telefono: '1122334455', mensaje: 'Hola, quiero consultar por RTX 3090 24GB (SKU: FH-RTX3090-24G-RFB)', origen: 'whatsapp', createdAt: new Date(Date.now() - 86400000 * 2).toISOString(), estado_cierre: 'abierta', venta_cerrada: false },
-  { id: 'c2', sku: 'TS-SAM-S24U-512', nombre: 'Samsung Galaxy S24 Ultra 512GB', marca: 'technostore', telefono: '1133445566', mensaje: 'Hola, quiero consultar por Samsung S24 Ultra (SKU: TS-SAM-S24U-512)', origen: 'whatsapp', createdAt: new Date(Date.now() - 86400000 * 4).toISOString(), estado_cierre: 'abierta', venta_cerrada: false },
-  { id: 'c3', sku: 'FH-RTX3090-24G-RFB', nombre: 'RTX 3090 24GB (Premium Refurb)', marca: 'futurohard', telefono: '1144556677', mensaje: 'Precio final con envío a Rosario?', origen: 'whatsapp', createdAt: new Date(Date.now() - 86400000 * 6).toISOString(), estado_cierre: 'cerrada', venta_cerrada: true },
-  { id: 'c4', sku: 'FH-RTX4090-24G', nombre: 'NVIDIA RTX 4090 24GB', marca: 'futurohard', telefono: '1155667788', mensaje: 'Consulto stock real y garantía', origen: 'whatsapp', createdAt: new Date(Date.now() - 86400000 * 1).toISOString(), estado_cierre: 'abierta', venta_cerrada: false },
-  { id: 'c5', sku: 'TS-SAM-S24U-512', nombre: 'Samsung Galaxy S24 Ultra 512GB', marca: 'technostore', telefono: '1166778899', mensaje: 'Tienen cuotas sin interés?', origen: 'whatsapp', createdAt: new Date(Date.now() - 86400000 * 8).toISOString(), estado_cierre: 'cerrada', venta_cerrada: false },
-]
+// Sin datos simulados: el negocio aún no registró ventas, consultas ni vistas.
+// Estas listas se llenan solas con la actividad real.
+export const mockConsultas = []
 
-export const mockVistas = [
-  { producto_id: 'p1', sku: 'FH-RTX4090-24G', nombre: 'NVIDIA RTX 4090 24GB', marca: 'futurohard', vistas: 842 },
-  { producto_id: 'p7', sku: 'TS-IPH15P-128', nombre: 'iPhone 15 Pro 128GB Titanio', marca: 'technostore', vistas: 631 },
-  { producto_id: 'p5', sku: 'FH-RIG-ULTRA-70B', nombre: 'Rig IA Ultra 70B — RTX 4090 24GB', marca: 'futurohard', vistas: 517 },
-  { producto_id: 'p8', sku: 'TS-MBA-M3-256', nombre: 'MacBook Air 13" M3 256GB', marca: 'technostore', vistas: 489 },
-  { producto_id: 'p2', sku: 'FH-RTX4080S-16G', nombre: 'NVIDIA RTX 4080 Super 16GB', marca: 'futurohard', vistas: 412 },
-  { producto_id: 'p11', sku: 'TS-AIRP-PRO2', nombre: 'AirPods Pro 2da Gen', marca: 'technostore', vistas: 398 },
-]
+export const mockVistas = []
