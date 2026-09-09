@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect } from "react"
 import Header from "./components/Header"
 import Hero from "./components/Hero"
 import FilterBar, { rangoMatch, ORDENES, isHardware, CATEGORIAS } from "./components/FilterBar"
-import { matchCpu, matchRam, matchSsd, specOptions, CPU_LABELS, fmtCap } from "./utils/specs"
+import { matchCpu, matchRam, matchSsd, specOptions, CPU_LABELS, fmtCap, canonCat, buildRanges, specsForCat, normText, matchQuery, matchNameSku } from "./utils/specs"
 import ProductGrid from "./components/ProductGrid"
 import ProductDetail from "./components/ProductDetail"
 import CartPage from "./components/CartPage"
@@ -110,24 +110,41 @@ export default function App() {
   useEffect(() => {
     if (source === null) return
     if (marca !== "todos" && !marcasDisponibles.includes(marca)) setMarca("todos")
-    if (!validCatIds.has(categoria)) setCategoria("todos")
-  }, [source, marcasDisponibles, marca, categoria, validCatIds])
-  const counts = useMemo(() => { const c = { todos: allProducts.length, hardware: 0 }; for (const p of allProducts) { c[p.categoria] = (c[p.categoria] || 0) + 1; if (isHardware(p.categoria)) c.hardware++ } return c }, [allProducts])
+    if (!validCatIds.has(canonCat(categoria))) setCategoria("todos")
+    else if (categoria !== canonCat(categoria)) setCategoria(canonCat(categoria))
+    if (rango !== "todos" && !/^(\d+-\d+|\d+\+)$/.test(rango)) setRango("todos")
+  }, [source, marcasDisponibles, marca, categoria, rango, validCatIds])
+  const counts = useMemo(() => { const c = { todos: allProducts.length, hardware: 0 }; for (const p of allProducts) { const k = canonCat(p.categoria); c[k] = (c[k] || 0) + 1; if (isHardware(p.categoria)) c.hardware++ } return c }, [allProducts])
   const specOpts = useMemo(() => specOptions(allProducts), [allProducts])
+  const rangeOpts = useMemo(() => buildRanges(allProducts), [allProducts])
+  const visibleSpecs = useMemo(() => specsForCat(categoria), [categoria])
+  // Al cambiar de categoría se limpian los filtros de specs que dejan de aplicar
+  useEffect(() => {
+    if (!visibleSpecs.includes('cpu') && cpu) setCpu("")
+    if (!visibleSpecs.includes('ram') && ram) setRam("")
+    if (!visibleSpecs.includes('ssd') && ssd) setSsd("")
+  }, [categoria]) // eslint-disable-line
   const visibles = useMemo(() => {
     if (source === null) return []
-    const query = q.trim().toLowerCase()
+    const query = normText(q.trim())
+    const cat = canonCat(categoria)
     let out = allProducts.filter(p => {
-      if (categoria === "hardware" ? !isHardware(p.categoria) : (categoria !== "todos" && p.categoria !== categoria)) return false
+      if (categoria === "hardware" ? !isHardware(p.categoria) : (cat !== "todos" && canonCat(p.categoria) !== cat)) return false
       if (marca !== "todos" && getBrand(p) !== marca) return false
       if (p.tipo_venta === "directa" && !rangoMatch(p.precio, rango)) return false
       if (p.tipo_venta === "encargo" && rango !== "todos") return false
       if (!matchCpu(p, cpu)) return false
       if (!matchRam(p, ram)) return false
       if (!matchSsd(p, ssd)) return false
-      if (query) { const hay = p.nombre.toLowerCase().includes(query) || p.descripcion.toLowerCase().includes(query) || Object.values(p.especificaciones || {}).some(v => String(v).toLowerCase().includes(query)); if (!hay) return false }
+      if (!matchQuery(p, query)) return false
       return true
     })
+    // Con búsqueda: primero coincidencias en nombre/SKU
+    if (query) {
+      const top = [], rest = []
+      for (const p of out) (matchNameSku(p, query) ? top : rest).push(p)
+      out = [...top, ...rest]
+    }
     if (orden === "precio-asc") out = [...out].sort((a, b) => (a.precio ?? 0) - (b.precio ?? 0))
     else if (orden === "precio-desc") out = [...out].sort((a, b) => (b.precio ?? 0) - (a.precio ?? 0))
     else if (orden === "nombre-asc") out = [...out].sort((a, b) => a.nombre.localeCompare(b.nombre))
@@ -170,7 +187,7 @@ export default function App() {
             {(q.trim() || hasFiltros) && (
               <nav className="breadcrumbs" aria-label="Filtros activos">
                 <button onClick={() => { setCategoria("todos"); scrollToCatalog() }}>Catálogo</button>
-                {categoria !== "todos" && <><span>›</span><button onClick={() => setCategoria("todos")}>{(CATEGORIAS.find(c => c.id === categoria)?.label) || categoria}</button></>}
+                {categoria !== "todos" && <><span>›</span><button onClick={() => setCategoria("todos")}>{(CATEGORIAS.find(c => c.id === canonCat(categoria))?.label) || categoria}</button></>}
                 {marca !== "todos" && <><span>›</span><button onClick={() => setMarca("todos")}>{marca}</button></>}
                 {cpu && <><span>›</span><button onClick={() => setCpu("")}>{CPU_LABELS[cpu] || cpu}</button></>}
                 {ram && <><span>›</span><button onClick={() => setRam("")}>{fmtCap(Number(ram))} RAM</button></>}
@@ -188,7 +205,7 @@ export default function App() {
                 categoria={categoria} marca={marca} rango={rango} orden={orden} cpu={cpu} ram={ram} ssd={ssd}
                 onCategoria={c => { setCategoria(c); scrollToCatalog() }}
                 onMarca={setMarca} onRango={setRango} onOrden={setOrden} onCpu={setCpu} onRam={setRam} onSsd={setSsd}
-                marcasDisponibles={marcasDisponibles} cpuOptions={specOpts.cpus} ramOptions={specOpts.rams} ssdOptions={specOpts.ssds} counts={counts}
+                marcasDisponibles={marcasDisponibles} cpuOptions={specOpts.cpus} ramOptions={specOpts.rams} ssdOptions={specOpts.ssds} rangeOptions={rangeOpts} visibleSpecs={visibleSpecs} counts={counts}
                 totalVisibles={visibles.length} totalAll={allProducts.length}
                 hasFiltros={hasFiltros} onLimpiar={limpiarFiltros}
               />

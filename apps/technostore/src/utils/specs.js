@@ -164,3 +164,101 @@ export function specOptions(products) {
 export function fmtCap(gb) {
   return gb >= 1024 ? `${gb / 1024}TB` : `${gb}GB`
 }
+
+/* ---------- Fase 1: categorías canónicas (display) ---------- */
+// Se agrupan las que confunden; el valor guardado no cambia.
+export const CANON_CATS = {
+  ram: 'memorias',
+  'ram-sodimm': 'memorias',
+  memorias: 'memorias',
+  ssd: 'almacenamiento',
+  'ssd-nvme': 'almacenamiento',
+  'ssd-sata': 'almacenamiento',
+}
+export const CANON_LABELS = {
+  memorias: 'Memorias RAM',
+  almacenamiento: 'Almacenamiento',
+}
+export function canonCat(c) {
+  const k = String(c || '').toLowerCase()
+  return CANON_CATS[k] || k
+}
+
+/* ---------- Fase 2: rangos de precio dinámicos ---------- */
+export function fmtPriceShort(n) {
+  if (n >= 1000000) {
+    const m = n / 1000000
+    return `$${Number(m.toFixed(m >= 10 ? 0 : 1))}M`
+  }
+  if (n >= 1000) return `$${Math.round(n / 1000)} mil`
+  return `$${n}`
+}
+
+function niceCeil(n) {
+  if (n <= 0) return 0
+  const mag = Math.pow(10, Math.floor(Math.log10(n)))
+  const norm = n / mag
+  const nice = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10
+  return nice * mag
+}
+
+// Cuartiles -> 4 tramos con bordes "lindos". Devuelve [{id:'min-max'|'min+', label}]
+export function buildRanges(products) {
+  const prices = products
+    .map(p => Number(p.precio_transferencia ?? p.precio ?? p.price ?? 0))
+    .filter(v => v > 0)
+    .sort((a, b) => a - b)
+  if (prices.length < 8) return []
+  const q = f => prices[Math.min(prices.length - 1, Math.floor(f * prices.length))]
+  const cuts = [0, niceCeil(q(0.25)), niceCeil(q(0.5)), niceCeil(q(0.75))].map((v, i, a) => (i > 0 && v <= a[i - 1] ? a[i - 1] + 1 : v))
+  const opts = [
+    { id: `0-${cuts[1]}`, label: `Hasta ${fmtPriceShort(cuts[1])}` },
+    { id: `${cuts[1] + 1}-${cuts[2]}`, label: `${fmtPriceShort(cuts[1] + 1)} — ${fmtPriceShort(cuts[2])}` },
+    { id: `${cuts[2] + 1}-${cuts[3]}`, label: `${fmtPriceShort(cuts[2] + 1)} — ${fmtPriceShort(cuts[3])}` },
+    { id: `${cuts[3] + 1}+`, label: `Más de ${fmtPriceShort(cuts[3] + 1)}` },
+  ]
+  return opts
+}
+
+export function matchRange(precio, rango) {
+  if (!rango || rango === 'todos') return true
+  const p = Number(precio) || 0
+  let m = String(rango).match(/^(\d+)-(\d+)$/)
+  if (m) return p >= Number(m[1]) && p <= Number(m[2])
+  m = String(rango).match(/^(\d+)\+$/)
+  if (m) return p > Number(m[1])
+  return true
+}
+
+/* ---------- Fase 3: relevancia de filtros por categoría ---------- */
+export const SPECS_FOR_CAT = {
+  todos: ['cpu', 'ram', 'ssd'],
+  notebooks: ['cpu', 'ram', 'ssd'],
+  celulares: ['ram', 'ssd'],
+  memorias: ['ram'],
+  almacenamiento: ['ssd'],
+}
+export function specsForCat(catId) {
+  return SPECS_FOR_CAT[canonCat(catId)] || []
+}
+
+/* ---------- Fase 4: búsqueda normalizada ---------- */
+export function normText(s) {
+  return String(s || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+}
+
+// true si matchea en nombre/sku (usado para rankear primero)
+export function matchNameSku(p, qn) {
+  const hay = `${p.nombre || p.name || ''} ${p.sku || ''}`
+  return normText(hay).includes(qn)
+}
+
+export function matchQuery(p, qn) {
+  if (!qn) return true
+  if (matchNameSku(p, qn)) return true
+  const resto = `${p.descripcion || ''} ${Object.values(p.especificaciones || {}).map(String).join(' ')}`
+  return normText(resto).includes(qn)
+}

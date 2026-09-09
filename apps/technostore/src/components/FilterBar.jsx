@@ -9,12 +9,8 @@ const CATEGORIAS = [
   { id: "hardware", label: "Hardware" },
   { id: "gpus", label: "Placas de Video" },
   { id: "procesadores", label: "Procesadores" },
-  { id: "ram", label: "RAM" },
-  { id: "ram-sodimm", label: "RAM SODIMM" },
-  { id: "memorias", label: "Memorias" },
-  { id: "ssd", label: "SSD" },
-  { id: "ssd-nvme", label: "SSD NVMe" },
-  { id: "ssd-sata", label: "SSD SATA" },
+  { id: "memorias", label: "Memorias RAM" },
+  { id: "almacenamiento", label: "Almacenamiento" },
   { id: "coolers", label: "Coolers" },
   { id: "gabinetes", label: "Gabinetes" },
   { id: "watercooling", label: "Watercooling" },
@@ -22,20 +18,21 @@ const CATEGORIAS = [
   { id: "accesorios", label: "Accesorios" },
 ]
 
-const RANGOS = [
-  { id: "todos", label: "Todos los precios" },
-  { id: "0-400", label: "Hasta $400.000" },
-  { id: "400-700", label: "$400.000 — $700.000" },
-  { id: "700-1200", label: "$700.000 — $1.200.000" },
-  { id: "1200+", label: "Más de $1.200.000" },
-]
-
+// Compat: acepta ids viejos ("0-400", "ram", ...) y rangos dinámicos "min-max"/"min+"
 function rangoMatch(precio, rango) {
-  if (rango === "todos") return true
-  if (rango === "0-400") return precio <= 400000
-  if (rango === "400-700") return precio > 400000 && precio <= 700000
-  if (rango === "700-1200") return precio > 700000 && precio <= 1200000
-  if (rango === "1200+") return precio > 1200000
+  if (!rango || rango === "todos") return true
+  const p = Number(precio) || 0
+  let m = String(rango).match(/^(\d+)-(\d+)$/)
+  if (m) {
+    // rangos legacy en miles ("0-400" = hasta $400.000)
+    const mult = Number(m[2]) <= 10000 ? 1000 : 1
+    return p >= Number(m[1]) * mult && p <= Number(m[2]) * mult
+  }
+  m = String(rango).match(/^(\d+)\+$/)
+  if (m) {
+    const mult = Number(m[1]) <= 10000 ? 1000 : 1
+    return p > Number(m[1]) * mult
+  }
   return true
 }
 
@@ -46,7 +43,7 @@ const ORDENES = [
   { id: "nombre-asc", label: "A — Z" },
 ]
 
-export default function FilterBar({ categoria, marca, rango, orden, cpu, ram, ssd, onCategoria, onMarca, onRango, onOrden, onCpu, onRam, onSsd, marcasDisponibles, cpuOptions, ramOptions, ssdOptions, counts, totalVisibles, totalAll, hasFiltros, onLimpiar }) {
+export default function FilterBar({ categoria, marca, rango, orden, cpu, ram, ssd, onCategoria, onMarca, onRango, onOrden, onCpu, onRam, onSsd, marcasDisponibles, cpuOptions, ramOptions, ssdOptions, rangeOptions, visibleSpecs, counts, totalVisibles, totalAll, hasFiltros, onLimpiar }) {
   return (
     <div className="filter-bar">
       <div className="filter-row">
@@ -72,7 +69,8 @@ export default function FilterBar({ categoria, marca, rango, orden, cpu, ram, ss
         <label className="filter-select">
           <span>Precio</span>
           <select value={rango} onChange={e => onRango(e.target.value)}>
-            {RANGOS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
+            <option value="todos">Todos los precios</option>
+            {rangeOptions.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
           </select>
         </label>
         <label className="filter-select">
@@ -81,27 +79,33 @@ export default function FilterBar({ categoria, marca, rango, orden, cpu, ram, ss
             {ORDENES.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
           </select>
         </label>
-        <label className="filter-select">
-          <span>Procesador</span>
-          <select value={cpu} onChange={e => onCpu(e.target.value)}>
-            <option value="">Todos</option>
-            {cpuOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-          </select>
-        </label>
-        <label className="filter-select">
-          <span>Memoria RAM</span>
-          <select value={ram} onChange={e => onRam(e.target.value)}>
-            <option value="">Toda</option>
-            {ramOptions.map(gb => <option key={gb} value={gb}>{gb >= 1024 ? `${gb / 1024}TB` : `${gb}GB`}</option>)}
-          </select>
-        </label>
-        <label className="filter-select">
-          <span>Disco</span>
-          <select value={ssd} onChange={e => onSsd(e.target.value)}>
-            <option value="">Todo</option>
-            {ssdOptions.map(gb => <option key={gb} value={gb}>{gb >= 1024 ? `${gb / 1024}TB` : `${gb}GB`}</option>)}
-          </select>
-        </label>
+        {visibleSpecs.includes('cpu') && (
+          <label className="filter-select">
+            <span>Procesador</span>
+            <select value={cpu} onChange={e => onCpu(e.target.value)}>
+              <option value="">Todos</option>
+              {cpuOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+            </select>
+          </label>
+        )}
+        {visibleSpecs.includes('ram') && (
+          <label className="filter-select">
+            <span>Memoria RAM</span>
+            <select value={ram} onChange={e => onRam(e.target.value)}>
+              <option value="">Toda</option>
+              {ramOptions.map(gb => <option key={gb} value={gb}>{gb >= 1024 ? `${gb / 1024}TB` : `${gb}GB`}</option>)}
+            </select>
+          </label>
+        )}
+        {visibleSpecs.includes('ssd') && (
+          <label className="filter-select">
+            <span>Disco</span>
+            <select value={ssd} onChange={e => onSsd(e.target.value)}>
+              <option value="">Todo</option>
+              {ssdOptions.map(gb => <option key={gb} value={gb}>{gb >= 1024 ? `${gb / 1024}TB` : `${gb}GB`}</option>)}
+            </select>
+          </label>
+        )}
       </div>
       <div className="filter-meta">
         <span className="filter-count">{totalVisibles === totalAll ? `${totalAll} productos` : `${totalVisibles} de ${totalAll} productos`}</span>

@@ -2,7 +2,9 @@ import { useState } from "react"
 
 const NAV = [
   { id: "gpus", label: "GPUs" },
-  { id: "memorias", label: "RAM / SSD" },
+  { id: "memorias", label: "Memorias RAM" },
+  { id: "almacenamiento", label: "Almacenamiento" },
+  { id: "procesadores", label: "Procesadores" },
   { id: "workstations", label: "Workstations" },
   { id: "notebooks", label: "Notebooks" },
 ]
