@@ -13,7 +13,7 @@ export default function Footer({ onSelectCategory }) {
         <div>
           <div className="footer-logo"><img src={`${import.meta.env.BASE_URL}logo.svg`} alt="TechnoStore" style={{ height: 24 }} /> TechnoStore</div>
           <p>Electrónica y hardware con garantía oficial. Av. Santa Fe 2844, Palermo.</p>
-          <div className="pay-chips"><span>MercadoPago</span><span>VISA</span><span>Mastercard</span></div>
+          <div className="pay-chips"><span>Transferencia</span><span>Efectivo</span></div>
         </div>
         <div>
           <h4>Categorías</h4>

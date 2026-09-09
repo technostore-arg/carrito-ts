@@ -222,9 +222,9 @@ export async function createOrder({ customer, items }) {
         phone: customer.phone || '',
         city: customer.city || '',
         address: customer.address || '',
-        payment_method: ['mercadopago', 'transferencia', 'tarjeta'].includes(customer.paymentMethod)
+        payment_method: ['mercadopago', 'transferencia', 'tarjeta', 'efectivo'].includes(customer.paymentMethod)
           ? customer.paymentMethod
-          : 'mercadopago',
+          : 'transferencia',
         tipo_entrega: ['envio', 'retiro'].includes(customer.tipoEntrega) ? customer.tipoEntrega : 'envio',
         subtotal,
         shipping,

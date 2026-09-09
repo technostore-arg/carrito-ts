@@ -4,9 +4,9 @@ import { ars } from '../utils/format'
 
 export default function CheckoutModal({ onClose }) {
   const { detailed, shipping, total, clearCart } = useCart()
-  const [form, setForm] = useState({ nombre: '', email: '', telefono: '', direccion: '', ciudad: 'CABA', pago: 'mercadopago', card: '', exp: '', cvv: '', tipoEntrega: 'envio' })
+  const [form, setForm] = useState({ nombre: '', email: '', telefono: '', direccion: '', ciudad: 'CABA', pago: 'transferencia', tipoEntrega: 'envio' })
+  const [comprobante, setComprobante] = useState(null)
   const [order, setOrder] = useState(null)
-  const [redirecting, setRedirecting] = useState(null)
   const [error, setError] = useState(null)
   const [sending, setSending] = useState(false)
   const setF = (field, value) => setForm(prev => ({ ...prev, [field]: value }))
@@ -19,18 +19,24 @@ export default function CheckoutModal({ onClose }) {
         customer: { name: form.nombre, email: form.email, phone: form.telefono, city: form.ciudad, address: form.direccion, paymentMethod: form.pago, tipoEntrega: form.tipoEntrega },
         items: detailed.map(p => ({ id: p.sku || p.id, qty: p.qty })),
       }
-      const res = await fetch('/api/checkout/crear-preferencia', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data.error || 'Error al crear preferencia')
-      if (form.pago === 'mercadopago') {
-        if (data.init_point) { setRedirecting({ url: data.init_point, code: data.code }); clearCart(); setTimeout(() => { window.location.href = data.init_point }, 1600); return }
-        setError('No se obtuvo URL de pago')
-      } else {
-        const orderRes = await fetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-        const orderData = await orderRes.json().catch(() => ({}))
-        if (!orderRes.ok) throw new Error(orderData.error || 'Error al crear pedido')
-        setOrder({ code: orderData.code }); clearCart()
+      const orderRes = await fetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      const orderData = await orderRes.json().catch(() => ({}))
+      if (!orderRes.ok) throw new Error(orderData.error || 'Error al crear pedido')
+
+      if (form.pago === 'transferencia' && comprobante) {
+        const reader = new FileReader()
+        reader.onload = async () => {
+          const base64 = reader.result.split(',')[1]
+          await fetch('/api/comprobantes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderCode: orderData.code, customerName: form.nombre, comprobanteData: base64 })
+          }).catch(() => {})
+        }
+        reader.readAsDataURL(comprobante)
       }
+
+      setOrder({ code: orderData.code, metodo: form.pago }); clearCart()
     } catch (err) {
       setError(err.message === 'Failed to fetch' ? 'No hay conexión con el servidor.' : err.message)
     } finally { setSending(false) }
@@ -40,24 +46,23 @@ export default function CheckoutModal({ onClose }) {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <button className="icon-btn close" onClick={onClose} aria-label="Cerrar">✕</button>
-        {redirecting ? (
-          <div className="success">
-            <span className="success-icon">○</span>
-            <h3>Te llevamos a MercadoPago…</h3>
-            <p>Tu pedido quedó registrado. En segundos vas a poder completar el pago.</p>
-            <div className="order-code">Pedido: <code>{redirecting.code}</code></div>
-          </div>
-        ) : order ? (
+        {order ? (
           <div className="success">
             <span className="success-icon">✓</span>
             <h3>¡Pedido registrado!</h3>
             <p>Gracias <b>{form.nombre}</b>. Confirmación a <b>{form.email}</b>.</p>
             <div className="order-code">Orden: <code>{order.code}</code></div>
             <div className="summary">
-              <div className="row"><span>Método</span><span>{form.pago === 'mercadopago' ? 'MercadoPago' : form.pago === 'transferencia' ? 'Transferencia' : 'Tarjeta'}</span></div>
+              <div className="row"><span>Método</span><span>{order.metodo === 'transferencia' ? 'Transferencia bancaria' : 'Efectivo'}</span></div>
               <div className="row"><span>Entrega</span><span>{form.tipoEntrega === 'retiro' ? 'Retiro en local' : 'Envío a domicilio'}</span></div>
               <div className="row total"><span>Total</span><b>{ars(total)}</b></div>
             </div>
+            {order.metodo === 'transferencia' && (
+              <p style={{ fontSize: 13, color: 'var(--muted)', textAlign: 'center', marginTop: 8 }}>Envíanos el comprobante por WhatsApp para confirmar tu pedido.</p>
+            )}
+            {order.metodo === 'efectivo' && (
+              <p style={{ fontSize: 13, color: 'var(--muted)', textAlign: 'center', marginTop: 8 }}>Pagás en efectivo al recibir o retirar tu pedido.</p>
+            )}
             <a className="btn-primary" href={`https://wa.me/5491127650658?text=${encodeURIComponent(`Hola! Pedido ${order.code}`)}`} target="_blank" rel="noreferrer">Coordinar por WhatsApp →</a>
           </div>
         ) : (
@@ -113,18 +118,31 @@ export default function CheckoutModal({ onClose }) {
                 </div>
               )}
               <div className="pay-methods span2">
-                <label className={form.pago === 'mercadopago' ? 'checked' : ''}><input type="radio" name="pago" checked={form.pago === 'mercadopago'} onChange={() => setF('pago', 'mercadopago')} /> MercadoPago · cuotas</label>
-                <label className={form.pago === 'transferencia' ? 'checked' : ''}><input type="radio" name="pago" checked={form.pago === 'transferencia'} onChange={() => setF('pago', 'transferencia')} /> Transferencia · -10%</label>
-                <label className={form.pago === 'tarjeta' ? 'checked' : ''}><input type="radio" name="pago" checked={form.pago === 'tarjeta'} onChange={() => setF('pago', 'tarjeta')} /> Tarjeta</label>
+                <label className={form.pago === 'transferencia' ? 'checked' : ''}><input type="radio" name="pago" checked={form.pago === 'transferencia'} onChange={() => setF('pago', 'transferencia')} /> Transferencia bancaria</label>
+                <label className={form.pago === 'efectivo' ? 'checked' : ''}><input type="radio" name="pago" checked={form.pago === 'efectivo'} onChange={() => setF('pago', 'efectivo')} /> Efectivo</label>
               </div>
-              {form.pago === 'tarjeta' && (
-                <>
-                  <div className="field span2"><label htmlFor="f-card">Número de tarjeta *</label><input id="f-card" required inputMode="numeric" minLength={19} value={form.card} onChange={e => setF('card', e.target.value.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim())} placeholder="4242 4242 4242 4242" /></div>
-                  <div className="field"><label htmlFor="f-exp">Vencimiento (MM/AA) *</label><input id="f-exp" required pattern="(0[1-9]|1[0-2])\/\d{2}" value={form.exp} onChange={e => { const d = e.target.value.replace(/\D/g, '').slice(0, 4); setF('exp', d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d) }} placeholder="12/28" /></div>
-                  <div className="field"><label htmlFor="f-cvv">CVV *</label><input id="f-cvv" required inputMode="numeric" maxLength={4} pattern="\d{3,4}" value={form.cvv} onChange={e => setF('cvv', e.target.value.replace(/\D/g, ''))} placeholder="123" /></div>
-                </>
+              {form.pago === 'efectivo' && (
+                <div className="field span2" style={{ padding: '12px 14px', borderRadius: 10, background: '#f0faf0', border: '1px solid #bfe3bf' }}>
+                  <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0, lineHeight: 1.6 }}>Pagás en <b>efectivo</b> al recibir tu pedido o al retirarlo en el local.</p>
+                </div>
               )}
-              <button type="submit" className="btn-primary checkout span2" disabled={sending}>{sending ? 'Procesando…' : form.pago === 'mercadopago' ? `Pagar · ${ars(total)}` : `Confirmar · ${ars(total)}`}</button>
+              {form.pago === 'transferencia' && (
+                <div className="field span2" style={{ padding: '12px 14px', borderRadius: 10, background: '#f0f7ff', border: '1px solid #b3d9ff' }}>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)', marginBottom: 6, display: 'block' }}>Datos para transferencia</label>
+                  <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0, lineHeight: 1.6 }}>
+                    <b>CBU:</b> 0000003100000000000000<br />
+                    <b>Alias:</b> TECNOSTORE.PAGOS<br />
+                    <b>Titular:</b> TechnoStore S.R.L.<br />
+                    <b>Banco:</b> Mercado Pago
+                  </p>
+                  <div style={{ marginTop: 10 }}>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', display: 'block', marginBottom: 4 }}>Subir comprobante (opcional)</label>
+                    <input type="file" accept="image/*,.pdf" onChange={e => setComprobante(e.target.files?.[0] || null)} style={{ fontSize: 12 }} />
+                    {comprobante && <span style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4, display: 'block' }}>✓ {comprobante.name}</span>}
+                  </div>
+                </div>
+              )}
+              <button type="submit" className="btn-primary checkout span2" disabled={sending}>{sending ? 'Procesando…' : `Confirmar pedido · ${ars(total)}`}</button>
               {error && <p className="secure span2" style={{ color: '#d70015', fontWeight: 600 }}>⚠ {error}</p>}
               <p className="secure span2">Compra protegida</p>
             </form>

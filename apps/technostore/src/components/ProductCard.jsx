@@ -32,16 +32,7 @@ export default function ProductCard({ producto, onAddToCart, onDetail }) {
         {esEncargo ? (
           <div className="price-row"><span className="price price--encargo">A consultar</span></div>
         ) : (
-          <div className="price-dual">
-            <div className="price-transfer">
-              <span className="price-label">Transferencia</span>
-              <span className="price">{ars(precio_transferencia)}</span>
-            </div>
-            <div className="price-mp">
-              <span className="price-label">MercadoPago</span>
-              <span className="price price--mp">{ars(precio_mercadopago)}</span>
-            </div>
-          </div>
+          <div className="price-row"><span className="price">{ars(precio_transferencia)}</span></div>
         )}
         <div className="card-actions">
           {esEncargo ? (

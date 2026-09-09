@@ -57,12 +57,8 @@ export default function ProductDetail({ producto, onClose, onAddToCart }) {
             <>
               <div style={{ display: "flex", gap: 16, marginBottom: 12, flexWrap: "wrap" }}>
                 <div style={{ flex: 1, minWidth: 140, padding: "10px 14px", borderRadius: 10, border: "2px solid var(--accent)", background: "#f0f7ff" }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--accent)", marginBottom: 4 }}>Transferencia</div>
+                  <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--accent)", marginBottom: 4 }}>Precio</div>
                   <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text)" }}>{ars(precio_transferencia)}</div>
-                </div>
-                <div style={{ flex: 1, minWidth: 140, padding: "10px 14px", borderRadius: 10, border: "1px solid var(--border)", background: "#fafafa" }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--muted)", marginBottom: 4 }}>MercadoPago</div>
-                  <div style={{ fontSize: 17, fontWeight: 600, color: "var(--muted)" }}>{ars(precio_mercadopago)}</div>
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>

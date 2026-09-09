@@ -7,7 +7,6 @@ export default function CheckoutModal({ onClose }) {
   const [form, setForm] = useState({ nombre: '', email: '', telefono: '', direccion: '', ciudad: 'CABA', tipoEntrega: 'envio' })
   const [comprobante, setComprobante] = useState(null)
   const [order, setOrder] = useState(null)
-  const [redirecting, setRedirecting] = useState(null)
   const [error, setError] = useState(null)
   const [sending, setSending] = useState(false)
   const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }))
@@ -21,13 +20,7 @@ export default function CheckoutModal({ onClose }) {
         items: detailed.map(p => ({ id: p.sku || p.id, qty: p.qty, precio: getPrice(p) })),
       }
 
-      if (metodoPago === 'mercadopago') {
-        const res = await fetch('/api/checkout/crear-preferencia', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-        const data = await res.json().catch(() => ({}))
-        if (!res.ok) throw new Error(data.error || 'Error al crear preferencia')
-        if (data.init_point) { setRedirecting({ url: data.init_point, code: data.code }); clearCart(); setTimeout(() => { window.location.href = data.init_point }, 1600); return }
-        setError('No se obtuvo URL de pago')
-      } else {
+      {
         const orderRes = await fetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
         const orderData = await orderRes.json().catch(() => ({}))
         if (!orderRes.ok) throw new Error(orderData.error || 'Error al crear pedido')
@@ -56,26 +49,22 @@ export default function CheckoutModal({ onClose }) {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <button className="icon-btn close" onClick={onClose} aria-label="Cerrar">✕</button>
-        {redirecting ? (
-          <div className="success">
-            <span className="success-icon">○</span>
-            <h3>Te llevamos a MercadoPago…</h3>
-            <p>Tu pedido quedó registrado. En segundos vas a poder completar el pago.</p>
-            <div className="order-code">Pedido: <code>{redirecting.code}</code></div>
-          </div>
-        ) : order ? (
+        {order ? (
           <div className="success">
             <span className="success-icon">✓</span>
             <h3>¡Pedido registrado!</h3>
             <p>Gracias <b>{form.nombre}</b>. Confirmación enviada a <b>{form.email}</b>.</p>
             <div className="order-code">Orden: <code>{order.code}</code></div>
             <div className="summary">
-              <div className="row"><span>Método</span><span>{order.metodo === 'mercadopago' ? 'MercadoPago' : order.metodo === 'transferencia' ? 'Transferencia bancaria' : 'Tarjeta'}</span></div>
+              <div className="row"><span>Método</span><span>{order.metodo === 'transferencia' ? 'Transferencia bancaria' : 'Efectivo'}</span></div>
               <div className="row"><span>Entrega</span><span>{form.tipoEntrega === 'retiro' ? 'Retiro en local' : 'Envío a domicilio'}</span></div>
               <div className="row total"><span>Total</span><b>{ars(total)}</b></div>
             </div>
             {order.metodo === 'transferencia' && (
               <p style={{ fontSize: 13, color: 'var(--muted)', textAlign: 'center', marginTop: 8 }}>Envíanos el comprobante por WhatsApp para confirmar tu pedido.</p>
+            )}
+            {order.metodo === 'efectivo' && (
+              <p style={{ fontSize: 13, color: 'var(--muted)', textAlign: 'center', marginTop: 8 }}>Pagás en efectivo al recibir o retirar tu pedido.</p>
             )}
             <a className="btn-primary" href={`https://wa.me/5491127650658?text=${encodeURIComponent(`Hola! Pedido ${order.code}`)}`} target="_blank" rel="noreferrer">Coordinar por WhatsApp →</a>
           </div>
@@ -136,11 +125,16 @@ export default function CheckoutModal({ onClose }) {
                   <input type="radio" name="pago" checked={metodoPago === 'transferencia'} onChange={() => setMetodoPago('transferencia')} />
                   <div><b>Transferencia bancaria</b><span>Precio más bajo</span></div>
                 </label>
-                <label className={metodoPago === 'mercadopago' ? 'checked' : ''}>
-                  <input type="radio" name="pago" checked={metodoPago === 'mercadopago'} onChange={() => setMetodoPago('mercadopago')} />
-                  <div><b>MercadoPago</b><span>Cuotas sin interés</span></div>
+                <label className={metodoPago === 'efectivo' ? 'checked' : ''}>
+                  <input type="radio" name="pago" checked={metodoPago === 'efectivo'} onChange={() => setMetodoPago('efectivo')} />
+                  <div><b>Efectivo</b><span>Pagás al recibir</span></div>
                 </label>
               </div>
+              {metodoPago === 'efectivo' && (
+                <div className="field span2" style={{ padding: '12px 14px', borderRadius: 10, background: '#f0faf0', border: '1px solid #bfe3bf' }}>
+                  <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0, lineHeight: 1.6 }}>Pagás en <b>efectivo</b> al recibir tu pedido o al retirarlo en el local.</p>
+                </div>
+              )}
               {metodoPago === 'transferencia' && (
                 <div className="field span2" style={{ padding: '12px 14px', borderRadius: 10, background: '#f0f7ff', border: '1px solid #b3d9ff' }}>
                   <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)', marginBottom: 6, display: 'block' }}>Datos para transferencia</label>
@@ -157,7 +151,7 @@ export default function CheckoutModal({ onClose }) {
                   </div>
                 </div>
               )}
-              <button type="submit" className="btn-primary checkout span2" disabled={sending}>{sending ? 'Procesando…' : metodoPago === 'mercadopago' ? `Pagar con MercadoPago · ${ars(total)}` : `Confirmar pedido · ${ars(total)}`}</button>
+              <button type="submit" className="btn-primary checkout span2" disabled={sending}>{sending ? 'Procesando…' : `Confirmar pedido · ${ars(total)}`}</button>
               {error && <p className="secure span2" style={{ color: '#d70015', fontWeight: 600 }}>⚠ {error}</p>}
               <p className="secure span2">Compra protegida · Factura A/B</p>
             </form>

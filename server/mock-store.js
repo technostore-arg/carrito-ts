@@ -467,7 +467,7 @@ export const mockStore = {
     const SHIP_THR = 300000, SHIP_COST = 15000
     const shipping = subtotal >= SHIP_THR ? 0 : SHIP_COST
     const total = subtotal + shipping
-    const order = { id: genId(), code, customer_name: customer.name?.trim(), email: customer.email?.trim(), phone: customer.phone || '', city: customer.city || '', address: customer.address || '', payment_method: customer.paymentMethod || 'mercadopago', subtotal, shipping, total, status: 'pendiente', created_at: new Date().toISOString(), items: resolved }
+    const order = { id: genId(), code, customer_name: customer.name?.trim(), email: customer.email?.trim(), phone: customer.phone || '', city: customer.city || '', address: customer.address || '', payment_method: customer.paymentMethod || 'transferencia', subtotal, shipping, total, status: 'pendiente', created_at: new Date().toISOString(), items: resolved }
     orders.push(order)
     persist()
     return { code, total }

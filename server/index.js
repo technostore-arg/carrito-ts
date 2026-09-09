@@ -12,6 +12,7 @@ import {
   deleteProduct,
   getOrders,
   getOrderById,
+  createOrder,
   updateOrderStatus,
   updateOrderPatch,
   getOrderByCode,
