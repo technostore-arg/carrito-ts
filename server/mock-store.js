@@ -183,6 +183,11 @@ function fixImage(sku, imagenes, nombre = '', categoria = '') {
   const n = String(nombre || sku || '')
   const cat = String(categoria || '').toLowerCase()
 
+  // Una imagen remota explícita (genérica provisoria o subida desde admin)
+  // siempre gana: no la reemplazamos por la foto heurística del modelo.
+  const first = Array.isArray(imagenes) && imagenes[0] ? String(imagenes[0]) : ''
+  if (/^https?:\/\//i.test(first)) return imagenes
+
   // Only apply phone image rules to phone-related categories
   const isPhone = cat === 'celulares' || cat === 'phones' || /celular|phone|xiaomi|samsung|poco|redmi|iphone|motorola|nothing/i.test(n)
   if (isPhone) {
