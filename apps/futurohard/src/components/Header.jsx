@@ -5,7 +5,6 @@ const NAV = [
   { id: "memorias", label: "Memorias RAM" },
   { id: "almacenamiento", label: "Almacenamiento" },
   { id: "procesadores", label: "Procesadores" },
-  { id: "workstations", label: "Workstations" },
   { id: "notebooks", label: "Notebooks" },
 ]
 

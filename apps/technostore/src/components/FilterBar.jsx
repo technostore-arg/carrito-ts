@@ -1,5 +1,5 @@
 // Categorías de componentes que agrupa la vista virtual "Hardware"
-const HARDWARE_CATS = ["gpus", "procesadores", "ram", "ram-sodimm", "memorias", "ssd", "ssd-nvme", "ssd-sata", "coolers", "gabinetes", "watercooling", "workstations"]
+const HARDWARE_CATS = ["gpus", "procesadores", "ram", "ram-sodimm", "memorias", "ssd", "ssd-nvme", "ssd-sata", "coolers", "gabinetes", "watercooling"]
 const isHardware = c => HARDWARE_CATS.includes(String(c || "").toLowerCase())
 
 const CATEGORIAS = [
@@ -14,7 +14,6 @@ const CATEGORIAS = [
   { id: "coolers", label: "Coolers" },
   { id: "gabinetes", label: "Gabinetes" },
   { id: "watercooling", label: "Watercooling" },
-  { id: "workstations", label: "Workstations" },
   { id: "accesorios", label: "Accesorios" },
 ]
 

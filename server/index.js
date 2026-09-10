@@ -31,7 +31,7 @@ const PORT = process.env.PORT || 3001
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'technostore2026'
 const MP_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN || ''
 
-const CATEGORIES = ['celulares', 'notebooks', 'computadoras', 'gpus', 'memorias', 'workstations', 'accesorios', 'coolers', 'ram', 'ram-sodimm', 'ssd-nvme', 'ssd-sata', 'gabinetes', 'watercooling', 'procesadores']
+const CATEGORIES = ['celulares', 'notebooks', 'computadoras', 'gpus', 'memorias', 'accesorios', 'coolers', 'ram', 'ram-sodimm', 'ssd', 'ssd-nvme', 'ssd-sata', 'gabinetes', 'watercooling', 'procesadores']
 
 const app = express()
 
