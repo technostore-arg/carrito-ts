@@ -13,7 +13,7 @@ export default function CartPage({ onBack }) {
         <button className="cart-back" onClick={onBack}>← Seguir comprando</button>
         <div className="cart-empty-page">
           <span>○</span>
-          <h2>Tu bolsa está vacía</h2>
+          <h2>Tu carrito está vacío</h2>
           <p>Cuando agregues hardware, va a aparecer acá.</p>
           <button className="btn-primary" onClick={onBack}>Explorar hardware</button>
         </div>
@@ -28,7 +28,7 @@ export default function CartPage({ onBack }) {
     <div className="cart-page container">
       <div className="cart-page-header">
         <button className="cart-back" onClick={onBack}>← Seguir comprando</button>
-        <h1>Bolsa <em>({count} {count === 1 ? "producto" : "productos"})</em></h1>
+          <h1>Carrito <em>({count} {count === 1 ? "producto" : "productos"})</em></h1>
       </div>
 
       <div className="cart-layout">

@@ -85,123 +85,39 @@ let mpPay = []
 
 function genId() { return randomBytes(6).toString('hex') }
 
-// Imágenes locales por modelo — descargadas en public/images/celulares/
-const IMAGE_BY_MODEL = [
-  // POCO F series
-  { test: /POCO F7 ULTRA/i, url: '/images/celulares/xiaomi-poco-f7-ultra.jpg' },
-  { test: /POCO F8 ULTRA/i, url: '/images/celulares/xiaomi-poco-f8-ultra.jpg' },
-  { test: /POCO F8 PRO/i, url: '/images/celulares/xiaomi-poco-f8-pro.jpg' },
-  { test: /POCO F5 PRO/i, url: '/images/celulares/xiaomi-poco-f5-pro-2.jpg' },
-  { test: /POCO F7 PRO/i, url: '/images/celulares/xiaomi-poco-f7.jpg' },
-  { test: /POCO F7\b/i, url: '/images/celulares/xiaomi-poco-f7.jpg' },
-  { test: /POCO F5\b/i, url: '/images/celulares/xiaomi-poco-f5-2.jpg' },
-  { test: /POCO F1/i, url: '/images/celulares/xiaomi-pocophone-f1-.jpg' },
-  // POCO X series
-  { test: /POCO X8 PRO MAX/i, url: '/images/celulares/xiaomi-poco-x8-pro.jpg' },
-  { test: /POCO X8 PRO/i, url: '/images/celulares/xiaomi-poco-x8-pro.jpg' },
-  { test: /POCO X7 PRO/i, url: '/images/celulares/xiaomi-poco-x7-pro.jpg' },
-  { test: /POCO X7\b/i, url: '/images/celulares/xiaomi-poco-x7.jpg' },
-  { test: /POCO X6 PRO/i, url: '/images/celulares/xiaomi-poco-x6-pro.jpg' },
-  { test: /POCO X4 PRO/i, url: '/images/celulares/xiaomi-poco-x4-pro.jpg' },
-  { test: /POCO X3/i, url: '/images/celulares/xiaomi-poco-x3.jpg' },
-  // POCO M series
-  { test: /POCO M8 PRO/i, url: '/images/celulares/xiaomi-poco-m8-pro.jpg' },
-  { test: /POCO M8\b/i, url: '/images/celulares/xiaomi-poco-m8.jpg' },
-  { test: /POCO M7 PRO/i, url: '/images/celulares/xiaomi-poco-m7-pro-5g.jpg' },
-  { test: /POCO M7\b/i, url: '/images/celulares/xiaomi-poco-m7-5g.jpg' },
-  { test: /POCO M6\b/i, url: '/images/celulares/xiaomi-poco-m6-pro-5g.jpg' },
-  { test: /POCO M3/i, url: '/images/celulares/xiaomi-poco-m3.jpg' },
-  // POCO C series
-  { test: /POCO C85/i, url: '/images/celulares/xiaomi-poco-c85.jpg' },
-  { test: /POCO C71/i, url: '/images/celulares/xiaomi-poco-c71.jpg' },
-  { test: /POCO C65/i, url: '/images/celulares/xiaomi-poco-c65.jpg' },
-  // Xiaomi Mi numbered (flagship)
-  { test: /MI 17 ULTRA/i, url: '/images/celulares/xiaomi-17-ultra.jpg' },
-  { test: /MI 17T PRO/i, url: '/images/celulares/xiaomi-17t-pro.jpg' },
-  { test: /MI 17T\b/i, url: '/images/celulares/xiaomi-17t.jpg' },
-  { test: /MI 17\b/i, url: '/images/celulares/xiaomi-17.jpg' },
-  { test: /MI 15T PRO/i, url: '/images/celulares/xiaomi-15t-pro.jpg' },
-  { test: /MI 15T\b/i, url: '/images/celulares/xiaomi-15t.jpg' },
-  { test: /MI 13T PRO/i, url: '/images/celulares/xiaomi-13t-pro.jpg' },
-  { test: /MI 13 LITE/i, url: '/images/celulares/xiaomi-13-lite.jpg' },
-  { test: /MI 12 LITE/i, url: '/images/celulares/xiaomi-12-lite-5g.jpg' },
-  { test: /MIX FLIP/i, url: '/images/celulares/xiaomi-mix-flip.jpg' },
-  // Xiaomi Redmi Note series
-  { test: /NOTE 15 PRO PLUS/i, url: '/images/celulares/xiaomi-redmi-note-15-pro-plus-5g.jpg' },
-  { test: /NOTE 15 PRO/i, url: '/images/celulares/xiaomi-redmi-note-15-pro-5g.jpg' },
-  { test: /NOTE 14 PRO PLUS/i, url: '/images/celulares/xiaomi-redmi-note-14-pro-plus-5g.jpg' },
-  { test: /NOTE 14 PRO/i, url: '/images/celulares/xiaomi-redmi-note-14-pro-5g.jpg' },
-  { test: /NOTE 14S/i, url: '/images/celulares/xiaomi-redmi-note-14-5g.jpg' },
-  { test: /NOTE 14\b/i, url: '/images/celulares/xiaomi-redmi-note-14-5g.jpg' },
-  { test: /NOTE 13 PRO PLUS/i, url: '/images/celulares/xiaomi-redmi-note-13-pro-plus.jpg' },
-  { test: /NOTE 13 PRO/i, url: '/images/celulares/xiaomi-redmi-note-13-pro.jpg' },
-  { test: /NOTE 12 PRO PLUS/i, url: '/images/celulares/xiaomi-redmi-note-12-pro-plus.jpg' },
-  { test: /NOTE 12 PRO/i, url: '/images/celulares/xiaomi-redmi-note-12-pro-plus.jpg' },
-  { test: /NOTE 12\b/i, url: '/images/celulares/xiaomi-redmi-note-12-5g.jpg' },
-  { test: /NOTE 11S/i, url: '/images/celulares/xiaomi-redmi-note-11s-5g.jpg' },
-  { test: /NOTE 11\b/i, url: '/images/celulares/xiaomi-redmi-note-11-4g.jpg' },
-  { test: /NOTE 9S/i, url: '/images/celulares/xiaomi-redmi-note-9-pro.jpg' },
-  // Xiaomi Redmi numbered series
-  { test: /REDMI A5/i, url: '/images/celulares/xiaomi-redmi-a5-4g.jpg' },
-  { test: /REDMI A3/i, url: '/images/celulares/xiaomi-redmi-a3.jpg' },
-  { test: /REDMI A7/i, url: '/images/celulares/xiaomi-redmi-a3.jpg' },
-  { test: /REDMI 17\b/i, url: '/images/celulares/xiaomi-redmi-13.jpg' },
-  { test: /REDMI 15C/i, url: '/images/celulares/xiaomi-poco-c85.jpg' },
-  { test: /REDMI 15\b/i, url: '/images/celulares/xiaomi-redmi-13.jpg' },
-  { test: /REDMI 14C/i, url: '/images/celulares/xiaomi-redmi-14c.jpg' },
-  { test: /REDMI 13\b/i, url: '/images/celulares/xiaomi-redmi-13.jpg' },
-  { test: /REDMI/i, url: '/images/celulares/xiaomi-redmi-14c.jpg' },
-  // Samsung Galaxy Z foldables
-  { test: /Z FOLD 8 ULTRA/i, url: '/images/celulares/samsung-galaxy-z-fold7.jpg' },
-  { test: /Z FOLD 8\b/i, url: '/images/celulares/samsung-galaxy-z-fold6.jpg' },
-  { test: /Z FOLD/i, url: '/images/celulares/samsung-galaxy-z-fold6.jpg' },
-  // Samsung Galaxy S series
-  { test: /S26 ULTRA/i, url: '/images/celulares/samsung-galaxy-s26-ultra.jpg' },
-  { test: /S26 PLUS/i, url: '/images/celulares/samsung-galaxy-s26-plus.jpg' },
-  { test: /S26\b/i, url: '/images/celulares/samsung-galaxy-s26.jpg' },
-  { test: /S25 ULTRA/i, url: '/images/celulares/samsung-galaxy-s25-ultra-sm-s938.jpg' },
-  { test: /S25 FE/i, url: '/images/celulares/samsung-galaxy-s25-fe.jpg' },
-  { test: /S25\b/i, url: '/images/celulares/samsung-galaxy-s25-fe.jpg' },
-  { test: /S24 FE/i, url: '/images/celulares/samsung-galaxy-s24-fe-5g.jpg' },
-  // Samsung Galaxy A series
-  { test: /SAMSUNG\s+A07/i, url: '/images/celulares/samsung-galaxy-a07.jpg' },
-  { test: /SAMSUNG\s+A06/i, url: '/images/celulares/samsung-galaxy-a06-5g.jpg' },
-  { test: /SAMSUNG\s+A05S/i, url: '/images/celulares/samsung-galaxy-a05s.jpg' },
-  { test: /SAMSUNG\s+A04S/i, url: '/images/celulares/samsung-galaxy-a04s.jpg' },
-  { test: /SAMSUNG\s+A04E/i, url: '/images/celulares/samsung-galaxy-a04e.jpg' },
-  { test: /SAMSUNG\s+A04\b/i, url: '/images/celulares/samsung-galaxy-a04.jpg' },
-  { test: /SAMSUNG\s+A03\s+CORE/i, url: '/images/celulares/samsung-galaxy-a03-core.jpg' },
-  { test: /SAMSUNG\s+A03/i, url: '/images/celulares/samsung-galaxy-a03.jpg' },
-  { test: /SAMSUNG\s+A14/i, url: '/images/celulares/samsung-galaxy-a14-5g.jpg' },
-  { test: /SAMSUNG\s+A12/i, url: '/images/celulares/samsung-galaxy-a12-nacho.jpg' },
-  { test: /SAMSUNG\s+A\d+/i, url: '/images/celulares/samsung-galaxy-a14-5g.jpg' },
-]
+// (Imágenes por modelo eliminadas: celulares y notebooks usan genéricas.
+// Las fotos reales subidas desde admin se conservan tal cual.)
 
-const DEFAULT_PHONE_IMG = '/images/celulares/xiaomi-redmi-note-13-pro.jpg'
+// Imágenes genéricas por categoría (provisorias hasta subir fotos reales desde admin)
+export const GENERIC_PHONE_IMG = 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=800&auto=format&fit=crop'
+export const GENERIC_NOTEBOOK_IMG = 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=800&auto=format&fit=crop'
+
+// Foto real subida desde admin (Firebase Storage) — nunca se reemplaza
+export function isAdminUpload(url) {
+  return /firebasestorage\.googleapis\.com/i.test(String(url || ''))
+}
+
+// Regla única de imagen por categoría, usada por mock y Firestore:
+// admin-upload gana, celulares/notebooks van a genérica, resto conserva.
+export function resolveCategoryImage(imagenes, categoria = '', nombre = '') {
+  const cat = String(categoria || '').toLowerCase()
+  const list = Array.isArray(imagenes) ? imagenes : []
+  const first = list[0] ? String(list[0]) : ''
+
+  // 1) Foto real subida desde admin siempre gana
+  if (isAdminUpload(first)) return list
+
+  // 2) Celulares y notebooks usan imagen genérica de su categoría
+  const isPhone = cat === 'celulares' || cat === 'phones' || /celular|phone|xiaomi|samsung|poco|redmi|iphone|motorola|nothing/i.test(String(nombre || ''))
+  if (isPhone) return [GENERIC_PHONE_IMG]
+  if (cat === 'notebooks') return [GENERIC_NOTEBOOK_IMG]
+
+  // 3) Resto de categorías conserva sus imágenes
+  return list
+}
 
 function fixImage(sku, imagenes, nombre = '', categoria = '') {
-  const n = String(nombre || sku || '')
-  const cat = String(categoria || '').toLowerCase()
-
-  // Una imagen remota explícita (genérica provisoria o subida desde admin)
-  // siempre gana: no la reemplazamos por la foto heurística del modelo.
-  const first = Array.isArray(imagenes) && imagenes[0] ? String(imagenes[0]) : ''
-  if (/^https?:\/\//i.test(first)) return imagenes
-
-  // Only apply phone image rules to phone-related categories
-  const isPhone = cat === 'celulares' || cat === 'phones' || /celular|phone|xiaomi|samsung|poco|redmi|iphone|motorola|nothing/i.test(n)
-  if (isPhone) {
-    for (const { test, url } of IMAGE_BY_MODEL) {
-      if (test.test(n)) return [url]
-    }
-  }
-
-  // If no name match, keep existing valid images
-  const hasValid = Array.isArray(imagenes) && imagenes.length && imagenes[0] && String(imagenes[0]).length > 10
-  if (hasValid) return imagenes
-  // Fallback for phones without specific match
-  if (/celulares/i.test(n) || /REDMI|POCO|MI |XIAOMI|SAMSUNG/i.test(n)) return [DEFAULT_PHONE_IMG]
-  return Array.isArray(imagenes) && imagenes.length ? imagenes : [DEFAULT_PHONE_IMG]
+  return resolveCategoryImage(imagenes, categoria, nombre || sku)
 }
 
 // Generador de descripciones reales basado en el nombre del producto

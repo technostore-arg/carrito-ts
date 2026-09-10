@@ -13,7 +13,7 @@
  */
 import { randomBytes } from 'node:crypto'
 import { getFirestoreDb, COLLECTIONS, FREE_SHIPPING_THRESHOLD, SHIPPING_COST } from './firebase.js'
-import { mockStore } from './mock-store.js'
+import { mockStore, resolveCategoryImage } from './mock-store.js'
 
 const { PRODUCTS, ORDERS, CONSULTAS, MP_PAYMENTS } = COLLECTIONS
 
@@ -28,7 +28,8 @@ function useMock(err) {
 // imagenes, especificaciones, tipo_venta...), así que se pasan tal cual.
 export function docToProduct(doc) {
   const d = doc.data()
-  const imagenes = Array.isArray(d.imagenes) ? d.imagenes : d.image ? [d.image] : []
+  const rawImagenes = Array.isArray(d.imagenes) ? d.imagenes : d.image ? [d.image] : []
+  const imagenes = resolveCategoryImage(rawImagenes, d.categoria ?? d.category ?? '', d.nombre ?? d.name ?? '')
   return {
     id: doc.id,
     name: d.name ?? d.nombre ?? '',
@@ -59,7 +60,7 @@ export function docToProduct(doc) {
     cuda: d.cuda ?? null,
     tflops: d.tflops ?? null,
     frameworks: Array.isArray(d.frameworks) ? d.frameworks : [],
-    image: d.image ?? imagenes[0] ?? null,
+    image: imagenes[0] ?? d.image ?? null,
     imagenes,
     descripcion: d.descripcion ?? d.description ?? '',
     description: d.description ?? d.descripcion ?? '',

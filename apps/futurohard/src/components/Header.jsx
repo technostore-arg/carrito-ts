@@ -34,7 +34,7 @@ export default function Header({ search, onSearchChange, onSelectCategory, onSer
           {search && <button className="search-clear" onClick={() => onSearchChange("")} aria-label="Limpiar">✕</button>}
         </div>
 
-        <button className="cart-btn" onClick={onCart} aria-label={`Bolsa (${cartCount})`}>
+        <button className="cart-btn" onClick={onCart} aria-label={`Carrito (${cartCount})`}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 7h12l-1 11H7L6 7z" /><path d="M9 7V5a3 3 0 0 1 6 0v2" /></svg>
           {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
         </button>
@@ -60,7 +60,7 @@ export default function Header({ search, onSearchChange, onSelectCategory, onSer
               ))}
               <button onClick={closeAnd(onServicios)} style={{ color: "var(--muted)" }}>Instalación de modelos</button>
               <button onClick={closeAnd(() => onSelectCategory("todos"))} className="mobile-all">Ver todo</button>
-              <button onClick={closeAnd(onCart)} className="mobile-all" style={{ background: '#fff', color: 'var(--text)', border: '1px solid var(--border)' }}>Bolsa {cartCount > 0 ? `(${cartCount})` : ''}</button>
+              <button onClick={closeAnd(onCart)} className="mobile-all" style={{ background: '#fff', color: 'var(--text)', border: '1px solid var(--border)' }}>Carrito {cartCount > 0 ? `(${cartCount})` : ''}</button>
             </nav>
           </div>
         </>
