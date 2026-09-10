@@ -91,6 +91,7 @@ function genId() { return randomBytes(6).toString('hex') }
 // Imágenes genéricas por categoría (provisorias hasta subir fotos reales desde admin)
 export const GENERIC_PHONE_IMG = 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=800&auto=format&fit=crop'
 export const GENERIC_NOTEBOOK_IMG = 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=800&auto=format&fit=crop'
+export const GENERIC_WORKSTATION_IMG = 'https://images.unsplash.com/photo-1587202372634-32705e3bf49c?q=80&w=800&auto=format&fit=crop'
 
 // Foto real subida desde admin (Firebase Storage) — nunca se reemplaza
 export function isAdminUpload(url) {
@@ -98,7 +99,7 @@ export function isAdminUpload(url) {
 }
 
 // Regla única de imagen por categoría, usada por mock y Firestore:
-// admin-upload gana, celulares/notebooks van a genérica, resto conserva.
+// admin-upload gana, celulares/notebooks/workstations van a genérica, resto conserva.
 export function resolveCategoryImage(imagenes, categoria = '', nombre = '') {
   const cat = String(categoria || '').toLowerCase()
   const list = Array.isArray(imagenes) ? imagenes : []
@@ -107,10 +108,12 @@ export function resolveCategoryImage(imagenes, categoria = '', nombre = '') {
   // 1) Foto real subida desde admin siempre gana
   if (isAdminUpload(first)) return list
 
-  // 2) Celulares y notebooks usan imagen genérica de su categoría
-  const isPhone = cat === 'celulares' || cat === 'phones' || /celular|phone|xiaomi|samsung|poco|redmi|iphone|motorola|nothing/i.test(String(nombre || ''))
-  if (isPhone) return [GENERIC_PHONE_IMG]
+  // 2) Celulares, notebooks y workstations usan imagen genérica de su categoría.
+  // La categoría manda; el nombre solo es red de seguridad para items sin categoría.
+  if (cat === 'celulares' || cat === 'phones' || cat === 'smartphones' || cat === 'cellphones') return [GENERIC_PHONE_IMG]
   if (cat === 'notebooks') return [GENERIC_NOTEBOOK_IMG]
+  if (cat === 'workstations') return [GENERIC_WORKSTATION_IMG]
+  if (!cat && /celular|phone|xiaomi|samsung|poco|redmi|iphone|motorola|nothing/i.test(String(nombre || ''))) return [GENERIC_PHONE_IMG]
 
   // 3) Resto de categorías conserva sus imágenes
   return list
