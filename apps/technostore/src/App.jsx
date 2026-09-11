@@ -51,7 +51,29 @@ export default function App() {
   const [selectedProduct, setSelectedProduct] = useState(null)
 
   useEffect(() => {
-    fetch("/api/products").then(r => r.ok ? r.json() : Promise.reject()).then(data => { if (Array.isArray(data)) setProducts(data) }).catch(() => setProducts([]))
+    fetch("/api/products").then(r => r.ok ? r.json() : Promise.reject()).then(data => {
+      if (Array.isArray(data)) {
+        // TechnoStore muestra su marca + marcas de fabricantes; las copias
+        // exclusivas de futurohard se ocultan para no duplicar por SKU
+        const seen = new Set()
+        const deduped = []
+        const fhOnly = []
+        for (const p of data) {
+          const marca = (p.marca || "").toLowerCase()
+          if (marca === "futurohard") { fhOnly.push(p); continue }
+          const key = String(p.sku || p.id)
+          if (seen.has(key)) continue
+          seen.add(key)
+          deduped.push(p)
+        }
+        // Si un SKU solo existe en versión futurohard, mostrarlo igual (no ocultar stock)
+        const dedupedSkus = new Set(deduped.map(p => String(p.sku || p.id)))
+        for (const p of fhOnly) {
+          if (!dedupedSkus.has(String(p.sku || p.id))) deduped.push(p)
+        }
+        setProducts(deduped)
+      }
+    }).catch(() => setProducts([]))
   }, [])
 
   // page navigation via history (base-aware)
