@@ -1,7 +1,8 @@
 /**
  * Alta/actualización de iPhone en .mock-data.json + Firestore (categoría celulares).
  * Uso: node scripts/update-iphone-stock.mjs [--dry-run]
- * Precio: costo_usd * 1550 → + fijo tramo (50/80/100) * 1550 = transferencia; MP = transfer * 1.16
+ * Precio: la lista USD ya es precio FINAL de venta (efectivo/transferencia)
+ *         → transferencia = usd * 1550 (sin fijo tramo); MP = transfer * 1.16
  * Variantes con precio distinto por color → SKU/color separado.
  */
 import fs from 'node:fs'
@@ -16,7 +17,7 @@ const USD_RATE = 1550
 const MP_MARKUP = 0.16
 const DRY = process.argv.includes('--dry-run')
 
-// Listado de costo del proveedor (USD), con +U$S100 ya incluido (lista para reenviar).
+// Listado USD del cliente: ya es precio final de venta (efectivo/transferencia).
 // Precio distinto por color → variante con key propia.
 const LIST = [
   // iPhone 18 Pro / Pro Max
@@ -59,18 +60,10 @@ const LIST = [
   { key: 'IP15-128', nombre: 'iPhone 15 128GB', usd: 850, colores: 'Blue, Pink' },
 ]
 
-function fixedUsd(usd) {
-  if (usd < 250) return 50
-  if (usd <= 400) return 80
-  return 100
-}
-
 function priceFor(usd) {
-  const costo = Math.round(usd * USD_RATE)
-  const fx = fixedUsd(usd)
-  const transferencia = Math.round(costo + fx * USD_RATE)
+  const transferencia = Math.round(usd * USD_RATE)
   const mercadopago = Math.round(transferencia * (1 + MP_MARKUP))
-  return { costo, fx, transferencia, mercadopago }
+  return { costo: transferencia, fx: 0, transferencia, mercadopago }
 }
 
 function skuFor(key) {
@@ -100,10 +93,10 @@ function buildDesired() {
 function applyToProduct(p, d) {
   const esp = {
     ...(p.especificaciones && typeof p.especificaciones === 'object' ? p.especificaciones : {}),
-    _costo_original: d.costo,
+    _costo_original: undefined,
     _usd: d.usd,
     _usd_rate: USD_RATE,
-    _pricing: { costo: d.costo, transferencia: d.transferencia, mercadopago: d.mercadopago, usdRate: USD_RATE, fixedUsd: d.fx },
+    _pricing: { transferencia: d.transferencia, mercadopago: d.mercadopago, usdRate: USD_RATE, fixedUsd: d.fx, esPrecioFinal: true },
     _colores: d.colores,
     ...(d.nota ? { _nota_precio: d.nota } : {}),
   }
@@ -137,10 +130,9 @@ function applyToProduct(p, d) {
 
 function newProduct(d, id) {
   const esp = {
-    _costo_original: d.costo,
     _usd: d.usd,
     _usd_rate: USD_RATE,
-    _pricing: { costo: d.costo, transferencia: d.transferencia, mercadopago: d.mercadopago, usdRate: USD_RATE, fixedUsd: d.fx },
+    _pricing: { transferencia: d.transferencia, mercadopago: d.mercadopago, usdRate: USD_RATE, fixedUsd: d.fx, esPrecioFinal: true },
     _colores: d.colores,
     ...(d.nota ? { _nota_precio: d.nota } : {}),
   }
