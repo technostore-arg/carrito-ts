@@ -88,10 +88,12 @@ function genId() { return randomBytes(6).toString('hex') }
 // (Imágenes por modelo eliminadas: celulares y notebooks usan genéricas.
 // Las fotos reales subidas desde admin se conservan tal cual.)
 
-// Imágenes genéricas por categoría (provisorias hasta subir fotos reales desde admin)
-export const GENERIC_PHONE_IMG = 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=800&auto=format&fit=crop'
-export const GENERIC_NOTEBOOK_IMG = 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=800&auto=format&fit=crop'
-export const GENERIC_WORKSTATION_IMG = 'https://images.unsplash.com/photo-1587202372634-32705e3bf49c?q=80&w=800&auto=format&fit=crop'
+// Imágenes genéricas por categoría: esquemas SVG ilustrativos hechos a mano
+// (se sirven desde /img en la API — se nota que son genéricos, no fotos reales).
+const PUBLIC_API = process.env.PUBLIC_API_URL || 'https://carrito-ts-neon.vercel.app'
+export const GENERIC_PHONE_IMG = `${PUBLIC_API}/img/generic-phone.svg`
+export const GENERIC_NOTEBOOK_IMG = `${PUBLIC_API}/img/generic-notebook.svg`
+export const GENERIC_WORKSTATION_IMG = `${PUBLIC_API}/img/generic-notebook.svg`
 
 // Foto real subida desde admin (Firebase Storage) — nunca se reemplaza
 export function isAdminUpload(url) {

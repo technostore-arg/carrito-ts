@@ -698,6 +698,9 @@ app.get(/^\/admin(\/.*)?$/, (req, res) => {
 app.use('/admin', express.static(ADMIN_DIST))
 app.use('/admin', express.static(ADMIN_LEGACY_DIR))
 
+// Imágenes genéricas (SVG ilustrativos) para celulares/notebooks
+app.use('/img', express.static(path.join(ADMIN_LEGACY_DIR, 'img'), { maxAge: '7d' }))
+
 /* ---------------- Scraping: Insumos Acuario ---------------- */
 const SCRAPE_INTERVAL_MS = 6 * 60 * 60 * 1000
 let lastScrapeResult = null

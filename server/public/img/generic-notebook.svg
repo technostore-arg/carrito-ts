@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" width="640" height="480" role="img" aria-label="Ilustración genérica de un notebook — imagen referencial, no es una foto del producto">
+  <defs>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#e9e9ee" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="640" height="480" fill="#f5f5f7"/>
+  <rect width="640" height="480" fill="url(#grid)"/>
+
+  <!-- Marco tipo plano -->
+  <g stroke="#0071e3" stroke-width="3" fill="none" stroke-linecap="round">
+    <path d="M28 68V28h40"/>
+    <path d="M572 28h40v40"/>
+    <path d="M612 412v40h-40"/>
+    <path d="M68 452H28v-40"/>
+  </g>
+
+  <!-- Notebook (esquema frontal abierto, sin marca) -->
+  <g transform="translate(30 96)">
+    <rect x="44" y="0" width="248" height="164" rx="12" fill="#ffffff" stroke="#8e8e93" stroke-width="3.5"/>
+    <rect x="54" y="10" width="228" height="138" rx="6" fill="#fafafb" stroke="#e8e8ed" stroke-width="1.5"/>
+    <circle cx="168" cy="154" r="4" fill="#d2d2d7"/>
+    <rect x="76" y="34" width="184" height="52" rx="8" fill="#e8e8ed"/>
+    <rect x="76" y="100" width="110" height="12" rx="6" fill="#e8e8ed"/>
+    <rect x="76" y="122" width="150" height="12" rx="6" fill="#ececf0"/>
+    <rect x="196" y="98" width="64" height="20" rx="10" fill="#0071e3" opacity="0.85"/>
+    <path d="M26 168h284l24 52a14 14 0 0 1 -12 22H14a14 14 0 0 1 -12 -22z" fill="#ffffff" stroke="#8e8e93" stroke-width="3.5" stroke-linejoin="round"/>
+    <path d="M40 176h256l16 34H24z" fill="#f0f0f3"/>
+    <rect x="132" y="182" width="72" height="14" rx="7" fill="#e0e0e5"/>
+    <path d="M0 242h336" stroke="#a1a1a6" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- Cota superior (estilo plano técnico) -->
+  <g stroke="#a1a1a6" stroke-width="1.5" fill="none">
+    <path d="M74 74h248" stroke-dasharray="7 7"/>
+    <path d="M74 68v12M322 68v12"/>
+  </g>
+  <!-- Crucetas de encuadre -->
+  <g stroke="#a1a1a6" stroke-width="1.5" opacity="0.7">
+    <path d="M48 96h14M55 89v14"/>
+    <path d="M376 96h14M383 89v14"/>
+    <path d="M48 348h14M55 341v14"/>
+    <path d="M376 348h14M383 341v14"/>
+  </g>
+
+  <!-- Texto -->
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+    <rect x="396" y="132" width="200" height="38" rx="19" fill="#f0f7ff" stroke="#0071e3" stroke-width="2"/>
+    <text x="496" y="157" text-anchor="middle" fill="#0071e3" font-size="17" font-weight="700" letter-spacing="1.6">IMAGEN GENÉRICA</text>
+
+    <text x="396" y="228" fill="#48484d" font-size="34" font-weight="800">Esquema</text>
+    <text x="396" y="272" fill="#0071e3" font-size="34" font-weight="800">ilustrativo</text>
+
+    <text x="396" y="318" fill="#8e8e93" font-size="17">La foto real del producto</text>
+    <text x="396" y="342" fill="#8e8e93" font-size="17">se publica próximamente.</text>
+
+    <g stroke="#a1a1a6" stroke-width="1.5" fill="none" opacity="0.8">
+      <path d="M396 372h204" stroke-dasharray="5 6"/>
+    </g>
+    <text x="396" y="398" fill="#a1a1a6" font-size="13" letter-spacing="0.5">Referencia visual — no corresponde</text>
+    <text x="396" y="418" fill="#a1a1a6" font-size="13" letter-spacing="0.5">a ningún modelo en particular.</text>
+  </g>
+</svg>
