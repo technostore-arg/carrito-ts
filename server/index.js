@@ -79,11 +79,38 @@ function safeEqual(a, b) {
 
 /* ---------------- Auth ---------------- */
 
+// Rate-limit simple de login: 10 fallos por IP cada 15 min.
+// En serverless es por instancia (no global), pero frena fuerza bruta básica.
+const LOGIN_WINDOW_MS = 15 * 60 * 1000
+const LOGIN_MAX_FAILS = 10
+const loginFails = new Map()
+function clientIp(req) {
+  const fwd = req.headers['x-forwarded-for']
+  return (Array.isArray(fwd) ? fwd[0] : String(fwd || '')).split(',')[0].trim() || req.socket?.remoteAddress || 'unknown'
+}
+function loginBlocked(ip) {
+  const rec = loginFails.get(ip)
+  return !!rec && Date.now() - rec.first < LOGIN_WINDOW_MS && rec.count >= LOGIN_MAX_FAILS
+}
+function loginFail(ip) {
+  const now = Date.now()
+  const rec = loginFails.get(ip)
+  if (!rec || now - rec.first >= LOGIN_WINDOW_MS) loginFails.set(ip, { count: 1, first: now })
+  else rec.count++
+  if (loginFails.size > 5000) for (const [k, v] of loginFails) if (now - v.first >= LOGIN_WINDOW_MS) loginFails.delete(k)
+}
+
 app.post('/api/admin/login', (req, res) => {
+  const ip = clientIp(req)
+  if (loginBlocked(ip)) {
+    return res.status(429).json({ error: 'Demasiados intentos — probá de nuevo en unos minutos' })
+  }
   const { password } = req.body || {}
   if (!safeEqual(password, ADMIN_PASSWORD)) {
+    loginFail(ip)
     return res.status(401).json({ error: 'Contraseña incorrecta' })
   }
+  loginFails.delete(ip)
   const token = randomBytes(24).toString('hex')
   sessions.set(token, Date.now())
   res.json({ token })

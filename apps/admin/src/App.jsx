@@ -35,7 +35,7 @@ export default function App() {
         <form onSubmit={login} className="card" style={{ maxWidth: 380, width: '100%', display: 'grid', gap: 12, textAlign: 'center' }}>
           <h1>⚙ Admin unificado</h1>
           <p className="muted">TechnoStore + Futuro Hard · panel compartido</p>
-          <input type="password" placeholder="Contraseña (technostore2026)" value={pw} onChange={e => setPw(e.target.value)} autoFocus />
+          <input type="password" placeholder="Contraseña" value={pw} onChange={e => setPw(e.target.value)} autoComplete="current-password" autoFocus />
           <button className="btn-primary" type="submit">Entrar</button>
           {err && <span className="err">{err}</span>}
           <small className="muted">Mock local activo — sin Firebase hasta Fase 7</small>
