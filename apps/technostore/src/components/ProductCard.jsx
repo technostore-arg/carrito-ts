@@ -6,6 +6,7 @@ export default function ProductCard({ producto, onAddToCart, onDetail }) {
   const foto = imagenes?.[0]
   const chips = specChips(producto)
   const esEncargo = tipo_venta === "encargo"
+  const esUsado = producto.condicion === "usado"
   const waHref = esEncargo ? waLink(`Hola, quiero consultar por ${nombre} (SKU: ${sku})`) : null
 
   const handleEncargo = () => {
@@ -17,6 +18,7 @@ export default function ProductCard({ producto, onAddToCart, onDetail }) {
       <div className="card-media">
         {foto ? <img src={foto} alt={nombre} loading="lazy" decoding="async" /> : <div className="fallback" aria-hidden>○</div>}
         <span className={`badge ${esEncargo ? "badge--encargo" : ""}`}>{esEncargo ? "A pedido" : categoria}</span>
+        {esUsado && <span className="badge badge--usado">Usado · 30 días</span>}
       </div>
       <div className="card-body">
         <span className="brand">{sku}</span>

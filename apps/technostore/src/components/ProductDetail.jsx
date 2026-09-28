@@ -27,9 +27,18 @@ export default function ProductDetail({ producto, onClose, onAddToCart }) {
           <span className="brand">{sku}</span>
           {marca && <span style={{ fontSize: 11, color: "var(--muted)", background: "#f5f5f7", padding: "2px 8px", borderRadius: 6 }}>{marca}</span>}
           <span className={`badge ${esEncargo ? "badge--encargo" : ""}`} style={{ position: "static" }}>{esEncargo ? "A pedido" : categoria}</span>
+          {producto.condicion === "usado" && <span className="badge badge--usado" style={{ position: "static" }}>Usado</span>}
         </div>
         <h2 className="modal-title" style={{ marginBottom: 10 }}>{nombre}</h2>
         {descripcion && <p style={{ fontSize: 13.5, color: "var(--muted)", lineHeight: 1.6, marginBottom: 14 }}>{descripcion}</p>}
+        {producto.condicion === "usado" && (
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+            {producto.garantia && <span className="spec-note spec-note--ok">Garantía {producto.garantia}</span>}
+            {especificaciones?._calidad && <span className="spec-note">Calidad {especificaciones._calidad}</span>}
+            {especificaciones?._bateria && <span className="spec-note">Batería {especificaciones._bateria}%</span>}
+            {especificaciones?._color && <span className="spec-note">{especificaciones._color}</span>}
+          </div>
+        )}
         {especificaciones && Object.keys(especificaciones).length > 0 && (() => {
           const clean = Object.entries(especificaciones).filter(([k]) => !k.startsWith('_'))
           if (clean.length === 0) return null

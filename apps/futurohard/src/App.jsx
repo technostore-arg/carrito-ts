@@ -89,7 +89,17 @@ export default function App() {
 
   const source = products === null ? null : products
   const allProducts = source ?? []
-  const marcasDisponibles = useMemo(() => { if (source === null) return []; return Array.from(new Set(allProducts.map(p => p.marca || 'Genérica'))).sort() }, [allProducts, source])
+  // Productos de la categoría activa → marcas/precios/specs acotados
+  const scopedProducts = useMemo(() => {
+    if (source === null) return null
+    const cat = canonCat(categoria)
+    if (cat === "todos") return allProducts
+    return allProducts.filter(p => canonCat(p.categoria) === cat)
+  }, [allProducts, source, categoria])
+  const marcasDisponibles = useMemo(() => {
+    if (scopedProducts === null) return []
+    return Array.from(new Set(scopedProducts.map(p => p.marca || 'Genérica'))).sort()
+  }, [scopedProducts, source])
   const validCatIds = useMemo(() => new Set(CATS.map(c => c.id)), [])
   useEffect(() => {
     if (source === null) return
@@ -99,8 +109,8 @@ export default function App() {
     if (rango !== "todos" && !/^(\d+-\d+|\d+\+)$/.test(rango)) setRango("todos")
   }, [source, marcasDisponibles, marca, categoria, rango, validCatIds])
   const counts = useMemo(() => { const c = { todos: allProducts.length }; for (const p of allProducts) { const k = canonCat(p.categoria); c[k] = (c[k] || 0) + 1 } return c }, [allProducts])
-  const specOpts = useMemo(() => specOptions(allProducts), [allProducts])
-  const rangeOpts = useMemo(() => buildRanges(allProducts), [allProducts])
+  const specOpts = useMemo(() => specOptions(scopedProducts ?? []), [scopedProducts, source])
+  const rangeOpts = useMemo(() => buildRanges(scopedProducts ?? []), [scopedProducts, source])
   const visibleSpecs = useMemo(() => specsForCat(categoria), [categoria])
   useEffect(() => {
     if (!visibleSpecs.includes('cpu') && cpu) setCpu("")

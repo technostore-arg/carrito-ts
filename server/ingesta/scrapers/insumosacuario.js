@@ -10,19 +10,30 @@ const BASE = 'https://insumosacuario.com.ar/hardware/'
 const SUBCATS = [
   'coolers', 'gabinetes', 'pasta-termica', 'discos-solidos-pci-e-m2',
   'memorias-ram-dimm', 'memorias-ram-sodimm', 'discos-solidos-sata',
-  'procesadores-amd', 'gabinetes-con-fuente-'
+  'procesadores-amd', 'gabinetes-con-fuente-', 'fuentes',
+  'motherboard-amd', 'motherboard-intel', 'placas-de-video-amd',
+  'placas-de-video-nvidia', 'procesadores-intel', 'discos-internos-hdd',
+  'memorias-p-server',
 ]
 
 const CAT_MAP = {
-  coolers: 'accesorios',
-  gabinetes: 'accesorios',
+  coolers: 'coolers',
+  gabinetes: 'gabinetes',
   'pasta-termica': 'accesorios',
-  'discos-solidos-pci-e-m2': 'accesorios',
-  'memorias-ram-dimm': 'accesorios',
-  'memorias-ram-sodimm': 'accesorios',
-  'discos-solidos-sata': 'accesorios',
-  'procesadores-amd': 'accesorios',
-  'gabinetes-con-fuente-': 'accesorios'
+  'discos-solidos-pci-e-m2': 'ssd-nvme',
+  'memorias-ram-dimm': 'ram',
+  'memorias-ram-sodimm': 'ram-sodimm',
+  'discos-solidos-sata': 'ssd-sata',
+  'procesadores-amd': 'procesadores',
+  'gabinetes-con-fuente-': 'gabinetes',
+  fuentes: 'accesorios',
+  'motherboard-amd': 'accesorios',
+  'motherboard-intel': 'accesorios',
+  'placas-de-video-amd': 'gpus',
+  'placas-de-video-nvidia': 'gpus',
+  'procesadores-intel': 'procesadores',
+  'discos-internos-hdd': 'accesorios',
+  'memorias-p-server': 'memorias',
 }
 
 async function fetchPage(url) {
@@ -59,12 +70,34 @@ function extractJsonLd(html) {
   return products
 }
 
+async function scrapeSubcat(subcat) {
+  const items = []
+  const seen = new Set()
+  for (let page = 1; page <= 30; page++) {
+    const url = page === 1 ? BASE + subcat + '/' : `${BASE}${subcat}/?page=${page}`
+    const html = await fetchPage(url)
+    const pageItems = extractJsonLd(html)
+    let added = 0
+    for (const item of pageItems) {
+      if (seen.has(item.sku)) continue
+      seen.add(item.sku)
+      items.push(item)
+      added++
+    }
+    const hasNext =
+      new RegExp(`href='\\?page=${page + 1}'`).test(html) ||
+      new RegExp(`href="\\?page=${page + 1}"`).test(html) ||
+      new RegExp(`rel=['"]next['"][^>]*href=['"]\\?page=${page + 1}`).test(html)
+    if (!hasNext || added === 0) break
+  }
+  return items
+}
+
 async function scrapeAll() {
   const all = new Map()
   for (const subcat of SUBCATS) {
     try {
-      const html = await fetchPage(BASE + subcat + '/')
-      const items = extractJsonLd(html)
+      const items = await scrapeSubcat(subcat)
       for (const item of items) {
         if (!all.has(item.sku)) {
           all.set(item.sku, { ...item, category: subcat })

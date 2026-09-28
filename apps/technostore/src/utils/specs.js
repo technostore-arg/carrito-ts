@@ -82,8 +82,13 @@ export function specChips(p) {
   } else if (cat === 'celulares') {
     const stor = storageOf(p)
     if (stor != null) chips.push(stor >= 1024 ? `${stor / 1024}TB` : `${stor}GB`)
-    const ram = ramOf(p)
-    if (ram != null) chips.push(`${ram}GB RAM`)
+    if (e._condicion === 'usado') {
+      if (e._calidad) chips.push(`Calidad ${e._calidad}`)
+      if (e._bateria) chips.push(`Bat ${e._bateria}%`)
+    } else {
+      const ram = ramOf(p)
+      if (ram != null) chips.push(`${ram}GB RAM`)
+    }
   } else if (cat === 'gpus' && p.vram) {
     chips.push(`${p.vram}GB VRAM`)
   } else if ((cat === 'ram' || cat === 'ram-sodimm' || cat === 'memorias') && ramOf(p) != null) {

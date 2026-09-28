@@ -45,7 +45,6 @@ export default function ProductGrid({ products, totalLabel, onReset, onDetail, o
 
   return (
     <>
-      <p className="grid-count">{totalLabel}</p>
       <div className="product-grid">
         {shown.map(p => (
           <ProductCard key={p.sku} producto={p} onDetail={onDetail} onAddToCart={onAddToCart} />

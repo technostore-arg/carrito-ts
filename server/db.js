@@ -69,6 +69,8 @@ export function docToProduct(doc) {
     moneda: d.moneda ?? 'ARS',
     subcategoria: d.subcategoria ?? '',
     fuente_origen: d.fuente_origen ?? 'manual',
+    condicion: d.condicion ?? 'nuevo',
+    garantia: d.garantia ?? null,
   }
 }
 
@@ -116,6 +118,8 @@ export function productToDoc(p) {
     estado: p.estado || 'activo',
     active: p.active === undefined ? (p.estado || 'activo') !== 'pausado' && (p.estado || 'activo') !== 'agotado' : !!p.active,
     fuente_origen: p.fuente_origen || 'manual',
+    condicion: p.condicion || 'nuevo',
+    garantia: p.garantia ?? null,
   }
 }
 
