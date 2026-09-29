@@ -21,13 +21,13 @@ export default function Header({ search, onSearchChange, onSelectCategory, activ
 
   const openSuggest = p => { onOpenProduct?.(p); setSearchFocus(false); setOpen(false) }
 
-  // helper (no componente inline: remontarÃ­a el input y perderÃ­a el foco)
+  // helper (no componente inline: remontaría el input y perdería el foco)
   const searchField = ({ autoFocus, onDone } = {}) => (
     <>
-      <span className="search-icon">âŒ•</span>
+      <span className="search-icon">⌨</span>
       <input
         type="text"
-        placeholder="Buscar modelo, marcaâ€¦"
+        placeholder="Buscar modelo, marca…"
         value={search}
         autoFocus={autoFocus}
         onChange={e => onSearchChange(e.target.value)}
@@ -37,18 +37,18 @@ export default function Header({ search, onSearchChange, onSelectCategory, activ
         aria-label="Buscar productos"
         aria-autocomplete="list"
       />
-      {search && <button className="search-clear" onClick={() => onSearchChange("")} aria-label="Limpiar bÃºsqueda">âœ•</button>}
+      {search && <button className="search-clear" onClick={() => onSearchChange("")} aria-label="Limpiar búsqueda">✕</button>}
       {showSuggests && (
         <div className="search-suggest" role="listbox">
           {suggestions.map(p => (
             <button key={p.sku} type="button" className="ss-item" role="option" onMouseDown={e => { e.preventDefault(); openSuggest(p) }}>
-              <span className="ss-thumb">{p.imagenes?.[0] ? <img src={p.imagenes[0]} alt="" loading="lazy" /> : "â—‹"}</span>
+              <span className="ss-thumb">{p.imagenes?.[0] ? <img src={p.imagenes[0]} alt="" loading="lazy" /> : "◉"}</span>
               <span className="ss-name">{p.nombre}</span>
               <span className="ss-price">{ars(p.precio_transferencia ?? p.precio)}</span>
             </button>
           ))}
           <button type="button" className="ss-all" onMouseDown={e => { e.preventDefault(); setSearchFocus(false); onSeeAllResults?.() }}>
-            Ver todos los resultados para â€œ{search.trim()}â€ â†’
+            Ver todos los resultados para “{search.trim()}” →
           </button>
         </div>
       )}
@@ -83,7 +83,7 @@ export default function Header({ search, onSearchChange, onSelectCategory, activ
           {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
         </button>
 
-        <button className="hamburger" aria-label={open ? "Cerrar menÃº" : "Abrir menÃº"} aria-expanded={open} onClick={() => setOpen(v => !v)}>
+        <button className="hamburger" aria-label={open ? "Cerrar menú" : "Abrir menú"} aria-expanded={open} onClick={() => setOpen(v => !v)}>
           <span className={`ham-line ${open ? "open" : ""}`} />
           <span className={`ham-line ${open ? "open" : ""}`} />
           <span className={`ham-line ${open ? "open" : ""}`} />
@@ -103,7 +103,7 @@ export default function Header({ search, onSearchChange, onSelectCategory, activ
                   {item.label}
                 </button>
               ))}
-              <button onClick={closeAnd(() => onSelectCategory("todos"))} className="mobile-all">Ver todo el catÃ¡logo</button>
+              <button onClick={closeAnd(() => onSelectCategory("todos"))} className="mobile-all">Ver todo el catálogo</button>
               <button onClick={closeAnd(onCart)} className="mobile-all" style={{ background: '#fff', color: 'var(--text)', border: '1px solid var(--border)' }}>
                 Carrito {cartCount > 0 ? `(${cartCount})` : ''}
               </button>
