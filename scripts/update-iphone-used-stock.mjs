@@ -1,11 +1,12 @@
 /**
  * iPhone USADOS (condición: usado, garantía 30 días) → mock + Firestore.
  * Uso: node scripts/update-iphone-used-stock.mjs [--dry-run]
- * Los US$ listados son PRECIO DE VENTA FINAL (transferencia):
- *   precio_transferencia = usd × 1550
- *   precio_mercadopago   = transferencia × 1.16
- *   precio (costo interno, estimado) = transferencia × 0.85 → solo para métricas de margen
+ * Los US$ listados son el COSTO del usado → venta = costo + U$S 100, todo en pesos:
+ *   precio (costo interno)      = usd × 1550
+ *   precio_transferencia (venta) = (usd + 100) × 1550
+ *   precio_mercadopago          = transferencia × 1.16  (recargo por medio de pago)
  * SKU por variante exacta (modelo + almacenamiento + calidad + batería + color).
+ * Batería puede ser número exacto (100) o rango ("88-90" → _bateria_min para filtros).
  */
 import fs from 'node:fs'
 import path from 'node:path'
@@ -16,89 +17,39 @@ const ROOT = path.join(__dirname, '..')
 const MOCK = path.join(ROOT, 'server', '.mock-data.json')
 const USD_RATE = 1550
 const MP_MARKUP = 0.16
-const COST_FACTOR = 0.85
 const DRY = process.argv.includes('--dry-run')
 
-// [modelo, almacenamiento GB, calidad, batería %, color, usd_venta, stock]
+// [modelo, almacenamiento GB, calidad, batería % (o rango "88-90"), color, usd_costo, stock, nota?]
 const LIST = [
-  // --- SERIE IPHONE 13 ---
-  ['iPhone 13', 128, 'A', 100, 'Black', 435, 1],
-  ['iPhone 13', 128, 'A', 100, 'Black', 420, 1],
-  ['iPhone 13', 128, 'A', 87, 'Black', 405, 1],
-  ['iPhone 13', 128, 'A', 85, 'Black', 405, 1],
-  ['iPhone 13', 128, 'A-', 100, 'Black', 420, 3],
-  ['iPhone 13', 128, 'A-', 97, 'Black', 405, 1],
-  ['iPhone 13', 128, 'A-', 88, 'Black', 405, 1],
-  ['iPhone 13', 128, 'A-', 87, 'Black', 405, 1],
-  ['iPhone 13', 128, 'A-', 86, 'Black', 405, 2],
-  ['iPhone 13', 512, 'A', 85, 'Black', 430, 1],
-  ['iPhone 13', 512, 'A-', 100, 'Black', 450, 1],
-  ['iPhone 13', 512, 'A-', 100, 'Blue', 450, 1],
-  ['iPhone 13', 512, 'A-', 100, 'Pink', 450, 1],
-  ['iPhone 13 Pro', 128, 'A', 100, 'Black', 510, 5],
-  ['iPhone 13 Pro', 128, 'A', 97, 'Black', 490, 1],
-  ['iPhone 13 Pro', 128, 'A-', 100, 'Black', 505, 1],
-  ['iPhone 13 Pro', 128, 'A-', 98, 'Black', 490, 1],
-  ['iPhone 13 Pro', 128, 'A-', 97, 'Black', 490, 1],
-  ['iPhone 13 Pro', 128, 'A-', 93, 'Black', 490, 1],
-  ['iPhone 13 Pro Max', 256, 'A+', 100, 'Gold', 620, 1],
-  // --- SERIE IPHONE 14 ---
-  ['iPhone 14', 128, 'A', 100, 'Purple', 440, 1],
-  ['iPhone 14', 128, 'A', 100, 'White', 440, 1],
-  ['iPhone 14', 128, 'A', 100, 'Yellow', 440, 1],
-  ['iPhone 14', 128, 'A-', 100, 'Red', 440, 1],
-  ['iPhone 14 Pro', 128, 'A', 100, 'Black', 580, 4],
-  ['iPhone 14 Pro', 512, 'A-', 100, 'Purple', 600, 1],
-  ['iPhone 14 Pro Max', 128, 'A', 89, 'Purple', 630, 1],
-  ['iPhone 14 Pro Max', 128, 'A', 87, 'Black', 630, 1],
-  ['iPhone 14 Pro Max', 128, 'A', 85, 'Black', 630, 1],
-  ['iPhone 14 Pro Max', 128, 'A-', 100, 'Black', 655, 1],
-  ['iPhone 14 Pro Max', 128, 'A-', 86, 'Black', 630, 1],
-  ['iPhone 14 Pro Max', 256, 'A-', 100, 'Black', 700, 2],
-  ['iPhone 14 Pro Max', 256, 'A-', 100, 'White', 700, 1],
-  ['iPhone 14 Pro Max', 256, 'A-', 86, 'Black', 680, 1],
-  ['iPhone 14 Pro Max', 256, 'A-', 85, 'Black', 680, 1],
-  // --- SERIE IPHONE 15 ---
-  ['iPhone 15', 128, 'A', 100, 'Black', 580, 1],
-  ['iPhone 15', 128, 'A', 85, 'Black', 550, 1],
-  ['iPhone 15', 128, 'A-', 100, 'Pink', 580, 1],
-  ['iPhone 15 Pro', 128, 'A', 100, 'Black', 710, 1],
-  ['iPhone 15 Pro', 128, 'A', 100, 'Blue', 710, 1],
-  ['iPhone 15 Pro', 128, 'A', 88, 'Blue', 675, 1],
-  ['iPhone 15 Pro', 128, 'A', 86, 'Blue', 675, 2],
-  ['iPhone 15 Pro', 128, 'A', 86, 'Silver', 675, 1],
-  ['iPhone 15 Pro', 128, 'A-', 100, 'Black', 705, 1],
-  ['iPhone 15 Pro', 128, 'A-', 100, 'Blue', 705, 1],
-  ['iPhone 15 Pro', 128, 'A-', 97, 'Blue', 675, 1],
-  ['iPhone 15 Pro', 128, 'A-', 87, 'Blue', 570, 1],
-  ['iPhone 15 Pro Max', 256, 'A+', 100, 'Blue', 830, 1],
-  ['iPhone 15 Pro Max', 256, 'A', 100, 'White', 810, 1],
-  ['iPhone 15 Pro Max', 256, 'A', 93, 'Black', 800, 1],
-  ['iPhone 15 Pro Max', 256, 'A', 89, 'White', 790, 1],
-  ['iPhone 15 Pro Max', 256, 'A', 86, 'White', 790, 1],
-  ['iPhone 15 Pro Max', 256, 'A-', 87, 'Blue', 790, 1],
-  ['iPhone 15 Pro Max', 256, 'A-', 86, 'Black', 790, 1],
   // --- SERIE IPHONE 16 ---
-  ['iPhone 16 Plus', 128, 'A+', 92, 'Black', 780, 1],
-  ['iPhone 16 Pro', 128, 'A-', 93, 'Desert', 820, 1],
-  ['iPhone 16 Pro Max', 256, 'A', 94, 'Black', 970, 1],
-  ['iPhone 16 Pro Max', 256, 'A', 93, 'Black', 970, 1],
-  ['iPhone 16 Pro Max', 256, 'A+', 93, 'Black', 970, 1],
-  ['iPhone 16 Pro Max', 256, 'A+', 93, 'Desert', 970, 1],
-  ['iPhone 16 Pro Max', 256, 'A+', 92, 'Black', 970, 1],
-  ['iPhone 16 Pro Max', 256, 'A', 92, 'Black', 970, 2],
-  ['iPhone 16 Pro Max', 256, 'A', 91, 'Black', 970, 1],
-  ['iPhone 16 Pro Max', 256, 'A', 90, 'Black', 970, 2],
-  ['iPhone 16 Pro Max', 256, 'A', 84, 'Black', 970, 1],
-  ['iPhone 16 Pro Max', 256, 'A-', 96, 'Black', 965, 1],
-  ['iPhone 16 Pro Max', 256, 'A-', 94, 'Black', 965, 1],
-  ['iPhone 16 Pro Max', 256, 'A-', 91, 'Black', 965, 1],
-  ['iPhone 16 Pro Max', 256, 'A-', 88, 'Desert', 965, 1],
-  ['iPhone 16 Pro Max', 512, 'A+', 85, 'Silver', 990, 1],
-  // --- SERIE IPHONE 17 ---
-  ['iPhone 17 Pro Max', 256, 'A+', 100, 'Orange', 1290, 2],
-  ['iPhone 17 Pro Max', 512, 'A+', 100, 'Blue', 1420, 1],
-  ['iPhone 17 Pro Max', 512, 'A+', 100, 'Orange', 1420, 1],
+  ['iPhone 16 Pro', 128, 'A+', '88-90', 'Desert', 710, 1],
+  ['iPhone 16 Pro Max', 256, 'A', '88-90', 'Desert', 840, 1],
+  ['iPhone 16 Pro Max', 256, 'A', '88-90', 'Natural', 840, 1],
+  ['iPhone 16 Pro Max', 256, 'A', '88-90', 'White', 840, 1],
+  ['iPhone 16 Pro Max', 256, 'A', '88-90', 'Black', 840, 1],
+  // --- SERIE IPHONE 15 ---
+  ['iPhone 15 Pro', 128, 'A+', 100, 'Black', 590, 1, 'Ultimo disponible'],
+  ['iPhone 15 Pro Max', 256, 'A+', 100, 'Black', 700, 1],
+  ['iPhone 15 Pro Max', 256, 'A+', 100, 'Blue', 700, 1],
+  ['iPhone 15 Pro Max', 256, 'A+', 100, 'Natural', 700, 1],
+  // --- SERIE IPHONE 14 ---
+  ['iPhone 14 Pro Max', 128, 'A+', 100, 'Black', 570, 1],
+  ['iPhone 14 Pro Max', 128, 'A+', 100, 'Purple', 570, 1],
+  ['iPhone 14 Pro Max', 128, 'A+', 100, 'Gold', 570, 1],
+  ['iPhone 14 Pro Max', 128, 'A+', 100, 'Silver', 570, 1],
+  // --- SERIE IPHONE 13 ---
+  ['iPhone 13 Pro', 128, 'A+', 100, 'Graphite', 420, 1],
+  ['iPhone 13 Pro', 128, 'A+', 100, 'Blue', 420, 1],
+  ['iPhone 13 Pro', 128, 'A+', 100, 'Silver', 420, 1],
+  ['iPhone 13 Pro', 128, 'A+', 100, 'Gold', 420, 1],
+  ['iPhone 13 Pro', 128, 'A+', 100, 'Green', 420, 1],
+  ['iPhone 13 Pro', 256, 'A+', 100, 'Graphite', 450, 1],
+  ['iPhone 13 Pro', 256, 'A+', 100, 'Blue', 450, 1],
+  ['iPhone 13 Pro', 256, 'A+', 100, 'Gold', 450, 1],
+  ['iPhone 13 Pro', 256, 'A+', 100, 'Green', 450, 1],
+  ['iPhone 13 Pro Max', 256, 'A+', 100, 'Graphite', 520, 1],
+  ['iPhone 13 Pro Max', 256, 'A+', 100, 'Blue', 520, 1],
+  ['iPhone 13 Pro Max', 256, 'A+', 100, 'Green', 520, 1],
 ]
 
 const MODEL_KEY = {
@@ -119,21 +70,21 @@ const MODEL_KEY = {
 const COLOR_KEY = {
   Black: 'BLK', Blue: 'BLU', Pink: 'PNK', Purple: 'PUR', White: 'WHT',
   Yellow: 'YEL', Red: 'RED', Gold: 'GLD', Desert: 'DZR', Silver: 'SLV', Orange: 'ORG',
+  Natural: 'NAT', Graphite: 'GRF', Green: 'GRN',
 }
 const CAL_KEY = { 'A+': 'APLUS', A: 'A', 'A-': 'AMINUS' }
 
-function priceFor(usd) {
-  const transferencia = Math.round(usd * USD_RATE)
-  return {
-    transferencia,
-    mercadopago: Math.round(transferencia * (1 + MP_MARKUP)),
-    costo: Math.round(transferencia * COST_FACTOR),
-  }
+const MARGEN_USD = 100 // venta = costo + U$S 100
+function priceFor(usdCosto) {
+  const costo = Math.round(usdCosto * USD_RATE)
+  const transferencia = Math.round((usdCosto + MARGEN_USD) * USD_RATE)
+  const mercadopago = Math.round(transferencia * (1 + MP_MARKUP))
+  return { costo, transferencia, mercadopago }
 }
 
 function buildDesired() {
   const used = new Set()
-  return LIST.map(([model, stor, cal, bat, color, usd, stock]) => {
+  return LIST.map(([model, stor, cal, bat, color, usd, stock, nota = null]) => {
     const base = `IPHU-${MODEL_KEY[model]}-${stor}-${CAL_KEY[cal]}-B${bat}-${COLOR_KEY[color]}`
     let sku = base
     if (used.has(sku)) sku = `${base}-P${usd}`
@@ -144,32 +95,34 @@ function buildDesired() {
     return {
       sku,
       nombre: `${model} ${stor}GB (Usado · ${condicion})`,
-      descripcion: `${model} ${stor}GB usado. ${condicion}. Garantía 30 días. Stock del proveedor actualizado.`,
+      descripcion: `${model} ${stor}GB usado. ${condicion}. Garantía 30 días.${nota ? ' ' + nota + '.' : ''}`,
       usd, costo, transferencia, mercadopago,
       model, stor, cal, bat, color, stock,
-      condicion,
+      condicion, nota,
     }
   })
 }
 
 function especFor(d) {
+  const batMin = typeof d.bat === 'number' ? d.bat : Number(String(d.bat).split('-')[0])
   return {
     _condicion: 'usado',
     _calidad: d.cal,
     _bateria: d.bat,
+    _bateria_min: batMin,
     _color: d.color,
     _almacenamiento: `${d.stor}GB`,
-    _usd_venta: d.usd,
+    _usd_costo: d.usd,
     _usd_rate: USD_RATE,
-    _costo_original: d.costo,
+    ...(d.nota ? { _nota: d.nota } : {}),
     _pricing: {
       costo: d.costo,
       transferencia: d.transferencia,
       mercadopago: d.mercadopago,
       usdRate: USD_RATE,
-      usdVentaFinal: d.usd,
-      costoEstimado: true,
-      nota: 'usd listado = precio de venta final (transferencia); costo interno estimado 85%',
+      usdCosto: d.usd,
+      margenUsd: MARGEN_USD,
+      nota: 'usd listado = costo del usado; venta = (costo + U$S100) × 1550; todo expresado en pesos',
     },
   }
 }

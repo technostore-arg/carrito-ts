@@ -166,7 +166,7 @@ export default function App() {
       if (p.tipo_venta === "encargo" && rango !== "todos") return false
       if (condicion !== "todos" && (p.condicion === "usado" ? "usado" : "nuevo") !== condicion) return false
       if (calidad !== "todos" && p.especificaciones?._calidad !== calidad) return false
-      if (batMin > 0 && (Number(p.especificaciones?._bateria) || 0) < batMin) return false
+      if (batMin > 0 && (Number(p.especificaciones?._bateria_min ?? p.especificaciones?._bateria) || 0) < batMin) return false
       if (!matchCpu(p, cpu)) return false
       if (!matchRam(p, ram)) return false
       if (!matchSsd(p, ssd)) return false
