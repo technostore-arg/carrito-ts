@@ -459,3 +459,29 @@ IPHONE 14 PRO MAX 128GB - Black/Purple/Gold/Silver - Calidad A+ - Bat 100% - Cos
 IPHONE 13 PRO 128GB - Graphite/Blue/Silver/Gold/Green - Calidad A+ - Bat 100% - Costo U$S 420 -> venta .000
 IPHONE 13 PRO 256GB - Graphite/Blue/Gold/Green - Calidad A+ - Bat 100% - Costo U$S 450 -> venta .500
 IPHONE 13 PRO MAX 256GB - Graphite/Blue/Green - Calidad A+ - Bat 100% - Costo U$S 520 -> venta .000
+LISTADO MACBOOK (41 SKUs / 41 unidades)
+Precio: usd = COSTO | ganancia: +U$S100 (costo <= 1500) / +U$S200 (costo > 1500) | venta = (usd + ganancia) x 1550 | MP = venta x 1.16
+
+MACBOOK NEO 13"" 8GB/256GB - Silver/Citrus/Indigo - Costo U$S 830 -> venta .441.500
+MACBOOK NEO 13"" 8GB/256GB - Blush - Costo U$S 850 -> venta .472.500
+MACBOOK NEO 13"" 8GB/512GB - Silver/Citrus/Indigo/Blush - Costo U$S 950 -> venta .627.500
+MACBOOK AIR M5 13"" 16GB/512GB - Midnight/Starlight/Silver/Sky Blue - Costo U$S 1390 -> venta .309.500
+MACBOOK AIR M5 13"" 16GB/1TB - Midnight/Sky Blue - Costo U$S 1650 -> venta .867.500
+MACBOOK AIR M5 13"" 24GB/1TB - Midnight/Sky Blue - Costo U$S 1880 -> venta .224.000
+MACBOOK AIR M5 13"" 24GB/1TB - Starlight - Costo U$S 2005 -> venta .417.750
+MACBOOK AIR M5 15"" 16GB/512GB - Midnight - Costo U$S 1590 -> venta .774.500
+MACBOOK AIR M5 15"" 16GB/512GB - Starlight/Sky Blue - Costo U$S 1600 -> venta .790.000
+MACBOOK AIR M5 15"" 16GB/1TB - Midnight - Costo U$S 1830 -> venta .146.500
+MACBOOK AIR M5 15"" 16GB/1TB - Starlight - Costo U$S 1905 -> venta .262.750
+MACBOOK AIR M5 15"" 24GB/1TB - Midnight/Sky Blue - Costo U$S 2130 -> venta .611.500
+MACBOOK PRO 14"" M5 16GB/512GB - Silver/Space Black - Costo U$S 1960 -> venta .348.000
+MACBOOK PRO 14"" M5 16GB/1TB - Silver - Costo U$S 2090 -> venta .549.500
+MACBOOK PRO 14"" M5 16GB/1TB - Space Black - Costo U$S 2110 -> venta .580.500
+MACBOOK PRO 14"" M5 16GB/1TB TECLADO ESPANOL - Space Black/Silver - Costo U$S 2100 -> venta .565.000
+MACBOOK PRO 14"" M5 24GB/1TB - Space Black - Costo U$S 2330 -> venta .921.500
+MACBOOK PRO 14"" M5 PRO 24GB/1TB - Space Black/Silver - Costo U$S 2550 -> venta .262.500
+MACBOOK PRO 14"" M5 PRO 24GB/2TB (18 CPU/20 GPU) - Space Black - Costo U$S 3130 -> venta .161.500
+MACBOOK PRO 14"" M5 PRO 24GB/2TB - Space Black/Silver - Costo U$S 3145 -> venta .184.750
+MACBOOK PRO 16"" M5 PRO 24GB/1TB - Space Black/Silver - Costo U$S 2950 -> venta .882.500
+MACBOOK PRO 16"" M5 PRO 48GB/1TB - Space Black/Silver - Costo U$S 3710 -> venta .060.500
+MACBOOK PRO 16"" M5 MAX 36GB/2TB - Space Black - Costo U$S 4430 -> venta .176.500
