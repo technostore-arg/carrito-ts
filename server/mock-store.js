@@ -294,8 +294,9 @@ export const mockStore = {
   consultas,
   borradores,
 
-  getProducts({ activeOnly } = {}) {
+  getProducts({ activeOnly, includeHidden } = {}) {
     let list = activeOnly ? products.filter(p => p.active !== false) : [...products]
+    if (!includeHidden) list = list.filter(p => p.visibleEnTienda !== false)
     // Ensure every product has both Spanish and English field names
     return list.map(p => {
       const nombre = p.nombre || p.name || ''
@@ -349,6 +350,7 @@ export const mockStore = {
       estado: data.estado || 'activo',
       moneda: data.moneda || 'ARS',
       fuente_origen: data.fuente_origen || 'manual',
+      visibleEnTienda: data.visibleEnTienda === undefined ? true : !!data.visibleEnTienda,
       rating: Number(data.rating) || 4.5,
       reviews: Number(data.reviews) || 0,
     }

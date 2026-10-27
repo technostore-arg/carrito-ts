@@ -263,30 +263,41 @@ export default function App() {
             <AppleSpotlight products={allProducts} onOpen={setSelectedProduct} onVerTodos={handleApple} />
           )}
           <section id="catalogo" className="container">
-            <div className="section-intro">
-              <span className="eyebrow">Catálogo TechnoStore</span>
-              <h2>Todo lo que necesitás, <em>a un clic</em></h2>
-              <p className="muted" style={{ marginTop: 8, maxWidth: 560 }}>Celulares, notebooks, computadoras y accesorios con fotos reales, precios claros y filtros que ayudan.</p>
-            </div>
-            <FilterPanel
-              categoria={categoria} marcas={marcas} rango={rango} orden={orden} cpu={cpu} ram={ram} ssd={ssd}
-              condicion={condicion} calidad={calidad} batMin={batMin}
-              onCategoria={c => { setCategoria(c); scrollToCatalog() }}
-              onMarcas={setMarcas} onRango={setRango} onOrden={setOrden} onCpu={setCpu} onRam={setRam} onSsd={setSsd}
-              onCondicion={setCondicion} onCalidad={setCalidad} onBatMin={setBatMin}
-              marcasDisponibles={marcasDisponibles} marcaCounts={marcaCounts}
-              cpuOptions={specOpts.cpus} ramOptions={specOpts.rams} ssdOptions={specOpts.ssds} rangeOptions={rangeOpts} visibleSpecs={visibleSpecs} counts={counts}
-              hasUsed={hasUsed} chips={chips}
-              totalVisibles={visibles.length} totalAll={allProducts.length}
-              hasFiltros={hasFiltros} onLimpiar={limpiarFiltros}
-            >
-              <ProductGrid
-                products={source === null ? null : visibles}
-                totalLabel={`${(source === null ? 0 : visibles.length)} producto${(source === null ? 0 : visibles.length) === 1 ? "" : "s"}`}
-                onReset={limpiarFiltros}
-                onDetail={setSelectedProduct} onAddToCart={addToCart}
-              />
-            </FilterPanel>
+            {source !== null && allProducts.length === 0 ? (
+              <div className="catalog-empty">
+                <span className="eyebrow">Catálogo en renovación</span>
+                <h2>Estamos armando una selección <em>más corta y mejor</em></h2>
+                <p>Volvemos en breve con los productos que mejor rotan: iPhones nuevos y usados con garantía, MacBooks, SSD, memorias y periféricos. Si necesitás algo puntual, escribinos.</p>
+                <a className="btn-primary" href="https://wa.me/5491127650658?text=Hola%2C%20quiero%20consultar%20por%20un%20producto" target="_blank" rel="noreferrer">Consultar por WhatsApp</a>
+              </div>
+            ) : (
+              <>
+                <div className="section-intro">
+                  <span className="eyebrow">Catálogo TechnoStore</span>
+                  <h2>Todo lo que necesitás, <em>a un clic</em></h2>
+                  <p className="muted" style={{ marginTop: 8, maxWidth: 560 }}>Celulares, notebooks, computadoras y accesorios con fotos reales, precios claros y filtros que ayudan.</p>
+                </div>
+                <FilterPanel
+                  categoria={categoria} marcas={marcas} rango={rango} orden={orden} cpu={cpu} ram={ram} ssd={ssd}
+                  condicion={condicion} calidad={calidad} batMin={batMin}
+                  onCategoria={c => { setCategoria(c); scrollToCatalog() }}
+                  onMarcas={setMarcas} onRango={setRango} onOrden={setOrden} onCpu={setCpu} onRam={setRam} onSsd={setSsd}
+                  onCondicion={setCondicion} onCalidad={setCalidad} onBatMin={setBatMin}
+                  marcasDisponibles={marcasDisponibles} marcaCounts={marcaCounts}
+                  cpuOptions={specOpts.cpus} ramOptions={specOpts.rams} ssdOptions={specOpts.ssds} rangeOptions={rangeOpts} visibleSpecs={visibleSpecs} counts={counts}
+                  hasUsed={hasUsed} chips={chips}
+                  totalVisibles={visibles.length} totalAll={allProducts.length}
+                  hasFiltros={hasFiltros} onLimpiar={limpiarFiltros}
+                >
+                  <ProductGrid
+                    products={source === null ? null : visibles}
+                    totalLabel={`${(source === null ? 0 : visibles.length)} producto${(source === null ? 0 : visibles.length) === 1 ? "" : "s"}`}
+                    onReset={limpiarFiltros}
+                    onDetail={setSelectedProduct} onAddToCart={addToCart}
+                  />
+                </FilterPanel>
+              </>
+            )}
           </section>
         </main>
       )}

@@ -169,6 +169,15 @@ export default function App() {
         <main>
           <Hero onExplore={scrollToCatalog} onServicios={scrollToServicios} />
           <section id="catalogo" className="container">
+            {source !== null && allProducts.length === 0 ? (
+              <div className="catalog-empty">
+                <span className="eyebrow">Catálogo en renovación</span>
+                <h2>Estamos curando el <em>hardware que vuelve</em></h2>
+                <p>Volvemos en breve con una selección corta de GPUs, memorias y SSD para IA. Si necesitás un equipo puntual, escribinos y lo buscamos.</p>
+                <a className="btn-primary" href="https://wa.me/5491127650658?text=Hola%2C%20quiero%20consultar%20por%20hardware" target="_blank" rel="noreferrer">Consultar por WhatsApp</a>
+              </div>
+            ) : (
+            <>
             {(q.trim() || categoria !== "todos" || marca !== "todos" || rango !== "todos" || cpu || ram || ssd) && (
               <nav className="breadcrumbs" aria-label="Filtros activos">
                 <button onClick={() => { setCategoria("todos"); scrollToCatalog() }}>Catálogo</button>
@@ -251,6 +260,8 @@ export default function App() {
               )}
             </div>
             <ProductGrid products={source === null ? null : visibles} totalLabel={`${(source === null ? 0 : visibles.length)} productos`} onReset={() => { setCategoria("todos"); setQ(""); setMarca("todos"); setRango("todos"); setCpu(""); setRam(""); setSsd("") }} onDetail={setSelectedProduct} onAddToCart={addToCart} />
+            </>
+            )}
           </section>
           <section className="container" style={{ marginTop: 8 }}>
             <div style={{ padding: "12px 16px", border: "1px dashed #e8e8ed", borderRadius: 12, background: "#f5f0ff", fontSize: 12, color: "#6e6e73" }}>

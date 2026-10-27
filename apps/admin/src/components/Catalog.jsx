@@ -7,7 +7,7 @@ const MAX_DIMENSION = 1600
 const JPEG_QUALITY = 0.8
 const fmt = n => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(n || 0)
 
-const emptyForm = { sku: '', nombre: '', descripcion: '', marca: 'technostore', categoria: '', tipo_venta: 'directa', precio: 0, stock: 0, estado: 'activo' }
+const emptyForm = { sku: '', nombre: '', descripcion: '', marca: 'technostore', categoria: '', tipo_venta: 'directa', precio: 0, stock: 0, estado: 'activo', visibleEnTienda: true }
 
 function resizeImage(file, maxDim, quality) {
   return new Promise((resolve, reject) => {
@@ -46,6 +46,7 @@ function resizeImage(file, maxDim, quality) {
 export default function Catalog() {
   const [marca, setMarca] = useState('todas')
   const [q, setQ] = useState('')
+  const [visibilidad, setVisibilidad] = useState('todas')
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(null)
@@ -77,7 +78,7 @@ export default function Catalog() {
   }
   const openEdit = p => {
     setEditing(p)
-    setForm({ sku: p.sku, nombre: p.nombre, descripcion: p.descripcion || '', marca: p.marca, categoria: p.categoria, tipo_venta: p.tipo_venta, precio: p.precio, stock: p.stock ?? 0, estado: p.estado })
+    setForm({ sku: p.sku, nombre: p.nombre, descripcion: p.descripcion || '', marca: p.marca, categoria: p.categoria, tipo_venta: p.tipo_venta, precio: p.precio, stock: p.stock ?? 0, estado: p.estado, visibleEnTienda: p.visibleEnTienda !== false })
     setImages(Array.isArray(p.imagenes) ? p.imagenes.filter(Boolean).map(url => ({ url, uploading: false })) : [])
     setShowForm(true)
   }
@@ -163,6 +164,17 @@ export default function Catalog() {
     load()
   }
 
+  const toggleVisible = async p => {
+    try {
+      await updateProducto(p.id, { visibleEnTienda: p.visibleEnTienda === false })
+      setMsg(p.visibleEnTienda === false ? 'Producto visible en la tienda' : 'Producto oculto en la tienda')
+      setTimeout(() => setMsg(''), 2000)
+      load()
+    } catch (err) { setMsg(err.message); setTimeout(() => setMsg(''), 3000) }
+  }
+
+  const shownRows = visibilidad === 'todas' ? rows : rows.filter(p => visibilidad === 'visibles' ? p.visibleEnTienda !== false : p.visibleEnTienda === false)
+
   return (
     <div className="stack">
       <div className="toolbar">
@@ -172,6 +184,11 @@ export default function Catalog() {
               <button key={m} className={marca === m ? 'seg-active' : ''} onClick={() => setMarca(m)}>{m === 'todas' ? 'Todas' : m === 'technostore' ? 'TechnoStore' : 'Futuro Hard'}</button>
             ))}
           </div>
+          <select className="search" value={visibilidad} onChange={e => setVisibilidad(e.target.value)}>
+            <option value="todas">Tienda: todas</option>
+            <option value="visibles">Tienda: visibles</option>
+            <option value="ocultas">Tienda: ocultas</option>
+          </select>
           <input className="search" placeholder="Buscar SKU, nombre o categoría…" value={q} onChange={e => setQ(e.target.value)} />
         </div>
         <button className="btn-primary" onClick={openCreate}>+ Alta producto</button>
@@ -182,12 +199,12 @@ export default function Catalog() {
       <div className="table-wrap">
         <table>
           <thead>
-            <tr><th>SKU</th><th>Nombre</th><th>Marca</th><th>Categoría</th><th>Tipo</th><th>Precio</th><th>Stock</th><th>Estado</th><th></th></tr>
+            <tr><th>SKU</th><th>Nombre</th><th>Marca</th><th>Categoría</th><th>Tipo</th><th>Precio</th><th>Stock</th><th>Estado</th><th>Tienda</th><th></th></tr>
           </thead>
           <tbody>
-            {loading ? <tr><td colSpan={9} className="muted" style={{ textAlign: 'center', padding: 24 }}>Cargando…</td></tr>
-              : rows.length === 0 ? <tr><td colSpan={9} className="muted" style={{ textAlign: 'center', padding: 24 }}>Sin resultados</td></tr>
-                : rows.map(p => (
+            {loading ? <tr><td colSpan={10} className="muted" style={{ textAlign: 'center', padding: 24 }}>Cargando…</td></tr>
+              : shownRows.length === 0 ? <tr><td colSpan={10} className="muted" style={{ textAlign: 'center', padding: 24 }}>Sin resultados</td></tr>
+                : shownRows.map(p => (
                   <tr key={p.id}>
                     <td><code className="sku">{p.sku}</code></td>
                     <td><b>{p.nombre}</b><br /><small className="muted">{p.descripcion?.slice(0, 56)}</small></td>
@@ -197,8 +214,12 @@ export default function Catalog() {
                     <td>{p.tipo_venta === 'encargo' ? <span className="muted">a consultar</span> : fmt(p.precio)}</td>
                     <td>{p.stock == null ? '—' : p.stock}</td>
                     <td><span className={`dot ${p.estado}`} /> {p.estado}</td>
+                    <td>
+                      <span className={`dot ${p.visibleEnTienda === false ? 'pausado' : 'activo'}`} /> {p.visibleEnTienda === false ? 'oculto' : 'visible'}
+                    </td>
                     <td className="row-actions">
                       <button className="btn-sm" onClick={() => openEdit(p)}>Editar</button>
+                      <button className="btn-sm" onClick={() => toggleVisible(p)}>{p.visibleEnTienda === false ? 'Mostrar' : 'Ocultar'}</button>
                       <button className="btn-sm danger" onClick={() => remove(p)}>Eliminar</button>
                     </td>
                   </tr>
@@ -206,7 +227,7 @@ export default function Catalog() {
           </tbody>
         </table>
       </div>
-      <p className="muted" style={{ fontSize: '.82rem' }}>{rows.length} productos</p>
+      <p className="muted" style={{ fontSize: '.82rem' }}>{shownRows.length} productos</p>
 
       {showForm && (
         <div className="modal-bg" onClick={() => setShowForm(false)}>
@@ -222,6 +243,7 @@ export default function Catalog() {
               <label>Precio (ARS)<input type="number" value={form.precio} onChange={e => setForm({ ...form, precio: e.target.value })} disabled={form.tipo_venta === 'encargo'} /></label>
               <label>Stock<input type="number" value={form.stock ?? ''} onChange={e => setForm({ ...form, stock: e.target.value })} disabled={form.tipo_venta === 'encargo'} placeholder={form.tipo_venta === 'encargo' ? 'null' : '0'} /></label>
               <label>Estado<select value={form.estado} onChange={e => setForm({ ...form, estado: e.target.value })}><option value="activo">activo</option><option value="pausado">pausado</option><option value="agotado">agotado</option></select></label>
+              <label>Tienda<select value={form.visibleEnTienda === false ? 'oculto' : 'visible'} onChange={e => setForm({ ...form, visibleEnTienda: e.target.value === 'visible' })}><option value="visible">visible</option><option value="oculto">oculto</option></select></label>
             </div>
 
             {/* Image upload section */}

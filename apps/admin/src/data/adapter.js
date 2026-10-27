@@ -37,11 +37,13 @@ function toAdminProduct(p) {
     imagenes: p.imagenes || (p.image ? [p.image] : []),
     image: p.image || (Array.isArray(p.imagenes) ? p.imagenes[0] : null),
     active: p.active !== false,
+    visibleEnTienda: p.visibleEnTienda !== false,
   }
 }
 
 export async function listProductos({ marca, q, tipo_venta, estado } = {}) {
-  const r = await fetch('/api/products')
+  // incluirOcultos=1 requiere sesión de admin (token en sessionStorage)
+  const r = await fetch('/api/products?incluirOcultos=1', { headers: { ...authHeader() } })
   if (!r.ok) throw new Error(`No se pudo listar productos (${r.status})`)
   let out = (await r.json()).map(toAdminProduct)
   if (marca && marca !== 'todas') out = out.filter(p => p.marca === marca)

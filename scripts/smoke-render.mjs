@@ -32,7 +32,7 @@ const specOpts = specOptions(scoped)
 const rangeOpts = buildRanges(scoped)
 const counts = { todos: products.length, celulares: scoped.length }
 const used = products.filter(p => p.condicion === 'usado')
-if (used.length !== 73) throw new Error('usados != 73: ' + used.length)
+if (used.length !== 25) throw new Error('usados != 25: ' + used.length)
 const newIphones = products.filter(p => p.categoria === 'celulares' && /iphone/i.test(p.nombre || '') && p.condicion !== 'usado')
 if (newIphones.length !== 35) throw new Error('iphone nuevos != 35: ' + newIphones.length)
 
@@ -79,12 +79,12 @@ if (detHtml.includes('_condicion')) throw new Error('ProductDetail filtra specs 
 const gridHtml = renderToString(h(ProductGrid, { products: used.slice(0, 5), totalLabel: '5 productos', onReset: noop, onDetail: noop, onAddToCart: noop }))
 if (!gridHtml.includes('iPhone')) throw new Error('ProductGrid vacio')
 
-// Lógica de filtro compuesta (réplica de App.visibles): Apple + usados + Calidad A + Bat >= 90
+// Lógica de filtro compuesta (réplica de App.visibles): Apple + usados + Calidad A+ + Bat >= 90
 const vis = scoped.filter(p =>
   ['Apple'].includes(getBrand(p)) &&
   (p.condicion === 'usado' ? 'usado' : 'nuevo') === 'usado' &&
-  (p.especificaciones?._calidad === 'A') &&
-  ((Number(p.especificaciones?._bateria) || 0) >= 90)
+  (p.especificaciones?._calidad === 'A+') &&
+  ((Number(p.especificaciones?._bateria_min ?? p.especificaciones?._bateria) || 0) >= 90)
 )
 if (vis.length === 0) throw new Error('filtro compuesto sin resultados')
 

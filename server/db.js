@@ -71,6 +71,9 @@ export function docToProduct(doc) {
     fuente_origen: d.fuente_origen ?? 'manual',
     condicion: d.condicion ?? 'nuevo',
     garantia: d.garantia ?? null,
+    // Curaduría de catálogo: false = oculto en las tiendas, visible en el admin.
+    // undefined = visible (compatibilidad con productos viejos).
+    visibleEnTienda: d.visibleEnTienda !== false,
   }
 }
 
@@ -120,6 +123,7 @@ export function productToDoc(p) {
     fuente_origen: p.fuente_origen || 'manual',
     condicion: p.condicion || 'nuevo',
     garantia: p.garantia ?? null,
+    visibleEnTienda: p.visibleEnTienda === undefined ? true : !!p.visibleEnTienda,
   }
 }
 
@@ -127,27 +131,29 @@ export function productToDoc(p) {
 
 // Cache en memoria (30s): en serverless sobrevive entre invocaciones tibias
 // y recorta lecturas de Firestore (cada listado son ~950 reads).
-const _productsCache = { ts: 0, active: null, all: null }
+const _productsCache = { ts: 0, entries: new Map() }
 const PRODUCTS_TTL_MS = 30 * 1000
-export function clearProductsCache() { _productsCache.ts = 0; _productsCache.active = null; _productsCache.all = null }
+export function clearProductsCache() { _productsCache.ts = 0; _productsCache.entries.clear() }
 
-export async function getProducts({ activeOnly = true } = {}) {
+export async function getProducts({ activeOnly = true, includeHidden = false } = {}) {
   try {
     const now = Date.now()
-    const key = activeOnly ? 'active' : 'all'
-    if (now - _productsCache.ts < PRODUCTS_TTL_MS && _productsCache[key]) {
-      return _productsCache[key]
+    const key = `${activeOnly ? 'active' : 'all'}:${includeHidden ? 'hidden' : 'visible'}`
+    if (now - _productsCache.ts < PRODUCTS_TTL_MS && _productsCache.entries.has(key)) {
+      return _productsCache.entries.get(key)
     }
     const db = getFirestoreDb()
     let q = db.collection(PRODUCTS)
     if (activeOnly) q = q.where('active', '==', true)
     const snap = await q.get()
-    const rows = snap.docs.map(docToProduct)
+    let rows = snap.docs.map(docToProduct)
+    // Los ocultos siguen en Firestore (stock/historial) pero no se publican.
+    if (!includeHidden) rows = rows.filter(p => p.visibleEnTienda !== false)
     _productsCache.ts = now
-    _productsCache[key] = rows
+    _productsCache.entries.set(key, rows)
     return rows
   } catch (e) {
-    if (useMock(e)) return mockStore.getProducts({ activeOnly })
+    if (useMock(e)) return mockStore.getProducts({ activeOnly, includeHidden })
     throw e
   }
 }
