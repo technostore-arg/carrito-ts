@@ -123,7 +123,9 @@ export function productToDoc(p) {
     fuente_origen: p.fuente_origen || 'manual',
     condicion: p.condicion || 'nuevo',
     garantia: p.garantia ?? null,
-    visibleEnTienda: p.visibleEnTienda === undefined ? true : !!p.visibleEnTienda,
+    // Curaduría: lo que se crea automáticamente (scraping/ingesta) nace OCULTO
+    // hasta que se revise. El admin manda visibleEnTienda explícito al crear.
+    visibleEnTienda: p.visibleEnTienda === undefined ? false : !!p.visibleEnTienda,
   }
 }
 

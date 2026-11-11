@@ -350,7 +350,8 @@ export const mockStore = {
       estado: data.estado || 'activo',
       moneda: data.moneda || 'ARS',
       fuente_origen: data.fuente_origen || 'manual',
-      visibleEnTienda: data.visibleEnTienda === undefined ? true : !!data.visibleEnTienda,
+      // Curaduría: altas automáticas nacen ocultas; el admin manda el valor explícito.
+      visibleEnTienda: data.visibleEnTienda === undefined ? false : !!data.visibleEnTienda,
       rating: Number(data.rating) || 4.5,
       reviews: Number(data.reviews) || 0,
     }
