@@ -184,6 +184,21 @@ export function canonCat(c) {
   return CANON_CATS[k] || k
 }
 
+const CAT_LABELS = {
+  gpus: 'GPU',
+  workstations: 'Workstation',
+  accesorios: 'Accesorio',
+  notebooks: 'Notebook',
+  celulares: 'Celular',
+  procesadores: 'Procesador',
+}
+
+/** Etiqueta corta y prolija para la categoría de una tarjeta. */
+export function catLabel(c) {
+  const canon = canonCat(c)
+  return CANON_LABELS[canon] || CAT_LABELS[canon] || String(c || '')
+}
+
 /* ---------- Fase 2: rangos de precio dinámicos ---------- */
 export function fmtPriceShort(n) {
   if (n >= 1000000) {

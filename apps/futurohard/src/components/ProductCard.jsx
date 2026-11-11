@@ -1,5 +1,5 @@
 import { ars, waLink } from "../utils/format"
-import { specChips } from "../utils/specs"
+import { specChips, catLabel } from "../utils/specs"
 
 export default function ProductCard({ producto, onAddToCart, onDetail }) {
   const { nombre, categoria, tipo_venta, stock, imagenes, sku, name, precio_transferencia, precio_mercadopago } = producto
@@ -18,7 +18,7 @@ export default function ProductCard({ producto, onAddToCart, onDetail }) {
     <article className="card" onClick={() => onDetail?.(producto)} style={{ cursor: "pointer" }}>
       <div className="card-media">
         {foto ? <img src={foto} alt={displayName} loading="lazy" decoding="async" /> : <div className="fallback" aria-hidden>○</div>}
-        <span className={`badge ${esEncargo ? "badge--encargo" : ""}`}>{esEncargo ? "A pedido" : categoria}</span>
+        <span className={`badge ${esEncargo ? "badge--encargo" : ""}`}>{esEncargo ? "A pedido" : catLabel(categoria)}</span>
       </div>
       <div className="card-body">
         <span className="brand">{sku}</span>

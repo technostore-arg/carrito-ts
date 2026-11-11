@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 import { ars, waLink } from "../utils/format"
+import { catLabel } from "../utils/specs"
 
 export default function ProductDetail({ producto, onClose, onAddToCart }) {
   useEffect(() => {
@@ -27,7 +28,7 @@ export default function ProductDetail({ producto, onClose, onAddToCart }) {
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
           <span className="brand">{sku}</span>
           {marca && <span style={{ fontSize: 11, color: "var(--muted)", background: "#f5f5f7", padding: "2px 8px", borderRadius: 6 }}>{marca}</span>}
-          <span className={`badge ${esEncargo ? "badge--encargo" : ""}`} style={{ position: "static" }}>{esEncargo ? "A pedido" : categoria}</span>
+          <span className={`badge ${esEncargo ? "badge--encargo" : ""}`} style={{ position: "static" }}>{esEncargo ? "A pedido" : catLabel(categoria)}</span>
         </div>
         <h2 className="modal-title" style={{ marginBottom: 10 }}>{displayName}</h2>
         {descripcion && <p style={{ fontSize: 13.5, color: "var(--muted)", lineHeight: 1.6, marginBottom: 14 }}>{descripcion}</p>}
