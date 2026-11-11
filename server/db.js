@@ -15,6 +15,7 @@ import { randomBytes } from 'node:crypto'
 import { getFirestoreDb, COLLECTIONS, FREE_SHIPPING_THRESHOLD, SHIPPING_COST } from './firebase.js'
 import { mockStore, resolveCategoryImage } from './mock-store.js'
 import fallbackCatalog from './catalog-fallback.js'
+import { cleanPhoneName, brandOfSku, isNewPhone } from './phone-names.js'
 
 const { PRODUCTS, ORDERS, CONSULTAS, MP_PAYMENTS } = COLLECTIONS
 
@@ -36,16 +37,26 @@ function fallbackProducts() {
 // imagenes, especificaciones, tipo_venta...), así que se pasan tal cual.
 export function docToProduct(doc) {
   const d = doc.data()
+  const categoria = String(d.categoria ?? d.category ?? '').toLowerCase()
+  const condicion = d.condicion ?? 'nuevo'
+  const rawName = d.nombre ?? d.name ?? ''
+  const rawBrand = d.marca ?? d.brand ?? 'technostore'
+  // Los celulares nuevos heredan nombres sucios de la importación: se limpian
+  // acá para que la tienda y el admin los muestren prolijos aunque el dato
+  // guardado todavía tenga el formato viejo.
+  const phone = isNewPhone(categoria, condicion)
+  const nombre = phone ? cleanPhoneName(rawName, d.sku) || rawName : rawName
+  const marca = phone ? (brandOfSku(d.sku) || rawBrand) : rawBrand
   const rawImagenes = Array.isArray(d.imagenes) ? d.imagenes : d.image ? [d.image] : []
-  const imagenes = resolveCategoryImage(rawImagenes, d.categoria ?? d.category ?? '', d.nombre ?? d.name ?? '')
+  const imagenes = resolveCategoryImage(rawImagenes, categoria, nombre)
   return {
     id: doc.id,
-    name: d.name ?? d.nombre ?? '',
-    nombre: d.nombre ?? d.name ?? '',
-    brand: d.brand ?? d.fabricante ?? d.marca ?? '',
-    marca: d.marca ?? d.brand ?? 'technostore',
+    name: nombre,
+    nombre,
+    brand: phone ? marca : (d.brand ?? d.fabricante ?? rawBrand),
+    marca,
     category: d.category ?? d.categoria ?? '',
-    categoria: String(d.categoria ?? d.category ?? '').toLowerCase(),
+    categoria,
     price: d.price ?? d.precio ?? 0,
     precio: d.precio ?? d.price ?? 0,
     precio_transferencia: d.precio_transferencia ?? d.precio ?? d.price ?? 0,

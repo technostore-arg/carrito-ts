@@ -23,92 +23,7 @@ const MOCK = path.join(ROOT, 'server', '.mock-data.json')
 const DRY = process.argv.includes('--dry-run')
 const now = new Date().toISOString()
 
-const BRAND_BY_SKU = [
-  [/^IPH-/, 'Apple'],
-  [/^MOT-/, 'Motorola'],
-  [/^SAM-/, 'Samsung'],
-  [/^TXT-(MI|NOTE|REDMI|POCO|MIXFLIP|XIAOMI)/, 'Xiaomi'],
-]
-
-const ACRONYMS = new Set(['5G', '4G', 'LTE', 'GT', 'FE', 'RAM', 'ROM', 'SIM', 'NFC', 'USB', 'AI', 'NFC'])
-const KEEP_LOWER = {
-  pro: 'Pro', max: 'Max', plus: 'Plus', ultra: 'Ultra', lite: 'Lite', neo: 'Neo',
-  power: 'Power', fusion: 'Fusion', core: 'Core', edge: 'Edge', note: 'Note',
-  flip: 'Flip', fold: 'Fold', galaxy: 'Galaxy', leica: 'Leica', dual: 'Dual',
-  sin: 'Sin', cargador: 'Cargador',
-}
-
-function titleWord(w) {
-  if (!w) return w
-  if (ACRONYMS.has(w.toUpperCase())) return w.toUpperCase()
-  if (/^iphone$/i.test(w)) return 'iPhone'
-  // Códigos de modelo: A03, E13, G04S, X3, Z8, 14S, 15C, 1TB, 512GB, 5G...
-  if (/^[A-Z]\d/i.test(w) || /^\d/.test(w)) return w.toUpperCase()
-  if (/^[A-Z]$/.test(w)) return w
-  const lower = w.toLowerCase()
-  if (KEEP_LOWER[lower]) return KEEP_LOWER[lower]
-  return lower.charAt(0).toUpperCase() + lower.slice(1)
-}
-
-function titleCase(text) {
-  return text.split('/').map(part => part.split(/\s+/).map(titleWord).join(' ')).join('/')
-}
-
-function brandOf(sku) {
-  const up = String(sku || '').toUpperCase()
-  for (const [re, brand] of BRAND_BY_SKU) if (re.test(up)) return brand
-  return null
-}
-
-function cleanName(raw, sku) {
-  let n = String(raw || '').trim()
-  // Basura de importación
-  n = n.replace(/\s*-\s*U\$S\s*$/i, '')
-  n = n.replace(/\s*-\s*U\$S\s*/gi, ' ')
-  n = n.replace(/\s*\(sin\s+fuente\)\s*/gi, ' ')
-  n = n.replace(/\s+/g, ' ').trim()
-
-  const brand = brandOf(sku)
-  const up = String(sku || '').toUpperCase()
-
-  let prefix = ''
-  if (brand === 'Xiaomi') {
-    if (/^TXT-NOTE/.test(up)) { prefix = 'Xiaomi Redmi Note '; n = n.replace(/^NOTE\s+/i, '') }
-    else if (/^TXT-REDMI/.test(up)) { prefix = 'Xiaomi Redmi '; n = n.replace(/^REDMI\s+/i, '') }
-    else if (/^TXT-POCO/.test(up)) { prefix = 'Xiaomi Poco '; n = n.replace(/^POCO\s+/i, '') }
-    else if (/^TXT-MIXFLIP/.test(up)) { prefix = 'Xiaomi Mix Flip '; n = n.replace(/^MIX\s+FLIP\s+/i, '') }
-    else if (/^TXT-MI/.test(up)) { prefix = 'Xiaomi Mi '; n = n.replace(/^MI\s+/i, '') }
-    else { prefix = 'Xiaomi '; n = n.replace(/^XIAOMI\s+/i, '') }
-  } else if (brand === 'Motorola') {
-    prefix = 'Motorola '
-    n = n.replace(/^MOTOROLA\s+/i, '')
-  } else if (brand === 'Samsung') {
-    prefix = 'Samsung '
-    n = n.replace(/^SAMSUNG\s+/i, '')
-  } else if (brand === 'Apple') {
-    n = n.replace(/^iphone/i, 'iPhone')
-  }
-
-  // Orden capacidad + RAM: "4GB 128GB" -> "128GB 4GB RAM"
-  n = n.replace(/(\d+(?:\.\d+)?(?:GB|TB))\s+(\d+(?:\.\d+)?(?:GB|TB))(?!\s*RAM)/i, (m, a, b) => {
-    const num = s => parseFloat(s)
-    const toGb = s => /TB/i.test(s) ? num(s) * 1024 : num(s)
-    if (toGb(a) < toGb(b)) return `${b} ${a} RAM`
-    return m
-  })
-
-  n = titleCase(n).replace(/\s+/g, ' ').trim()
-  // Variantes entre paréntesis: "(black, Blue)" -> "(Black, Blue)"
-  n = n.replace(/\(([^)]*)\)/g, (m, inner) => `(${inner.split(',').map(s => titleCase(s.trim())).join(', ')})`)
-
-  if (brand === 'Apple') {
-    n = n.replace(/^iphone/i, 'iPhone')
-    n = n.replace(/^(iPhone\s+\d+)E\b/, '$1e')
-    return n
-  }
-  if (brand === 'Samsung' && !/^Galaxy\s/i.test(n)) return `${prefix}Galaxy ${n}`
-  return `${prefix}${n}`.trim()
-}
+import { cleanPhoneName, brandOfSku } from '../server/phone-names.js'
 
 /* ---------------- Mock ---------------- */
 const mock = JSON.parse(fs.readFileSync(MOCK, 'utf8'))
@@ -135,8 +50,8 @@ const changes = []
 const source = LOCAL ? mockPhones.map(p => ({ ref: null, data: p })) : fsPhones
 for (const d of source) {
   const oldName = String(d.data.nombre || d.data.name || '')
-  const newName = cleanName(oldName, d.data.sku)
-  const brand = brandOf(d.data.sku)
+  const newName = cleanPhoneName(oldName, d.data.sku)
+  const brand = brandOfSku(d.data.sku)
   const oldBrand = String(d.data.marca || '')
   if (newName !== oldName || (brand && brand !== oldBrand)) {
     changes.push({ sku: d.data.sku, oldName, newName, oldBrand, newBrand: brand || oldBrand, ref: d.ref })
