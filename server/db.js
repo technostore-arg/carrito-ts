@@ -14,11 +14,19 @@
 import { randomBytes } from 'node:crypto'
 import { getFirestoreDb, COLLECTIONS, FREE_SHIPPING_THRESHOLD, SHIPPING_COST } from './firebase.js'
 import { mockStore, resolveCategoryImage } from './mock-store.js'
+import fallbackCatalog from './catalog-fallback.js'
 
 const { PRODUCTS, ORDERS, CONSULTAS, MP_PAYMENTS } = COLLECTIONS
 
 function useMock(err) {
   return err && String(err.message || '').includes('FIREBASE_NO_CONFIG')
+}
+
+// Catálogo de contingencia: si Firestore falla (caída o cuota excedida), la
+// tienda sigue mostrando el último catálogo publicado en vez de quedar vacía.
+function fallbackProducts() {
+  const rows = fallbackCatalog && Array.isArray(fallbackCatalog.products) ? fallbackCatalog.products : []
+  return rows
 }
 
 /* ---------------- Traducción doc <-> forma API ---------------- */
@@ -156,6 +164,15 @@ export async function getProducts({ activeOnly = true, includeHidden = false } =
     return rows
   } catch (e) {
     if (useMock(e)) return mockStore.getProducts({ activeOnly, includeHidden })
+    // Último recurso para el público: snapshot del catálogo.
+    if (!includeHidden) {
+      const rows = fallbackProducts().filter(p =>
+        (!activeOnly || p.active !== false) && p.visibleEnTienda !== false)
+      if (rows.length) {
+        console.warn('[db] Firestore no disponible; sirviendo catálogo de contingencia:', e.message)
+        return rows
+      }
+    }
     throw e
   }
 }
@@ -168,6 +185,10 @@ export async function getProductById(id) {
     return docToProduct(doc)
   } catch (e) {
     if (useMock(e)) return mockStore.getProductById(id)
+    const key = String(id || '').toUpperCase()
+    const found = fallbackProducts().find(p =>
+      String(p.id || '').toUpperCase() === key || String(p.sku || '').toUpperCase() === key)
+    if (found) return found
     throw e
   }
 }

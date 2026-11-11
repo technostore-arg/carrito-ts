@@ -126,14 +126,13 @@ app.get('/api/products', async (req, res) => {
     if (includeHidden) {
       const token = (req.headers.authorization || '').replace('Bearer ', '')
       if (!token || !sessions.has(token)) return res.status(401).json({ error: 'No autorizado' })
-    } else {
-      // Cache de edge (Vercel CDN): el catálogo cambia poco y cada
-      // lectura son ~950 reads de Firestore. 2 min + stale 10 min.
-      res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=600')
     }
     // El admin ve TODO (activos, pausados y ocultos); el público solo lo activo y visible.
     const rows = await getProducts({ activeOnly: !includeHidden, includeHidden })
+    // Cache de edge (Vercel CDN) solo para respuestas OK: el catálogo cambia poco
+    // y cada lectura son ~950 reads de Firestore. 2 min + stale 10 min.
     if (includeHidden) res.setHeader('Cache-Control', 'no-store')
+    else res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=600')
     res.json(rows)
   } catch (e) {
     res.status(503).json({ error: e.message })
