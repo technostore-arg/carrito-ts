@@ -18,3 +18,4 @@ firebase-config.js
 .DS_Store
 
 .vercel
+insumosacuario-scrape-*.json

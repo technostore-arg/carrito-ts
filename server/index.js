@@ -720,16 +720,16 @@ async function runScrapeInsumosAcuario() {
   try {
     const scraped = await scrapeInsumosAcuario()
     const normalized = normIA(scraped)
-    const allProducts = await getProducts()
+    const allProducts = await getProducts({ activeOnly: false, includeHidden: true })
     const existing = allProducts.filter(p => p.fuente_origen === 'scraping_insumosacuario' || p.marca === 'insumosacuario')
     const changes = diffIA(existing, normalized)
     let created = 0, updated = 0
     for (const p of changes.news) {
-      createProduct({ sku: p.sku, nombre: p.nombre, precio: p.precio, marca: p.marca && p.marca !== 'insumosacuario' ? p.marca : 'Genérica', categoria: p.categoria, stock: p.stock, tipo_venta: 'directa', descripcion: p.descripcion, imagenes: p.imagenes, fuente_origen: 'scraping_insumosacuario' })
+      createProduct({ sku: p.sku, nombre: p.nombre, precio: p.precio, precio_transferencia: p.precio_transferencia, precio_mercadopago: p.precio_mercadopago, marca: p.marca && p.marca !== 'insumosacuario' ? p.marca : 'Genérica', categoria: p.categoria, stock: p.stock, active: p.stock > 0, estado: p.stock > 0 ? 'activo' : 'agotado', tipo_venta: 'directa', descripcion: p.descripcion, imagenes: p.imagenes, fuente_origen: 'scraping_insumosacuario' })
       created++
     }
-    for (const c of changes.priceChanges) { const p = existing.find(x => x.sku === c.sku); if (p) { updateProduct(p.id, { precio: c.new }); updated++ } }
-    for (const c of changes.stockChanges) { const p = existing.find(x => x.sku === c.sku); if (p) { updateProduct(p.id, { stock: c.newStock }); updated++ } }
+    for (const c of changes.priceChanges) { const p = existing.find(x => x.sku === c.sku); if (p) { updateProduct(p.id, { precio: c.new, precio_transferencia: c.new, precio_mercadopago: Math.round(c.new * 1.16) }); updated++ } }
+    for (const c of changes.stockChanges) { const p = existing.find(x => x.sku === c.sku); if (p) { updateProduct(p.id, { stock: c.newStock, active: c.newStock > 0, estado: c.newStock > 0 ? 'activo' : 'agotado' }); updated++ } }
     lastScrapeResult = { ts: new Date().toISOString(), scraped: scraped.length, created, updated, priceChanges: changes.priceChanges.length, stockChanges: changes.stockChanges.length, removed: changes.removed.length }
     console.log(`[scrape] Done: ${created} new, ${updated} updated, ${changes.priceChanges.length} price, ${changes.stockChanges.length} stock`)
     return lastScrapeResult
