@@ -39,10 +39,10 @@ export default function App() {
       if (Array.isArray(data)) {
         const fhOnly = data.filter(p => {
           const marca = (p.marca || "").toLowerCase()
-          const cat = (p.categoria || "").toLowerCase()
+          const cat = canonCat(p.categoria)
           if (marca === "futurohard") return true
           if (marca === "technostore") return false
-          return ["gpus", "memorias", "workstations", "accesorios"].includes(cat) && cat !== "celulares"
+          return ["gpus", "memorias", "almacenamiento", "workstations", "accesorios"].includes(cat)
         })
         setProducts(fhOnly)
       }
