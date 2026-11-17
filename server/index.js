@@ -26,11 +26,31 @@ import { createPreference, handleWebhook } from './checkout.js'
 import { applyPricing } from './ingesta/pricing.js'
 import { getFirestoreDb, COLLECTIONS } from './firebase.js'
 import { getLiveQuotesFromHub } from './hub/live-quotes.js'
+import { isPgConfigured, getPgPool } from './hub/pg.js'
+import { buildAuthUrl, createMlClient } from './ml/mlClient.js'
+import { createMlRepository } from './ml/mlRepository.js'
+import { syncHubToMercadoLibre } from './ml/mlPricingAndSync.js'
+import { recordWebhookEvent, processPendingWebhooks } from './ml/mlWebhooks.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3001
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'technostore2026'
 const MP_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN || ''
+const CRON_SECRET = process.env.CRON_SECRET || ''
+
+/** Helper: repo MLA sólo si el hub PostgreSQL está configurado. */
+function mlRepo() {
+  if (!isPgConfigured()) return null
+  return createMlRepository(getPgPool())
+}
+
+function cronAuth(req, res, next) {
+  const token = (req.headers.authorization || '').replace('Bearer ', '')
+  if (!CRON_SECRET || !safeEqual(token, CRON_SECRET)) {
+    return res.status(401).json({ error: 'No autorizado' })
+  }
+  next()
+}
 
 const CATEGORIES = ['celulares', 'notebooks', 'computadoras', 'gpus', 'memorias', 'accesorios', 'coolers', 'ram', 'ram-sodimm', 'ssd', 'ssd-nvme', 'ssd-sata', 'gabinetes', 'watercooling', 'procesadores']
 
@@ -430,6 +450,79 @@ app.post('/api/consultas', async (req, res) => {
     res.status(201).json({ ok: true, id })
   } catch (e) {
     res.status(503).json({ error: e.message })
+  }
+})
+
+/* ---------------- Mercado Libre (Fase 3) ---------------- */
+
+// 1) OAuth: URL de autorización y callback que guarda tokens en ml_credentials.
+app.get('/api/ml/auth/url', (req, res) => {
+  const url = buildAuthUrl({ state: String(req.query.state || 'technostore') })
+  res.json({ url })
+})
+
+app.get('/api/ml/auth/callback', async (req, res) => {
+  if (req.query.error) return res.status(400).json({ error: String(req.query.error) })
+  const code = String(req.query.code || '')
+  if (!code) return res.status(400).json({ error: 'Falta code' })
+  const repo = mlRepo()
+  if (!repo) return res.status(503).json({ error: 'Hub PostgreSQL no configurado' })
+  try {
+    const client = createMlClient({ repo })
+    const result = await client.exchangeCode(code)
+    res.json({ ok: true, ...result })
+  } catch (e) {
+    res.status(502).json({ error: e.message })
+  }
+})
+
+// 2) Cron interno: sincronización Hub -> MLA (lote acotado).
+app.post('/api/cron/ml-sync', cronAuth, async (req, res) => {
+  const repo = mlRepo()
+  if (!repo) return res.status(503).json({ error: 'Hub PostgreSQL no configurado' })
+  try {
+    const batchSize = Math.min(Number(req.body?.batchSize) || 50, 100)
+    const offset = Math.max(Number(req.body?.offset) || 0, 0)
+    const summary = await syncHubToMercadoLibre({
+      repo,
+      mlClient: createMlClient({ repo }),
+      dryRun: !!req.body?.dryRun,
+      batchSize,
+      offset,
+    })
+    res.json(summary)
+  } catch (e) {
+    res.status(502).json({ error: e.message })
+  }
+})
+
+// 3) Cron interno: proceso de eventos encolados por los webhooks.
+app.post('/api/cron/ml-webhooks', cronAuth, async (req, res) => {
+  const repo = mlRepo()
+  if (!repo) return res.status(503).json({ error: 'Hub PostgreSQL no configurado' })
+  try {
+    const summary = await processPendingWebhooks({
+      repo,
+      mlClient: createMlClient({ repo }),
+      limit: Math.min(Number(req.body?.limit) || 20, 100),
+    })
+    res.json(summary)
+  } catch (e) {
+    res.status(502).json({ error: e.message })
+  }
+})
+
+// 4) Webhook público: idempotente y responde 200 rápido (no procesa acá).
+app.post('/api/ml/webhooks', async (req, res) => {
+  const repo = mlRepo()
+  if (!repo) return res.status(200).json({ received: false, reason: 'hub_no_configured' })
+  try {
+    const result = await recordWebhookEvent({ repo, payload: req.body || {} })
+    res.status(200).json({ received: true, ...result })
+  } catch (e) {
+    // Respondemos 200 para evitar reintentos infinitos; el error queda en logs.
+    console.error('[ml-webhook] error al registrar:', e.message)
+    res.status(200).json({ received: false, error: e.message })
   }
 })
 
