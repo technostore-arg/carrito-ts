@@ -1,0 +1,47 @@
+name: Elit sync
+
+on:
+  schedule:
+    # Stock y precios cada 15 minutos (hora UTC)
+    - cron: '*/15 * * * *'
+    # Catálogo completo una vez por día (03:10 UTC)
+    - cron: '10 3 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'catalog | stock'
+        required: true
+        default: 'stock'
+
+concurrency:
+  group: elit-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Elegir modo
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "value=${{ inputs.mode }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "10 3 * * *" ]; then
+            echo "value=catalog" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=stock" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Sincronizar
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ELIT_MODE: ${{ secrets.ELIT_MODE || 'sandbox' }}
+          ELIT_USER_ID: ${{ secrets.ELIT_USER_ID }}
+          ELIT_TOKEN: ${{ secrets.ELIT_TOKEN }}
+          PG_SSL: '1'
+        run: node scripts/elit-sync.mjs --mode ${{ steps.mode.outputs.value }}

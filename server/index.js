@@ -25,6 +25,7 @@ import { scrapeAll as scrapeInsumosAcuario, normalizeForStore as normIA, diff as
 import { createPreference, handleWebhook } from './checkout.js'
 import { applyPricing } from './ingesta/pricing.js'
 import { getFirestoreDb, COLLECTIONS } from './firebase.js'
+import { getLiveQuotesFromHub } from './hub/live-quotes.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3001
@@ -123,6 +124,18 @@ app.post('/api/products/live', async (req, res) => {
   try {
     const skus = Array.isArray(req.body?.skus) ? req.body.skus.slice(0, 200).map(String) : []
     if (!skus.length) return res.json({ quotes: {}, updatedAt: new Date().toISOString() })
+
+    res.setHeader('Cache-Control', 'no-store')
+
+    // Hub PostgreSQL (Fase 2): si está configurado, manda el motor de precios.
+    // Ante cualquier error se cae al legacy Firestore para no dejar la tienda caída.
+    try {
+      const hub = await getLiveQuotesFromHub(skus)
+      if (hub) return res.json({ ...hub, updatedAt: new Date().toISOString() })
+    } catch (e) {
+      console.warn('[hub] live quotes fallback a Firestore:', e.message)
+    }
+
     const rows = await getProducts({ activeOnly: true })
     const wanted = new Set(skus.map(s => s.toUpperCase()))
     /** @type {Record<string, object>} */
@@ -139,7 +152,6 @@ app.post('/api/products/live', async (req, res) => {
         updatedAt: new Date().toISOString(),
       }
     }
-    res.setHeader('Cache-Control', 'no-store')
     res.json({ quotes, updatedAt: new Date().toISOString() })
   } catch (e) {
     res.status(503).json({ error: e.message })

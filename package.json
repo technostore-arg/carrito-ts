@@ -19,7 +19,12 @@
     "build:futurohard": "vite build --config apps/futurohard/vite.config.js",
     "build:admin": "vite build --config apps/admin/vite.config.js",
     "preview": "vite preview --config apps/technostore/vite.config.js",
-    "migrate:firestore": "node server/migrate-to-firestore.mjs"
+    "migrate:firestore": "node server/migrate-to-firestore.mjs",
+    "db:migrate": "node scripts/migrate-pg.mjs",
+    "elit:sync:catalog": "node scripts/elit-sync.mjs --mode catalog",
+    "elit:sync:stock": "node scripts/elit-sync.mjs --mode stock",
+    "test:pricing": "node scripts/test-pricing-sync.mjs",
+    "test:cro": "node scripts/test-cro.mjs"
   },
   "dependencies": {
     "concurrently": "^10.0.5",
@@ -27,6 +32,7 @@
     "firebase-admin": "^14.3.0",
     "framer-motion": "^13.1.1",
     "pdf-parse": "^2.4.5",
+    "pg": "^8.23.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "xlsx": "^0.18.5"

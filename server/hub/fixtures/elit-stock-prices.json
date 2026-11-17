@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "meta": { "generatedAt": "2026-11-17T09:15:00Z" },
+  "data": {
+    "actualizaciones": [
+      { "codigo": "EL-1001", "moneda": "USD", "precio_usd": 850, "stock": 7 },
+      { "codigo": "EL-1002", "moneda": "USD", "precio_usd": 120, "stock": 2 },
+      { "codigo": "EL-1003", "moneda": "USD", "precio_usd": 45, "stock": 10 },
+      { "codigo": "EL-1004", "moneda": "USD", "precio_usd": 0, "stock": 5 },
+      { "codigo": "EL-1005", "moneda": "USD", "precio_usd": 300, "stock": 4 },
+      { "codigo": "EL-1006", "moneda": "USD", "precio_usd": 90, "stock": 0 },
+      { "codigo": "EL-1007", "moneda": "USD", "precio_usd": 255, "stock": 8 },
+      { "codigo": "EL-1008", "moneda": "USD", "precio_usd": 180, "stock": 1 }
+    ]
+  }
+}
