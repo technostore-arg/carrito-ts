@@ -1,49 +1,55 @@
-import { ars, waLink } from "../utils/format"
-import { specChips } from "../utils/specs"
+import { specChips } from '../utils/specs.js'
+import { waLink } from '../utils/format.js'
+import PriceBlock from './PriceBlock.jsx'
+import StockBadge from './StockBadge.jsx'
+import { stockState, STOCK_LABELS } from '../utils/stock.js'
+import ProductMedia from './ProductMedia.jsx'
 
+/** Tarjeta de producto con precio dual, badges de stock e imagen lazy. */
 export default function ProductCard({ producto, onAddToCart, onDetail }) {
-  const { nombre, categoria, tipo_venta, stock, imagenes, sku, precio_transferencia, precio_mercadopago } = producto
-  const foto = imagenes?.[0]
+  const { nombre, categoria, imagenes, sku } = producto
   const chips = specChips(producto)
-  const esEncargo = tipo_venta === "encargo"
-  const esUsado = producto.condicion === "usado"
-  const waHref = esEncargo ? waLink(`Hola, quiero consultar por ${nombre} (SKU: ${sku})`) : null
+  const state = stockState(producto)
+  const sinCompra = state === 'agotado' || state === 'encargo'
+  const esUsado = producto.condicion === 'usado'
+  const foto = imagenes?.[0]
+  const consulta = waLink(`Hola, quiero consultar por ${nombre} (SKU: ${sku})`)
 
-  const handleEncargo = () => {
-    try { fetch("/api/consultas", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sku, nombre, marca: producto.marca, mensaje: `Hola, quiero consultar por ${nombre} (SKU: ${sku})`, origen: "whatsapp" }) }).catch(() => {}) } catch {}
+  const consultar = () => {
+    try {
+      fetch('/api/consultas', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sku, nombre, marca: producto.marca, mensaje: `Consulta por ${nombre}`, origen: 'whatsapp' }),
+      }).catch(() => {})
+    } catch { /* el link de WhatsApp funciona igual */ }
   }
 
   return (
-    <article className="card" onClick={() => onDetail?.(producto)} style={{ cursor: "pointer" }}>
+    <article className="card" onClick={() => onDetail?.(producto)} style={{ cursor: 'pointer' }}>
       <div className="card-media">
-        {foto ? <img src={foto} alt={nombre} loading="lazy" decoding="async" /> : <div className="fallback" aria-hidden>○</div>}
-        <span className={`badge ${esEncargo ? "badge--encargo" : ""}`}>{esEncargo ? "A pedido" : categoria}</span>
+        <ProductMedia src={foto} alt={nombre} className="card-media__img" />
+        <span className={`badge ${state === 'encargo' ? 'badge--encargo' : ''}`}>{state === 'encargo' ? 'A pedido' : categoria}</span>
+        <StockBadge producto={producto} compact />
         {esUsado && <span className="badge badge--usado">Usado · 30 días</span>}
       </div>
       <div className="card-body">
         <span className="brand">{sku}</span>
         <h3 title={nombre}>{nombre}</h3>
         {chips.length > 0 && (
-          <div style={{ display: "flex", gap: 4, flexWrap: "wrap", margin: "0 0 8px" }}>
-            {chips.map((c, i) => (
-              <span key={i} style={{ fontSize: 10.5, fontWeight: 600, color: "var(--text)", background: "#f0f4ff", border: "1px solid #dbe4ff", padding: "2px 7px", borderRadius: 6, whiteSpace: "nowrap" }}>{c}</span>
-            ))}
+          <div className="spec-chips">
+            {chips.map((c, i) => <span key={i}>{c}</span>)}
           </div>
         )}
-        {!esEncargo && <p style={{ fontSize: 11, color: "var(--amber)", margin: "0 0 8px", fontWeight: 500 }}>Recomendamos consultar stock antes de comprar</p>}
-        {esEncargo ? (
-          <div className="price-row"><span className="price price--encargo">A consultar</span></div>
-        ) : (
-          <div className="price-row"><span className="price">{ars(precio_transferencia)}</span></div>
-        )}
+        <PriceBlock producto={producto} compact />
         <div className="card-actions">
-          {esEncargo ? (
-            <a className="add-btn" href={waHref} target="_blank" rel="noreferrer" onClick={e => { e.stopPropagation(); handleEncargo() }}>Consultar</a>
+          {sinCompra ? (
+            <a className="add-btn" href={consulta} target="_blank" rel="noreferrer" onClick={e => { e.stopPropagation(); consultar() }}>Consultar</a>
           ) : (
             <button className="add-btn" onClick={e => { e.stopPropagation(); onAddToCart?.(producto) }}>Agregar</button>
           )}
           <button className="add-btn add-btn--ghost" onClick={e => { e.stopPropagation(); onDetail?.(producto) }}>Detalle</button>
         </div>
+        {state === 'agotado' && <span className="card-stock-note">{STOCK_LABELS.agotado}</span>}
       </div>
     </article>
   )

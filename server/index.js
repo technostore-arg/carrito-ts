@@ -118,6 +118,34 @@ app.post('/api/admin/login', (req, res) => {
 
 /* ---------------- Products ---------------- */
 
+// Precios/stock en tiempo real (sin caché): separados del catálogo cacheable.
+app.post('/api/products/live', async (req, res) => {
+  try {
+    const skus = Array.isArray(req.body?.skus) ? req.body.skus.slice(0, 200).map(String) : []
+    if (!skus.length) return res.json({ quotes: {}, updatedAt: new Date().toISOString() })
+    const rows = await getProducts({ activeOnly: true })
+    const wanted = new Set(skus.map(s => s.toUpperCase()))
+    /** @type {Record<string, object>} */
+    const quotes = {}
+    for (const p of rows) {
+      const sku = String(p.sku || p.id).toUpperCase()
+      if (!wanted.has(sku)) continue
+      quotes[sku] = {
+        precio_transferencia: p.precio_transferencia,
+        precio_mercadopago: p.precio_mercadopago,
+        precio_lista: p.precio_lista ?? null,
+        stock: p.stock,
+        stock_source: p.stock_source || (p.fuente_origen === 'scraping_insumosacuario' ? 'supplier' : 'local'),
+        updatedAt: new Date().toISOString(),
+      }
+    }
+    res.setHeader('Cache-Control', 'no-store')
+    res.json({ quotes, updatedAt: new Date().toISOString() })
+  } catch (e) {
+    res.status(503).json({ error: e.message })
+  }
+})
+
 app.get('/api/products', async (req, res) => {
   try {
     // El admin pide incluirOcultos=1 para ver también los archivados.

@@ -73,8 +73,8 @@ function FacetOpt({ active, label, count, onClick, type = "radio" }) {
  * Renderiza `children` como contenido principal (el grid).
  */
 export default function FilterPanel({
-  categoria, marcas, rango, orden, cpu, ram, ssd, condicion, calidad, batMin,
-  onCategoria, onMarcas, onRango, onOrden, onCpu, onRam, onSsd, onCondicion, onCalidad, onBatMin,
+  categoria, marcas, rango, orden, cpu, ram, ssd, condicion, calidad, batMin, disponibilidad,
+  onCategoria, onMarcas, onRango, onOrden, onCpu, onRam, onSsd, onCondicion, onCalidad, onBatMin, onDisponibilidad,
   marcasDisponibles, marcaCounts, cpuOptions, ramOptions, ssdOptions, rangeOptions,
   visibleSpecs, counts, hasUsed, chips, totalVisibles, totalAll, hasFiltros, onLimpiar, children,
 }) {
@@ -87,6 +87,7 @@ export default function FilterPanel({
   const activeCount =
     (categoria !== "todos" ? 1 : 0) + marcas.length + (rango !== "todos" ? 1 : 0) +
     (condicion !== "todos" ? 1 : 0) + (calidad !== "todos" ? 1 : 0) + (batMin > 0 ? 1 : 0) +
+    (disponibilidad !== "todos" ? 1 : 0) +
     (cpu ? 1 : 0) + (ram ? 1 : 0) + (ssd ? 1 : 0)
 
   const facets = (
@@ -136,6 +137,13 @@ export default function FilterPanel({
         </Facet>
       )}
 
+      <Facet title="Disponibilidad">
+        <div className="facet-opts" role="radiogroup">
+          <FacetOpt active={disponibilidad === "todos"} label="Todos" onClick={() => onDisponibilidad("todos")} />
+          <FacetOpt active={disponibilidad === "hoy"} label="Entrega hoy" onClick={() => onDisponibilidad("hoy")} />
+        </div>
+      </Facet>
+
       <Facet title="Precio">
         <div className="facet-opts" role="radiogroup">
           <FacetOpt active={rango === "todos"} label="Todos los precios" onClick={() => onRango("todos")} />
@@ -181,6 +189,9 @@ export default function FilterPanel({
       <div className="catalog-toolbar">
         <button type="button" className="filters-fab" onClick={() => setSheetOpen(true)}>
           Filtros {activeCount > 0 && <em>{activeCount}</em>}
+        </button>
+        <button type="button" className={`quick-avail ${disponibilidad === "hoy" ? "active" : ""}`} onClick={() => onDisponibilidad(disponibilidad === "hoy" ? "todos" : "hoy")} aria-pressed={disponibilidad === "hoy"}>
+          ⚡ Entrega hoy
         </button>
         <span className="filter-count">{totalVisibles === totalAll ? `${totalAll} productos` : `${totalVisibles} de ${totalAll} productos`}</span>
         <div className="chips" role="list">

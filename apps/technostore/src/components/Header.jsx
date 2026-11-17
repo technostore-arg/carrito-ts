@@ -27,7 +27,7 @@ export default function Header({ search, onSearchChange, onSelectCategory, activ
       <span className="search-icon">⌨</span>
       <input
         type="text"
-        placeholder="Buscar modelo, marca…"
+        placeholder="Buscar modelo, marca, SKU…"
         value={search}
         autoFocus={autoFocus}
         onChange={e => onSearchChange(e.target.value)}

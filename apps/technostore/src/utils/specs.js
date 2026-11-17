@@ -264,6 +264,10 @@ export function matchNameSku(p, qn) {
 export function matchQuery(p, qn) {
   if (!qn) return true
   if (matchNameSku(p, qn)) return true
-  const resto = `${p.descripcion || ''} ${Object.values(p.especificaciones || {}).map(String).join(' ')}`
+  // Búsqueda instantánea: nombre, SKU, marca y categoría (además de specs).
+  const brand = `${p.marca || p.brand || ''} ${p.fabricante || ''}`
+  const cat = `${p.categoria || p.category || ''}`
+  if (normText(`${brand} ${cat}`).includes(qn)) return true
+  const resto = `${p.descripcion || p.description || ''} ${Object.values(p.especificaciones || {}).map(String).join(' ')}`
   return normText(resto).includes(qn)
 }

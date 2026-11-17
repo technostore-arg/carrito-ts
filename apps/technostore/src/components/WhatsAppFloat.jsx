@@ -9,6 +9,7 @@ export default function WhatsAppFloat() {
       href={href}
       target="_blank"
       rel="noreferrer"
+      className="whatsapp-float"
       aria-label="WhatsApp"
       style={{
         position: 'fixed',

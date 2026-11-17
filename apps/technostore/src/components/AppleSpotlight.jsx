@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import ProductMedia from './ProductMedia.jsx'
 import { ars } from "../utils/format"
 import { specChips } from "../utils/specs"
 import { getBrand } from "../utils/brand"
@@ -45,7 +46,7 @@ export default function AppleSpotlight({ products, onOpen, onVerTodos }) {
             return (
               <button type="button" key={p.sku} className="spotlight-card" onClick={() => onOpen?.(p)}>
                 <div className="spotlight-media">
-                  {p.imagenes?.[0] ? <img src={p.imagenes[0]} alt={p.nombre} loading="lazy" decoding="async" /> : <span aria-hidden>○</span>}
+                  <ProductMedia src={p.imagenes?.[0]} alt={p.nombre} />
                   <span className={`badge ${usado ? "badge--usado" : ""}`}>{usado ? `Usado · Bat ${e._bateria}%` : "Nuevo"}</span>
                 </div>
                 <div className="spotlight-body">

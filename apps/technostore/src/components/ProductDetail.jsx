@@ -1,80 +1,57 @@
-import { useEffect } from "react"
-import { ars, waLink } from "../utils/format"
+import { useEffect } from 'react'
+import { waLink } from '../utils/format.js'
+import PriceBlock from './PriceBlock.jsx'
+import StockBadge from './StockBadge.jsx'
+import { stockState } from '../utils/stock.js'
+import ProductMedia from './ProductMedia.jsx'
 
+/** Detalle de producto: mismos precios duales y badges que la tarjeta. */
 export default function ProductDetail({ producto, onClose, onAddToCart }) {
   useEffect(() => {
-    document.body.classList.add("locked")
-    const h = e => { if (e.key === "Escape") onClose() }
-    window.addEventListener("keydown", h)
-    return () => { document.body.classList.remove("locked"); window.removeEventListener("keydown", h) }
+    document.body.classList.add('locked')
+    const h = e => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', h)
+    return () => { document.body.classList.remove('locked'); window.removeEventListener('keydown', h) }
   }, [onClose])
+
   if (!producto) return null
-  const { nombre, descripcion, categoria, tipo_venta, stock, especificaciones, imagenes, sku, marca, precio_transferencia, precio_mercadopago } = producto
-  const foto = imagenes?.[0]
-  const esEncargo = tipo_venta === "encargo"
-  const waHref = esEncargo ? waLink(`Hola, quiero consultar por ${nombre} (SKU: ${sku})`) : null
+  const { nombre, descripcion, categoria, imagenes, sku, marca, especificaciones } = producto
+  const state = stockState(producto)
+  const sinCompra = state === 'agotado' || state === 'encargo'
+  const waHref = waLink(`Hola, quiero consultar por ${nombre} (SKU: ${sku})`)
+
+  const specs = Object.entries(especificaciones || {}).filter(([k]) => !k.startsWith('_'))
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
+      <div className="modal modal--product" onClick={e => e.stopPropagation()}>
         <button className="close icon-btn" onClick={onClose} aria-label="Cerrar">✕</button>
-        {foto && (
-          <div style={{ width: "100%", height: 320, borderRadius: 12, overflow: "hidden", marginBottom: 16, background: "#f5f5f7", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-            <img src={foto} alt={nombre} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-          </div>
-        )}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+        <ProductMedia src={imagenes?.[0]} alt={nombre} className="detail-media" eager />
+        <div className="detail-badges">
           <span className="brand">{sku}</span>
-          {marca && <span style={{ fontSize: 11, color: "var(--muted)", background: "#f5f5f7", padding: "2px 8px", borderRadius: 6 }}>{marca}</span>}
-          <span className={`badge ${esEncargo ? "badge--encargo" : ""}`} style={{ position: "static" }}>{esEncargo ? "A pedido" : categoria}</span>
-          {producto.condicion === "usado" && <span className="badge badge--usado" style={{ position: "static" }}>Usado</span>}
+          {marca && <span className="detail-chip">{marca}</span>}
+          <span className="badge badge--static">{categoria}</span>
+          <StockBadge producto={producto} />
+          {producto.condicion === 'usado' && <span className="badge badge--usado badge--static">Usado · {producto.garantia || 'garantía'}</span>}
         </div>
-        <h2 className="modal-title" style={{ marginBottom: 10 }}>{nombre}</h2>
-        {descripcion && <p style={{ fontSize: 13.5, color: "var(--muted)", lineHeight: 1.6, marginBottom: 14 }}>{descripcion}</p>}
-        {producto.condicion === "usado" && (
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
-            {producto.garantia && <span className="spec-note spec-note--ok">Garantía {producto.garantia}</span>}
-            {especificaciones?._calidad && <span className="spec-note">Calidad {especificaciones._calidad}</span>}
-            {especificaciones?._bateria && <span className="spec-note">Batería {especificaciones._bateria}%</span>}
-            {especificaciones?._color && <span className="spec-note">{especificaciones._color}</span>}
+        <h2 className="modal-title">{nombre}</h2>
+        {descripcion && <p className="detail-desc">{descripcion}</p>}
+
+        {specs.length > 0 && (
+          <div className="detail-specs">
+            <h4>Especificaciones</h4>
+            {specs.map(([k, v]) => (
+              <div key={k}><span>{k}</span><span>{String(v)}</span></div>
+            ))}
           </div>
         )}
-        {especificaciones && Object.keys(especificaciones).length > 0 && (() => {
-          const clean = Object.entries(especificaciones).filter(([k]) => !k.startsWith('_'))
-          if (clean.length === 0) return null
-          return (
-            <div style={{ marginBottom: 16 }}>
-              <h4 style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 8 }}>Especificaciones</h4>
-              <div style={{ display: "grid", gap: 6 }}>
-                {clean.map(([k, v]) => (
-                  <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", borderRadius: 8, background: "#f5f5f7", fontSize: 12.5 }}>
-                    <span style={{ color: "var(--muted)", fontWeight: 500 }}>{k}</span>
-                    <span>{String(v)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )
-        })()}
-        <div style={{ borderTop: "1px solid var(--border-light)", paddingTop: 14 }}>
-          {esEncargo ? (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-              <span className="price price--encargo">A consultar</span>
-              <a className="add-btn" href={waHref} target="_blank" rel="noreferrer">Consultar por WhatsApp</a>
-            </div>
+
+        <div className="detail-buy">
+          <PriceBlock producto={producto} />
+          {sinCompra ? (
+            <a className="add-btn" href={waHref} target="_blank" rel="noreferrer">Consultar por WhatsApp</a>
           ) : (
-            <>
-              <div style={{ display: "flex", gap: 16, marginBottom: 12, flexWrap: "wrap" }}>
-                <div style={{ flex: 1, minWidth: 140, padding: "10px 14px", borderRadius: 10, border: "2px solid var(--accent)", background: "#f0f7ff" }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--accent)", marginBottom: 4 }}>Precio</div>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: "var(--text)" }}>{ars(precio_transferencia)}</div>
-                </div>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                <p style={{ fontSize: 11, color: "var(--amber)", margin: 0, fontWeight: 500 }}>Recomendamos consultar stock antes de comprar</p>
-                <button className="add-btn" onClick={() => { onAddToCart?.(producto); onClose() }}>Agregar al carrito</button>
-              </div>
-            </>
+            <button className="add-btn" onClick={() => { onAddToCart?.(producto); onClose() }}>Agregar al carrito</button>
           )}
         </div>
       </div>

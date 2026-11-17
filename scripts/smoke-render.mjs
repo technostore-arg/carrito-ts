@@ -23,7 +23,12 @@ import { getBrand } from '../apps/technostore/src/utils/brand.js'
 import fs from 'node:fs'
 
 const mock = JSON.parse(fs.readFileSync('server/.mock-data.json', 'utf8'))
-const products = mock.products
+let products = mock.products
+if (!products.length) {
+  const backup = fs.readdirSync('.').filter(f => /^productos-backup-.*\.json$/.test(f)).sort().pop()
+  if (backup) products = JSON.parse(fs.readFileSync(backup, 'utf8'))
+}
+if (!products.length) { console.log('SMOKE SKIP: catálogo vacío y sin backup local'); process.exit(0) }
 const scoped = products.filter(p => canonCat(p.categoria) === 'celulares')
 const marcas = [...new Set(scoped.map(getBrand))].sort()
 const marcaCounts = {}
