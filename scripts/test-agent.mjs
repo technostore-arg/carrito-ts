@@ -7,7 +7,7 @@ import assert from 'node:assert/strict'
 import { createHubTools } from '../server/agent/hubTools.js'
 import { createMockLlm } from '../server/agent/llmClient.js'
 import { runToolLoop, validateMlResponse, answerMlQuestions, handleSalesChat } from '../server/agent/orchestrator.js'
-import { processPendingSupplierOrders, resolveApproval, signApprovalToken } from '../server/agent/orderFulfillmentAgent.js'
+import { processPendingSupplierOrders, resolveApproval, verifyApprovalToken } from '../server/agent/orderFulfillmentAgent.js'
 
 const pricingConfig = {
   usdArsRate: 1500, listSurchargePercent: 16, safetyStockThreshold: 3,
@@ -221,7 +221,7 @@ function mockElit() {
   assert.equal(notified.length, 1)
   const approval = [...repo.state.approvals.values()][0]
   assert.equal(approval.status, 'pending_approval')
-  assert.equal(approval.approval_token, signApprovalToken(approval.id, 's'))
+  assert.equal(verifyApprovalToken(approval.approval_token, approval.id, 's'), true)
 
   const rejected = await resolveApproval({ repo, approvalId: approval.id, token: approval.approval_token, action: 'reject', elitClient: elit, config: { approvalSecret: 's' } })
   assert.equal(rejected.status, 'rejected')

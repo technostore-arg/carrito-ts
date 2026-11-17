@@ -97,6 +97,16 @@ export function createAgentRepository(pool) {
       throw new Error('Stock insuficiente en todos los proveedores')
     },
 
+    async getAutoSpendLast24h() {
+      const { rows } = await pool.query(
+        `SELECT COALESCE(SUM(total_cost_usd),0) AS spent
+           FROM supplier_purchase_approvals
+          WHERE status IN ('auto_executed','executed')
+            AND created_at >= now() - interval '24 hours'`
+      )
+      return Number(rows[0]?.spent) || 0
+    },
+
     async createHubOrder(o) {
       await pool.query(
         `INSERT INTO hub_orders (code, channel, customer_json, items_json, subtotal, discount,

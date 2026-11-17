@@ -2,20 +2,41 @@
  * server/agent/orderFulfillmentAgent.js — Compras a Elit con Human-in-the-Loop.
  * Repositorio, elitClient y notifier inyectables (tests 100% locales).
  */
-import { createHmac, timingSafeEqual } from 'node:crypto'
+import { createHmac } from 'node:crypto'
+import { safeCompareSecret } from '../hub/security.js'
 
 export const DEFAULT_AUTO_APPROVE_USD_LIMIT = 150
+export const DEFAULT_DAILY_SPEND_CAP_USD = 400
+export const APPROVAL_TOKEN_TTL_MS = 24 * 60 * 60 * 1000
 
-/** @param {string|number} id @param {string} secret */
-export function signApprovalToken(id, secret) {
-  return createHmac('sha256', secret || 'dev-secret').update(String(id)).digest('base64url')
+/**
+ * Token HMAC con expiración opcional (24 hs en el flujo de aprobación).
+ * El formato sin expiración se mantiene por compatibilidad con tokens viejos.
+ */
+export function signApprovalToken(id, secret, expiresAtMs = null) {
+  const key = secret || 'dev-secret'
+  if (!expiresAtMs) return createHmac('sha256', key).update(String(id)).digest('base64url')
+  const payload = Buffer.from(`${id}:${expiresAtMs}`).toString('base64url')
+  const sig = createHmac('sha256', key).update(payload).digest('base64url')
+  return `${payload}.${sig}`
 }
 
 /** @param {string} token @param {string|number} id @param {string} secret */
-export function verifyApprovalToken(token, id, secret) {
-  const a = Buffer.from(String(token || ''))
-  const b = Buffer.from(signApprovalToken(id, secret))
-  return a.length === b.length && timingSafeEqual(a, b)
+export function verifyApprovalToken(token, id, secret, { now = () => Date.now() } = {}) {
+  const raw = String(token || '')
+  const key = secret || 'dev-secret'
+  if (!raw.includes('.')) {
+    return safeCompareSecret(raw, createHmac('sha256', key).update(String(id)).digest('base64url'))
+  }
+  const [payload, sig] = raw.split('.')
+  if (!payload || !safeCompareSecret(sig, createHmac('sha256', key).update(payload).digest('base64url'))) return false
+  try {
+    const [tokenId, exp] = Buffer.from(payload, 'base64url').toString('utf8').split(':')
+    const expires = Number(exp)
+    return String(tokenId) === String(id) && Number.isFinite(expires) && now() < expires
+  } catch {
+    return false
+  }
 }
 
 /** Notificador de Telegram (inyectable; sin credenciales sólo loguea). */
@@ -45,6 +66,8 @@ export async function processPendingSupplierOrders({
   repo, elitClient, notifier, config = {}, limit = 20,
 } = {}) {
   const autoLimit = Number(config.autoApproveUsdLimit ?? process.env.AUTO_APPROVE_USD_LIMIT) || DEFAULT_AUTO_APPROVE_USD_LIMIT
+  const dailyCap = Number(config.dailyAutoSpendCapUsd ?? process.env.DAILY_AUTO_SPEND_CAP_USD) || DEFAULT_DAILY_SPEND_CAP_USD
+  let spentLast24h = Number(await repo.getAutoSpendLast24h?.()) || 0
   const usdRate = Number(config.usdArsRate) || 1550
   const approvalSecret = config.approvalSecret || process.env.APPROVAL_SECRET || 'dev-secret'
   const baseUrl = (config.approvalBaseUrl || process.env.APPROVAL_BASE_URL || 'https://carrito-ts-neon.vercel.app').replace(/\/$/, '')
@@ -64,12 +87,13 @@ export async function processPendingSupplierOrders({
       const totalCostUsd = Math.round(unitUsd * qty * 100) / 100
       const items = [{ sku: listing.supplier_sku || listing.supplierSku, qty, cost_usd: unitUsd }]
 
-      if (totalCostUsd < autoLimit) {
+      if (totalCostUsd < autoLimit && (spentLast24h + totalCostUsd) < dailyCap) {
         const placed = await elitClient.placeOrder({ items })
         await repo.upsertApproval({
           orderSource: 'ml', externalOrderId: String(order.id), items,
           totalCostUsd, status: 'auto_executed', approvalToken: null,
         })
+        spentLast24h += totalCostUsd
         await repo.updateSupplierOrderStatus(order.id, 'ordered')
         results.push({ orderId: order.id, status: 'auto_executed', totalCostUsd, placed })
         continue
@@ -80,7 +104,7 @@ export async function processPendingSupplierOrders({
         totalCostUsd, status: 'pending_approval', approvalToken: null,
       })
       const approvalId = created?.id
-      const token = signApprovalToken(approvalId, approvalSecret)
+      const token = signApprovalToken(approvalId, approvalSecret, Date.now() + APPROVAL_TOKEN_TTL_MS)
       await repo.upsertApproval({
         orderSource: 'ml', externalOrderId: String(order.id), items,
         totalCostUsd, status: 'pending_approval', approvalToken: token,

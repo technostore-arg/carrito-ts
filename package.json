@@ -28,6 +28,7 @@
     "test:ml": "node scripts/test-ml.mjs",
     "test:agent": "node scripts/test-agent.mjs",
     "test:e2e": "node scripts/test-e2e-flow.mjs",
+    "test:security": "node scripts/test-security.mjs",
     "ml:sync": "node scripts/ml-sync.mjs",
     "ml:webhooks": "node scripts/ml-sync.mjs --job webhooks"
   },

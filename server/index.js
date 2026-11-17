@@ -2,7 +2,7 @@ import express from 'express'
 import path from 'node:path'
 import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { randomBytes, timingSafeEqual } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 import { existsSync } from 'node:fs'
 import {
   getProducts,
@@ -40,6 +40,10 @@ import { createElitClient } from './hub/elitService.js'
 import { getPublicCatalogFromHub, getPublicProductFromHub } from './hub/publicCatalog.js'
 import { placeWebOrder } from './hub/orderService.js'
 import { withAdvisoryLock } from './hub/advisoryLock.js'
+import {
+  safeCompareSecret, createRateLimiter, rateLimitMiddleware,
+  signOAuthState, verifyOAuthState, verifyWhatsappSignature, validateMlWebhookPayload,
+} from './hub/security.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3001
@@ -68,11 +72,17 @@ function agentServices(repo) {
 
 function cronAuth(req, res, next) {
   const token = (req.headers.authorization || '').replace('Bearer ', '')
-  if (!CRON_SECRET || !safeEqual(token, CRON_SECRET)) {
+  if (!CRON_SECRET || !safeCompareSecret(token, CRON_SECRET)) {
     return res.status(401).json({ error: 'No autorizado' })
   }
   next()
 }
+
+// Ventana deslizante en memoria: 15 req/min por IP.
+const chatLimiter = createRateLimiter({ max: 15, windowMs: 60_000 })
+const orderLimiter = createRateLimiter({ max: 15, windowMs: 60_000 })
+const rateLimitChat = rateLimitMiddleware(chatLimiter)
+const rateLimitOrders = rateLimitMiddleware(orderLimiter)
 
 const CATEGORIES = ['celulares', 'notebooks', 'computadoras', 'gpus', 'memorias', 'accesorios', 'coolers', 'ram', 'ram-sodimm', 'ssd', 'ssd-nvme', 'ssd-sata', 'gabinetes', 'watercooling', 'procesadores']
 
@@ -102,7 +112,10 @@ app.use((req, res, next) => {
   next()
 })
 
-app.use(express.json({ limit: '20mb' }))
+app.use(express.json({
+  limit: '20mb',
+  verify: (req, _res, buf) => { req.rawBody = buf.toString('utf8') },
+}))
 
 const sessions = new Map()
 
@@ -115,9 +128,7 @@ function auth(req, res, next) {
 }
 
 function safeEqual(a, b) {
-  const ba = Buffer.from(String(a))
-  const bb = Buffer.from(String(b))
-  return ba.length === bb.length && timingSafeEqual(ba, bb)
+  return safeCompareSecret(a, b)
 }
 
 /* ---------------- Auth ---------------- */
@@ -495,14 +506,23 @@ app.post('/api/consultas', async (req, res) => {
 
 /* ---------------- Mercado Libre (Fase 3) ---------------- */
 
-// 1) OAuth: URL de autorización y callback que guarda tokens en ml_credentials.
+// 1) OAuth: URL firmada con state anti-CSRF. Requiere admin_key (= CRON_SECRET).
 app.get('/api/ml/auth/url', (req, res) => {
-  const url = buildAuthUrl({ state: String(req.query.state || 'technostore') })
-  res.json({ url })
+  const provided = String(req.query.admin_key || (req.headers.authorization || '').replace('Bearer ', '') || '')
+  if (!CRON_SECRET || !safeCompareSecret(provided, CRON_SECRET)) {
+    return res.status(401).json({ error: 'No autorizado' })
+  }
+  const state = signOAuthState(CRON_SECRET)
+  const url = buildAuthUrl({ state })
+  res.json({ url, state })
 })
 
 app.get('/api/ml/auth/callback', async (req, res) => {
   if (req.query.error) return res.status(400).json({ error: String(req.query.error) })
+  const state = String(req.query.state || '')
+  if (!CRON_SECRET || !verifyOAuthState(state, CRON_SECRET)) {
+    return res.status(403).json({ error: 'State OAuth inválido o expirado' })
+  }
   const code = String(req.query.code || '')
   if (!code) return res.status(400).json({ error: 'Falta code' })
   const repo = mlRepo()
@@ -556,6 +576,8 @@ app.post('/api/cron/ml-webhooks', cronAuth, async (req, res) => {
 
 // 4) Webhook público: idempotente y responde 200 rápido (no procesa acá).
 app.post('/api/ml/webhooks', async (req, res) => {
+  const validation = validateMlWebhookPayload(req.body || {}, process.env.ML_SELLER_ID || '')
+  if (!validation.valid) return res.status(401).json({ error: 'Webhook no autorizado', reason: validation.reason })
   const repo = mlRepo()
   if (!repo) return res.status(200).json({ received: false, reason: 'hub_no_configured' })
   try {
@@ -571,14 +593,14 @@ app.post('/api/ml/webhooks', async (req, res) => {
 /* ---------------- Agente de IA (Fase 4) ---------------- */
 
 // Chat de ventas (web / WhatsApp). Respuestas siempre grounded en el Hub.
-app.post('/api/agent/chat', async (req, res) => {
+app.post('/api/agent/chat', rateLimitChat, async (req, res) => {
   const repo = agentRepo()
   if (!repo) return res.status(503).json({ error: 'Hub PostgreSQL no configurado' })
   try {
     const { tools, llm } = agentServices(repo)
     const result = await handleSalesChat({
       repo, tools, llm,
-      userInput: String(req.body?.message || '').slice(0, 2000),
+      userInput: String(req.body?.message || '').slice(0, 500),
       channel: req.body?.channel === 'whatsapp' ? 'whatsapp' : 'web',
       sessionId: String(req.body?.sessionId || req.body?.from || 'anon'),
     })
@@ -590,6 +612,14 @@ app.post('/api/agent/chat', async (req, res) => {
 
 // Webhook simple de WhatsApp Cloud API (o payload {from, text}).
 app.post('/api/agent/whatsapp', async (req, res) => {
+  const waSecret = process.env.WHATSAPP_APP_SECRET || ''
+  if (waSecret && !verifyWhatsappSignature(
+    req.rawBody || JSON.stringify(req.body || {}),
+    req.headers['x-hub-signature-256'],
+    waSecret
+  )) {
+    return res.status(401).json({ error: 'Firma de WhatsApp inválida' })
+  }
   const repo = agentRepo()
   if (!repo) return res.status(200).json({ received: false, reason: 'hub_no_configured' })
   try {
@@ -682,7 +712,7 @@ app.post('/api/agent/approvals/:id/resolve', async (req, res) => {
 
 /* ---------------- Orders ---------------- */
 
-app.post('/api/orders', async (req, res) => {
+app.post('/api/orders', rateLimitOrders, async (req, res) => {
   try {
     const { customer, items } = req.body || {}
     if (!customer?.name || !customer?.email) {
