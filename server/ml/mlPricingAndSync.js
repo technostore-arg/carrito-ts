@@ -123,7 +123,8 @@ export function buildMlItemPayload(master, plan, config = {}) {
     available_quantity: plan.stock,
     listing_type_id: plan.listing_type_id,
     status: plan.status === 'active' ? 'active' : 'paused',
-    manufacturing_time: plan.manufacturing_time,
+    // MLA exige el tiempo de preparación dentro de sale_terms.
+    sale_terms: [{ id: 'MANUFACTURING_TIME', value_name: plan.manufacturing_time }],
     pictures: images.slice(0, 8).map(url => ({ source: url })),
   }
 }

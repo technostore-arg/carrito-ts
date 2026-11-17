@@ -7,6 +7,7 @@ import { getPgPool, isPgConfigured, closePgPool } from '../server/hub/pg.js'
 import { createElitClient } from '../server/hub/elitService.js'
 import { createPgRepository } from '../server/hub/pgRepository.js'
 import { syncElitCatalog, syncElitStockAndPrices } from '../server/hub/sync.js'
+import { withAdvisoryLock } from '../server/hub/advisoryLock.js'
 
 const argv = process.argv.slice(2)
 const mode = argv.includes('--mode') ? argv[argv.indexOf('--mode') + 1] : 'stock'
@@ -36,9 +37,12 @@ if (!isPgConfigured()) {
 const pool = getPgPool()
 const repo = createPgRepository(pool)
 try {
-  const result = mode === 'catalog'
-    ? await syncElitCatalog({ client, repo })
-    : await syncElitStockAndPrices({ client, repo })
+  const locked = await withAdvisoryLock(pool, `elit-sync:${mode}`, async () => (
+    mode === 'catalog'
+      ? await syncElitCatalog({ client, repo })
+      : await syncElitStockAndPrices({ client, repo })
+  ))
+  const result = locked.skipped ? { skipped: true, reason: 'already_running' } : locked.result
   console.log('[elit] resultado:', JSON.stringify(result))
   if (result.errors?.length) process.exitCode = 2
 } catch (e) {

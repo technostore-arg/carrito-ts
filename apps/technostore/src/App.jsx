@@ -11,6 +11,7 @@ import MobileCartBar from "./components/MobileCartBar"
 import Checkout from "./components/Checkout"
 import useCatalog from "./hooks/useCatalog"
 import useDebouncedValue from "./hooks/useDebouncedValue"
+import { mergeQuotes } from "./data/catalog.js"
 import { SEARCH_DEBOUNCE_MS } from "./config/store"
 import AppleSpotlight from "./components/AppleSpotlight"
 import Footer from "./components/Footer"
@@ -214,14 +215,20 @@ export default function App() {
       const [sku, qty] = part.split(":")
       return { sku: String(sku || "").toUpperCase(), qty: Math.min(Math.max(Number(qty) || 1, 1), 10) }
     })
-    for (const item of wanted) {
-      const product = allProducts.find(p => String(p.sku || "").toUpperCase() === item.sku)
-      if (product) for (let i = 0; i < item.qty; i++) addToCart(product)
-    }
-    sp.delete("cart")
-    const qs = sp.toString()
-    window.history.replaceState(null, "", qs ? `${base}?${qs}` : base)
-    setTimeout(() => setDrawerOpen(true), 100)
+    ;(async () => {
+      // Esperamos a la cotización real para no precargar productos a $0.
+      const quotes = await refreshQuotes(wanted.map(w => w.sku))
+      const resolved = mergeQuotes(allProducts, quotes)
+      for (const item of wanted) {
+        const product = resolved.find(p => String(p.sku || "").toUpperCase() === item.sku)
+        if (!product || !(Number(product.precio_transferencia) > 0) || product.quarantined) continue
+        for (let i = 0; i < item.qty; i++) addToCart(product)
+      }
+      sp.delete("cart")
+      const qs = sp.toString()
+      window.history.replaceState(null, "", qs ? `${base}?${qs}` : base)
+      setTimeout(() => setDrawerOpen(true), 100)
+    })()
   }, [source]) // eslint-disable-line
 
   const openProduct = p => {

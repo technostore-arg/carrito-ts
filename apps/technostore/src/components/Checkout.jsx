@@ -78,6 +78,7 @@ export default function Checkout({ onClose }) {
           tipoEntrega: form.tipoEntrega, paymentMethod: metodoPago,
           documento: form.factura ? `${form.tipoDocumento} ${form.documento}` : null,
           cuotas: metodoPago === 'tarjeta' ? cuotas : null,
+          cupon: cupon?.code || null,
         },
         items: items.map(p => ({ id: p.sku, nombre: p.nombre, qty: p.qty, precio: getPrice(p) })),
       }

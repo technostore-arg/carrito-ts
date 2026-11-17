@@ -24,7 +24,8 @@ export function createTelegramNotifier({ botToken, chatId, fetchImpl = fetch } =
   const chat = chatId || process.env.TELEGRAM_CHAT_ID || ''
   return {
     async send({ text, approvalUrl } = {}) {
-      const message = `${text}${approvalUrl ? `\n\nAprobar: ${approvalUrl}?action=approve\nRechazar: ${approvalUrl}?action=reject` : ''}`
+      const sep = approvalUrl.includes('?') ? '&' : '?'
+      const message = `${text}${approvalUrl ? `\n\nAprobar: ${approvalUrl}${sep}action=approve\nRechazar: ${approvalUrl}${sep}action=reject` : ''}`
       if (!token || !chat) { console.log('[telegram:mock]', message); return { sent: false } }
       const res = await fetchImpl(`https://api.telegram.org/bot${token}/sendMessage`, {
         method: 'POST',

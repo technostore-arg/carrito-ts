@@ -35,8 +35,11 @@ import { createAgentRepository } from './agent/agentRepository.js'
 import { createHubTools } from './agent/hubTools.js'
 import { createLlmClient } from './agent/llmClient.js'
 import { answerMlQuestions, handleSalesChat } from './agent/orchestrator.js'
-import { processPendingSupplierOrders, resolveApproval } from './agent/orderFulfillmentAgent.js'
+import { processPendingSupplierOrders, resolveApproval, verifyApprovalToken } from './agent/orderFulfillmentAgent.js'
 import { createElitClient } from './hub/elitService.js'
+import { getPublicCatalogFromHub, getPublicProductFromHub } from './hub/publicCatalog.js'
+import { placeWebOrder } from './hub/orderService.js'
+import { withAdvisoryLock } from './hub/advisoryLock.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3001
@@ -207,12 +210,19 @@ app.get('/api/products', async (req, res) => {
       if (!token || !sessions.has(token)) return res.status(401).json({ error: 'No autorizado' })
     }
     // El admin ve TODO (activos, pausados y ocultos); el público solo lo activo y visible.
-    const rows = await getProducts({ activeOnly: !includeHidden, includeHidden })
-    // Cache de edge (Vercel CDN) solo para respuestas OK: el catálogo cambia poco
-    // y cada lectura son ~950 reads de Firestore. 2 min + stale 10 min.
     if (includeHidden) res.setHeader('Cache-Control', 'no-store')
     else res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=600')
-    res.json(rows)
+
+    // Hub PostgreSQL: el catálogo público sale de master_products + pricingEngine.
+    if (!includeHidden && isPgConfigured()) {
+      try {
+        const rows = await getPublicCatalogFromHub(getPgPool())
+        return res.json(rows)
+      } catch (e) {
+        console.warn('[hub] catálogo público fallback a Firestore:', e.message)
+      }
+    }
+    res.json(await getProducts({ activeOnly: !includeHidden, includeHidden }))
   } catch (e) {
     res.status(503).json({ error: e.message })
   }
@@ -220,6 +230,17 @@ app.get('/api/products', async (req, res) => {
 
 app.get('/api/products/:id', async (req, res) => {
   try {
+    if (isPgConfigured()) {
+      try {
+        const hubProduct = await getPublicProductFromHub(req.params.id, getPgPool())
+        if (hubProduct) {
+          res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=600')
+          return res.json(hubProduct)
+        }
+      } catch (e) {
+        console.warn('[hub] detalle fallback a Firestore:', e.message)
+      }
+    }
     const row = await getProductById(req.params.id)
     if (!row) return res.status(404).json({ error: 'Producto no encontrado' })
     res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=600')
@@ -500,16 +521,18 @@ app.post('/api/cron/ml-sync', cronAuth, async (req, res) => {
   const repo = mlRepo()
   if (!repo) return res.status(503).json({ error: 'Hub PostgreSQL no configurado' })
   try {
-    const batchSize = Math.min(Number(req.body?.batchSize) || 50, 100)
-    const offset = Math.max(Number(req.body?.offset) || 0, 0)
-    const summary = await syncHubToMercadoLibre({
-      repo,
-      mlClient: createMlClient({ repo }),
-      dryRun: !!req.body?.dryRun,
-      batchSize,
-      offset,
+    const locked = await withAdvisoryLock(getPgPool(), 'cron:ml-sync', async () => {
+      const batchSize = Math.min(Number(req.body?.batchSize) || 50, 100)
+      const offset = Math.max(Number(req.body?.offset) || 0, 0)
+      return syncHubToMercadoLibre({
+        repo,
+        mlClient: createMlClient({ repo }),
+        dryRun: !!req.body?.dryRun,
+        batchSize,
+        offset,
+      })
     })
-    res.json(summary)
+    res.json(locked.skipped ? { skipped: true, reason: 'already_running' } : locked.result)
   } catch (e) {
     res.status(502).json({ error: e.message })
   }
@@ -520,12 +543,12 @@ app.post('/api/cron/ml-webhooks', cronAuth, async (req, res) => {
   const repo = mlRepo()
   if (!repo) return res.status(503).json({ error: 'Hub PostgreSQL no configurado' })
   try {
-    const summary = await processPendingWebhooks({
+    const locked = await withAdvisoryLock(getPgPool(), 'cron:ml-webhooks', async () => processPendingWebhooks({
       repo,
       mlClient: createMlClient({ repo }),
       limit: Math.min(Number(req.body?.limit) || 20, 100),
-    })
-    res.json(summary)
+    }))
+    res.json(locked.skipped ? { skipped: true, reason: 'already_running' } : locked.result)
   } catch (e) {
     res.status(502).json({ error: e.message })
   }
@@ -587,20 +610,59 @@ app.post('/api/cron/agent-tasks', cronAuth, async (req, res) => {
   const repo = agentRepo()
   if (!repo) return res.status(503).json({ error: 'Hub PostgreSQL no configurado' })
   try {
-    const { tools, llm } = agentServices(repo)
-    const mlClient = createMlClient({ repo })
-    const elitClient = createElitClient()
-    const questions = await answerMlQuestions({ repo, mlClient, tools, llm, limit: Math.min(Number(req.body?.questions) || 10, 50) })
-    const purchases = await processPendingSupplierOrders({
-      repo, elitClient, limit: Math.min(Number(req.body?.orders) || 20, 100),
+    const locked = await withAdvisoryLock(getPgPool(), 'cron:agent-tasks', async () => {
+      const { tools, llm } = agentServices(repo)
+      const mlClient = createMlClient({ repo })
+      const elitClient = createElitClient()
+      const questions = await answerMlQuestions({ repo, mlClient, tools, llm, limit: Math.min(Number(req.body?.questions) || 10, 50) })
+      const purchases = await processPendingSupplierOrders({
+        repo, elitClient, limit: Math.min(Number(req.body?.orders) || 20, 100),
+      })
+      return { questions, purchases }
     })
-    res.json({ questions, purchases })
+    res.json(locked.skipped ? { skipped: true, reason: 'already_running' } : locked.result)
   } catch (e) {
     res.status(502).json({ error: e.message })
   }
 })
 
-// Resolución de aprobaciones con token firmado (un clic desde Telegram/WhatsApp).
+// Confirmación HTML: abrir el link desde el celular NO aprueba nada.
+app.get('/api/agent/approvals/:id/resolve', async (req, res) => {
+  const repo = agentRepo()
+  if (!repo) return res.status(503).send('Hub no configurado')
+  res.setHeader('Cache-Control', 'no-store')
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow')
+  const token = String(req.query.token || '')
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+  const page = (title, body) => `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>body{font-family:-apple-system,Inter,sans-serif;background:#fbfbfd;color:#1d1d1f;margin:0;padding:32px}.card{max-width:520px;margin:auto;background:#fff;border:1px solid #e8e8ed;border-radius:18px;padding:28px}h1{font-size:20px;margin:0 0 8px}p{color:#6e6e73;font-size:14px;line-height:1.6}.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e8e8ed;font-size:14px}.btns{display:flex;gap:10px;margin-top:22px}button{flex:1;padding:13px;border-radius:999px;font-size:14px;font-weight:600;border:1px solid #0071e3;cursor:pointer}.ok{background:#0071e3;color:#fff}.no{background:#fff;color:#0071e3}</style></head><body><div class="card">${body}</div></body></html>`
+  if (!verifyApprovalToken(token, req.params.id, process.env.APPROVAL_SECRET || 'dev-secret')) {
+    return res.status(403).send(page('Link inválido', '<h1>Link no válido</h1><p>El enlace de aprobación venció o no es válido.</p>'))
+  }
+  try {
+    const a = await repo.getApprovalById(req.params.id)
+    if (!a) return res.status(404).send(page('No encontrada', '<h1>Solicitud no encontrada</h1>'))
+    const items = typeof a.items_json === 'string' ? JSON.parse(a.items_json) : (a.items_json || [])
+    const rows = items.map(i => `<div class="row"><span>${esc(i.sku)}</span><span>× ${esc(i.qty)} · U$S ${esc(i.cost_usd)}</span></div>`).join('')
+    const action = `/api/agent/approvals/${encodeURIComponent(req.params.id)}/resolve`
+    return res.send(page('Aprobar compra a Elit', `
+      <h1>Compra pendiente de aprobación</h1>
+      <p>Revisá los ítems antes de aprobar. Esta acción genera la orden en Elit.</p>
+      ${rows}
+      <div class="row"><span>Total</span><strong>U$S ${esc(a.total_cost_usd)}</strong></div>
+      <div class="row"><span>Estado</span><span>${esc(a.status)}</span></div>
+      <form method="POST" action="${action}">
+        <input type="hidden" name="token" value="${esc(token)}">
+        <div class="btns">
+          <button class="ok" type="submit" name="action" value="approve">Aprobar compra</button>
+          <button class="no" type="submit" name="action" value="reject">Rechazar</button>
+        </div>
+      </form>`))
+  } catch (e) {
+    return res.status(502).send(page('Error', `<h1>Error</h1><p>${esc(e.message)}</p>`))
+  }
+})
+
+// Resolución real (sólo POST): el token se valida de nuevo en el service.
 app.post('/api/agent/approvals/:id/resolve', async (req, res) => {
   const repo = agentRepo()
   if (!repo) return res.status(503).json({ error: 'Hub PostgreSQL no configurado' })
@@ -629,18 +691,24 @@ app.post('/api/orders', async (req, res) => {
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'El carrito está vacío' })
     }
-    const result = await createOrder({ customer, items })
-    
-    // Send WhatsApp notification to admin
+
+    const repo = agentRepo()
+    const result = repo
+      ? await placeWebOrder({
+          repo, customer, items,
+          paymentMethod: customer.paymentMethod || 'transferencia',
+          couponCode: customer.cupon || null,
+        })
+      : await createOrder({ customer, items })
+
+    // Notificación al administrador (fire-and-forget).
     try {
       const WhatsAppNumber = '5491127650658'
-      const itemsList = items.map(i => `• ${i.nombre || i.id} x${i.qty}`).join('%0A')
-      const adminMsg = `🛒 *NUEVO PEDIDO*%0A%0ACódigo: *${result.code}*%0ACliente: ${customer.name}%0ATel: ${customer.phone || 'N/A'}%0A%0AItems:%0A${itemsList}%0A%0AMétodo: ${customer.paymentMethod || 'No especificado'}`
-      const adminUrl = `https://wa.me/${WhatsAppNumber}?text=${adminMsg}`
-      // Fire-and-forget notification log
-      fetch(adminUrl).catch(() => {})
+      const itemsList = (result.items || items).map(i => `• ${i.nombre || i.id || i.sku} x${i.qty}`).join('%0A')
+      const adminMsg = `🛒 *NUEVO PEDIDO*%0A%0ACódigo: *${result.code}*%0ACliente: ${customer.name}%0ATel: ${customer.phone || 'N/A'}%0ATotal: $${result.total || ''}%0A%0AItems:%0A${itemsList}%0A%0AMétodo: ${customer.paymentMethod || 'No especificado'}`
+      fetch(`https://wa.me/${WhatsAppNumber}?text=${adminMsg}`).catch(() => {})
     } catch {}
-    
+
     res.status(201).json({ ok: true, ...result })
   } catch (e) {
     res.status(400).json({ error: e.message })

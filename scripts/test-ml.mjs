@@ -94,8 +94,10 @@ const master = {
   const plan = computeMlListingPlan({ quote: quote({ stock_source: 'supplier' }), master_product: master })
   const payload = buildMlItemPayload(master, plan)
   assert.equal(payload.available_quantity, 5)
-  assert.equal(payload.manufacturing_time, '2 days')
+  assert.deepEqual(payload.sale_terms, [{ id: 'MANUFACTURING_TIME', value_name: '2 days' }])
   assert.equal(payload.pictures[0].source, 'https://cdn.test/1.jpg')
+  const localPayload = buildMlItemPayload(master, computeMlListingPlan({ quote: quote(), master_product: master }))
+  assert.deepEqual(localPayload.sale_terms, [{ id: 'MANUFACTURING_TIME', value_name: null }])
 }
 
 /* ---------- Repo en memoria ---------- */

@@ -78,6 +78,35 @@ export function createAgentRepository(pool) {
       return rows[0] || null
     },
 
+    /** Reserva stock en el origen solicitado (o el alternativo si no alcanza). */
+    async reserveStock({ masterProductId, quantity, preferredSource = 'local' }) {
+      const qty = Math.max(1, Number(quantity) || 1)
+      const order = preferredSource === 'supplier' ? ['ELIT', 'LOCAL'] : ['LOCAL', 'ELIT']
+      for (const code of order) {
+        const { rows } = await pool.query(
+          'SELECT raw_stock FROM supplier_listings WHERE master_product_id = $1 AND supplier_code = $2',
+          [masterProductId, code]
+        )
+        if (!rows[0] || Number(rows[0].raw_stock) < qty) continue
+        await pool.query(
+          'UPDATE supplier_listings SET raw_stock = raw_stock - $2, updated_at = now() WHERE master_product_id = $1 AND supplier_code = $3',
+          [masterProductId, qty, code]
+        )
+        return { fulfillmentSource: code === 'ELIT' ? 'supplier' : 'local' }
+      }
+      throw new Error('Stock insuficiente en todos los proveedores')
+    },
+
+    async createHubOrder(o) {
+      await pool.query(
+        `INSERT INTO hub_orders (code, channel, customer_json, items_json, subtotal, discount,
+                                 shipping, total, payment_method)
+         VALUES ($1,'web',$2::jsonb,$3::jsonb,$4,$5,$6,$7,$8)`,
+        [o.code, JSON.stringify(o.customer || {}), JSON.stringify(o.items || []),
+         o.subtotal || 0, o.discount || 0, o.shipping || 0, o.total || 0, o.paymentMethod || null]
+      )
+    },
+
     async getConversation(channel, externalSessionId) {
       const { rows } = await pool.query(
         'SELECT messages_json FROM agent_conversations WHERE channel = $1 AND external_session_id = $2',
