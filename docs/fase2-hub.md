@@ -25,7 +25,14 @@ node --env-file=.env scripts/elit-sync.mjs --mode stock
 npm run test:pricing
 ```
 
-El cron propuesto en `.github/workflows/elit-sync.yml` corre stock cada 15 min y catálogo diariamente. Requiere los secrets `DATABASE_URL`, `ELIT_USER_ID`, `ELIT_TOKEN` (y opcionalmente `ELIT_MODE`).
+El cron propuesto está en `docs/elit-sync.workflow.yml.example` (copiar a `.github/workflows/elit-sync.yml` cuando el token de GitHub tenga permiso `workflow`): stock cada 15 min y catálogo diariamente. Requiere los secrets `DATABASE_URL`, `ELIT_USER_ID`, `ELIT_TOKEN` (y opcionalmente `ELIT_MODE`).
+
+Alternativa sin GitHub Actions — crontab en el servidor:
+
+```cron
+*/15 * * * * cd /ruta/carrito && node --env-file=.env scripts/elit-sync.mjs --mode stock >> /var/log/elit-stock.log 2>&1
+10 3 * * *  cd /ruta/carrito && node --env-file=.env scripts/elit-sync.mjs --mode catalog >> /var/log/elit-catalog.log 2>&1
+```
 
 ## Reglas del motor (`server/hub/pricingEngine.js`)
 
