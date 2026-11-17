@@ -31,6 +31,12 @@ import { buildAuthUrl, createMlClient } from './ml/mlClient.js'
 import { createMlRepository } from './ml/mlRepository.js'
 import { syncHubToMercadoLibre } from './ml/mlPricingAndSync.js'
 import { recordWebhookEvent, processPendingWebhooks } from './ml/mlWebhooks.js'
+import { createAgentRepository } from './agent/agentRepository.js'
+import { createHubTools } from './agent/hubTools.js'
+import { createLlmClient } from './agent/llmClient.js'
+import { answerMlQuestions, handleSalesChat } from './agent/orchestrator.js'
+import { processPendingSupplierOrders, resolveApproval } from './agent/orderFulfillmentAgent.js'
+import { createElitClient } from './hub/elitService.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3001
@@ -42,6 +48,19 @@ const CRON_SECRET = process.env.CRON_SECRET || ''
 function mlRepo() {
   if (!isPgConfigured()) return null
   return createMlRepository(getPgPool())
+}
+
+/** Helper: repo del agente (hereda el repo MLA y agrega herramientas del Hub). */
+function agentRepo() {
+  if (!isPgConfigured()) return null
+  return createAgentRepository(getPgPool())
+}
+
+function agentServices(repo) {
+  return {
+    tools: createHubTools(repo),
+    llm: createLlmClient({}),
+  }
 }
 
 function cronAuth(req, res, next) {
@@ -523,6 +542,79 @@ app.post('/api/ml/webhooks', async (req, res) => {
     // Respondemos 200 para evitar reintentos infinitos; el error queda en logs.
     console.error('[ml-webhook] error al registrar:', e.message)
     res.status(200).json({ received: false, error: e.message })
+  }
+})
+
+/* ---------------- Agente de IA (Fase 4) ---------------- */
+
+// Chat de ventas (web / WhatsApp). Respuestas siempre grounded en el Hub.
+app.post('/api/agent/chat', async (req, res) => {
+  const repo = agentRepo()
+  if (!repo) return res.status(503).json({ error: 'Hub PostgreSQL no configurado' })
+  try {
+    const { tools, llm } = agentServices(repo)
+    const result = await handleSalesChat({
+      repo, tools, llm,
+      userInput: String(req.body?.message || '').slice(0, 2000),
+      channel: req.body?.channel === 'whatsapp' ? 'whatsapp' : 'web',
+      sessionId: String(req.body?.sessionId || req.body?.from || 'anon'),
+    })
+    res.json(result)
+  } catch (e) {
+    res.status(502).json({ error: e.message })
+  }
+})
+
+// Webhook simple de WhatsApp Cloud API (o payload {from, text}).
+app.post('/api/agent/whatsapp', async (req, res) => {
+  const repo = agentRepo()
+  if (!repo) return res.status(200).json({ received: false, reason: 'hub_no_configured' })
+  try {
+    const entry = req.body?.entry?.[0]?.changes?.[0]?.value
+    const message = entry?.messages?.[0]
+    const from = message?.from || req.body?.from || 'anon'
+    const text = String(message?.text?.body || req.body?.text || '').slice(0, 2000)
+    const { tools, llm } = agentServices(repo)
+    const result = await handleSalesChat({ repo, tools, llm, userInput: text, channel: 'whatsapp', sessionId: from })
+    res.json({ received: true, ...result })
+  } catch (e) {
+    res.status(200).json({ received: false, error: e.message })
+  }
+})
+
+// Cron interno: preguntas de ML + compras pendientes a Elit.
+app.post('/api/cron/agent-tasks', cronAuth, async (req, res) => {
+  const repo = agentRepo()
+  if (!repo) return res.status(503).json({ error: 'Hub PostgreSQL no configurado' })
+  try {
+    const { tools, llm } = agentServices(repo)
+    const mlClient = createMlClient({ repo })
+    const elitClient = createElitClient()
+    const questions = await answerMlQuestions({ repo, mlClient, tools, llm, limit: Math.min(Number(req.body?.questions) || 10, 50) })
+    const purchases = await processPendingSupplierOrders({
+      repo, elitClient, limit: Math.min(Number(req.body?.orders) || 20, 100),
+    })
+    res.json({ questions, purchases })
+  } catch (e) {
+    res.status(502).json({ error: e.message })
+  }
+})
+
+// Resolución de aprobaciones con token firmado (un clic desde Telegram/WhatsApp).
+app.post('/api/agent/approvals/:id/resolve', async (req, res) => {
+  const repo = agentRepo()
+  if (!repo) return res.status(503).json({ error: 'Hub PostgreSQL no configurado' })
+  try {
+    const result = await resolveApproval({
+      repo,
+      approvalId: req.params.id,
+      token: String(req.body?.token || req.query.token || ''),
+      action: String(req.body?.action || req.query.action || ''),
+      elitClient: createElitClient(),
+    })
+    res.status(result.ok ? 200 : 400).json(result)
+  } catch (e) {
+    res.status(502).json({ error: e.message })
   }
 })
 

@@ -65,7 +65,7 @@ export async function processPendingWebhooks({
       } else if (ev.topic === 'questions') {
         // Queda pending para el Agente de IA (Fase 4), pero se marca como
         // "ya ingerido" con processed_at para que este worker no lo repita.
-        await repo.markWebhookEvent(eventKey, 'pending', { processedAt: now(), agentReady: true })
+        await repo.markWebhookEvent(eventKey, 'pending', { processedAt: now(), agentReady: true, agentState: 'pending_agent' })
         processed++
         details.push({ eventKey, status: 'pending_agent' })
       } else {

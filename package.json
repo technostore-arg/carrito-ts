@@ -26,6 +26,7 @@
     "test:pricing": "node scripts/test-pricing-sync.mjs",
     "test:cro": "node scripts/test-cro.mjs",
     "test:ml": "node scripts/test-ml.mjs",
+    "test:agent": "node scripts/test-agent.mjs",
     "ml:sync": "node scripts/ml-sync.mjs",
     "ml:webhooks": "node scripts/ml-sync.mjs --job webhooks"
   },

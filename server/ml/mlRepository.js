@@ -118,10 +118,23 @@ export function createMlRepository(pool) {
 
     async markWebhookEvent(eventKey, status, extra = {}) {
       await pool.query(
-        `UPDATE ml_webhook_events SET status = $2, processed_at = COALESCE($3, processed_at),
-                error_message = $4 WHERE event_key = $1`,
-        [eventKey, status, extra.processedAt || null, extra.errorMessage || null]
+        `UPDATE ml_webhook_events
+            SET status = $2, processed_at = COALESCE($3, processed_at),
+                error_message = $4, agent_state = COALESCE($5, agent_state)
+          WHERE event_key = $1`,
+        [eventKey, status, extra.processedAt || null, extra.errorMessage || null, extra.agentState || null]
       )
+    },
+
+    /** Preguntas ya ingeridas por el worker, listas para el agente de IA. */
+    async getPendingAgentQuestions({ limit = 20 } = {}) {
+      const { rows } = await pool.query(
+        `SELECT * FROM ml_webhook_events
+          WHERE topic = 'questions' AND agent_state = 'pending_agent'
+          ORDER BY created_at LIMIT $1`,
+        [limit]
+      )
+      return rows
     },
 
     /** Descuenta stock del origen correcto y devuelve fulfillment_source. */

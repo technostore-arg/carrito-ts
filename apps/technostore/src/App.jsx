@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react"
+import { useMemo, useState, useEffect, useRef } from "react"
 import Header from "./components/Header"
 import Hero from "./components/Hero"
 import FilterPanel, { rangoMatch, ORDENES, isHardware, CATEGORIAS } from "./components/FilterPanel"
@@ -201,6 +201,28 @@ export default function App() {
   }, [qDebounced, source, allProducts])
 
   const scrollToCatalog = () => document.getElementById("catalogo")?.scrollIntoView({ behavior: "smooth" })
+
+  // Links precargados por el agente (?cart=SKU:2,SKU2:1) -> DrawerCart.
+  const cartPreloadDone = useRef(false)
+  useEffect(() => {
+    if (source === null || cartPreloadDone.current) return
+    const sp = new URLSearchParams(window.location.search)
+    const raw = sp.get("cart")
+    if (!raw) return
+    cartPreloadDone.current = true
+    const wanted = raw.split(",").slice(0, 10).map(part => {
+      const [sku, qty] = part.split(":")
+      return { sku: String(sku || "").toUpperCase(), qty: Math.min(Math.max(Number(qty) || 1, 1), 10) }
+    })
+    for (const item of wanted) {
+      const product = allProducts.find(p => String(p.sku || "").toUpperCase() === item.sku)
+      if (product) for (let i = 0; i < item.qty; i++) addToCart(product)
+    }
+    sp.delete("cart")
+    const qs = sp.toString()
+    window.history.replaceState(null, "", qs ? `${base}?${qs}` : base)
+    setTimeout(() => setDrawerOpen(true), 100)
+  }, [source]) // eslint-disable-line
 
   const openProduct = p => {
     // Precio/stock se refrescan al abrir el detalle, sin recargar fotos.

@@ -120,6 +120,14 @@ export function createElitClient(opts = {}) {
       const payload = await requestWithRetry(url, { headers }, opts)
       return extractItems(payload, 'actualizaciones').map(normalizeElitItem)
     },
+    async placeOrder({ items = [], sandbox = mode !== 'production' } = {}) {
+      const url = `${baseUrl.replace(/\/$/, '')}${opts.orderPath || process.env.ELIT_ORDER_PATH || '/pedidos'}`
+      return requestWithRetry(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ items, sandbox }),
+      }, opts)
+    },
   }
 }
 
@@ -136,6 +144,9 @@ export function createFixtureClient(opts = {}) {
     async getStockAndPrices() {
       const payload = JSON.parse(fs.readFileSync(stockFile, 'utf8'))
       return extractItems(payload, 'actualizaciones').map(normalizeElitItem)
+    },
+    async placeOrder({ items = [] } = {}) {
+      return { order_id: `ELIT-FIXTURE-${Date.now()}`, status: 'confirmed', sandbox: true, items }
     },
   }
 }

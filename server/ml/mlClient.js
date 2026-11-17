@@ -167,5 +167,6 @@ export function createMlClient(deps = {}) {
     pauseItem: id => mlFetch(`/items/${id}`, { method: 'PUT', body: { status: 'paused' } }),
     getOrder: id => mlFetch(`/orders/${id}`),
     getQuestion: id => mlFetch(`/questions/${id}`),
+    answerQuestion: (id, text) => mlFetch(`/questions/${id}/answers`, { method: 'POST', body: { text } }),
   }
 }
