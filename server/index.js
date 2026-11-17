@@ -40,14 +40,15 @@ import { createElitClient } from './hub/elitService.js'
 import { getPublicCatalogFromHub, getPublicProductFromHub } from './hub/publicCatalog.js'
 import { placeWebOrder } from './hub/orderService.js'
 import { withAdvisoryLock } from './hub/advisoryLock.js'
-import {
-  safeCompareSecret, createRateLimiter, rateLimitMiddleware,
-  signOAuthState, verifyOAuthState, verifyWhatsappSignature, validateMlWebhookPayload,
-} from './hub/security.js'
+import { safeCompareSecret, createRateLimiter, rateLimitMiddleware,
+  signOAuthState, verifyOAuthState, verifyWhatsappSignature, validateMlWebhookPayload } from './hub/security.js'
+import { validateAdminCredentials } from './hub/adminAuth.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3001
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'technostore2026'
+const ADMIN_TOTP_SECRET = process.env.ADMIN_TOTP_SECRET || ''
+const ADMIN_SESSION_TTL_MS = Number(process.env.ADMIN_SESSION_TTL_MS) || 8 * 60 * 60 * 1000
 const MP_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN || ''
 const CRON_SECRET = process.env.CRON_SECRET || ''
 
@@ -129,7 +130,9 @@ const sessions = new Map()
 
 function auth(req, res, next) {
   const token = (req.headers.authorization || '').replace('Bearer ', '')
-  if (!token || !sessions.has(token)) {
+  const issuedAt = token ? sessions.get(token) : null
+  if (!issuedAt || Date.now() - issuedAt > ADMIN_SESSION_TTL_MS) {
+    if (token) sessions.delete(token)
     return res.status(401).json({ error: 'No autorizado' })
   }
   next()
@@ -167,10 +170,11 @@ app.post('/api/admin/login', (req, res) => {
   if (loginBlocked(ip)) {
     return res.status(429).json({ error: 'Demasiados intentos — probá de nuevo en unos minutos' })
   }
-  const { password } = req.body || {}
-  if (!safeEqual(password, ADMIN_PASSWORD)) {
+  const { password, totp } = req.body || {}
+  const result = validateAdminCredentials({ password, totp, adminPassword: ADMIN_PASSWORD, totpSecret: ADMIN_TOTP_SECRET })
+  if (!result.ok) {
     loginFail(ip)
-    return res.status(401).json({ error: 'Contraseña incorrecta' })
+    return res.status(401).json({ error: result.error })
   }
   loginFails.delete(ip)
   const token = randomBytes(24).toString('hex')
@@ -1092,7 +1096,7 @@ app.get(/^\/(?!api|futurohard|admin).*/, (req, res) => {
 if (process.env.VERCEL !== '1') {
   app.listen(PORT, () => {
     console.log(`[server] API + admin en http://localhost:${PORT}`)
-    console.log(`[server] Admin password: ${ADMIN_PASSWORD}`)
+    console.log(`[server] Admin 2FA: ${ADMIN_TOTP_SECRET ? 'activada' : 'desactivada'}`)
   })
 }
 

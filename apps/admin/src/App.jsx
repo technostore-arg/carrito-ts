@@ -15,13 +15,14 @@ export default function App() {
   const [tab, setTab] = useState('catalogo')
   const [token, setToken] = useState(sessionStorage.getItem('admin_tok') || '')
   const [pw, setPw] = useState('')
+  const [totp, setTotp] = useState('')
   const [err, setErr] = useState('')
 
   const login = async e => {
     e.preventDefault()
     setErr('')
     try {
-      const r = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw }) })
+      const r = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw, totp }) })
       const d = await r.json()
       if (!r.ok) throw new Error(d.error || 'Error')
       setToken(d.token)
@@ -36,6 +37,7 @@ export default function App() {
           <h1>⚙ Admin unificado</h1>
           <p className="muted">TechnoStore + Futuro Hard · panel compartido</p>
           <input type="password" placeholder="Contraseña" value={pw} onChange={e => setPw(e.target.value)} autoComplete="current-password" autoFocus />
+          <input type="text" inputMode="numeric" placeholder="Código 2FA (si aplica)" value={totp} onChange={e => setTotp(e.target.value.replace(/\D/g, '').slice(0, 6))} autoComplete="one-time-code" />
           <button className="btn-primary" type="submit">Entrar</button>
           {err && <span className="err">{err}</span>}
           <small className="muted">Mock local activo — sin Firebase hasta Fase 7</small>

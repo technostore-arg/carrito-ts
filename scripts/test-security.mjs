@@ -8,6 +8,8 @@ import {
 } from '../server/hub/security.js'
 import { createHmac } from 'node:crypto'
 import { signApprovalToken, verifyApprovalToken, processPendingSupplierOrders } from '../server/agent/orderFulfillmentAgent.js'
+import { generateTotpSecret, totpCode, verifyTotp, totpUri } from '../server/hub/totp.js'
+import { validateAdminCredentials } from '../server/hub/adminAuth.js'
 
 /* 1. Comparación en tiempo constante */
 assert.equal(safeCompareSecret('abc123', 'abc123'), true)
@@ -118,4 +120,20 @@ assert.equal(safeCompareSecret('abc', 'abcdef'), false)
   assert.ok(verifyApprovalToken(approvals[0].approvalToken, approvals[0].id, 's'))
 }
 
-console.log('SECURITY TESTS OK (7 grupos)')
+/* 8. 2FA TOTP del admin */
+{
+  const secret = generateTotpSecret()
+  const now = Date.now()
+  const code = totpCode(secret, { now })
+  assert.match(secret, /^[A-Z2-7]{32}$/)
+  assert.ok(totpUri(secret).startsWith('otpauth://totp/'))
+  assert.equal(verifyTotp(code, secret, { now }), true)
+  assert.equal(verifyTotp(code === '000000' ? '111111' : '000000', secret, { now }), false)
+  assert.equal(verifyTotp(code, secret, { now: now + 10 * 60 * 1000 }), false)
+  assert.equal(validateAdminCredentials({ password: 'clave', totp: code, adminPassword: 'clave', totpSecret: secret, now: () => now }).ok, true)
+  assert.equal(validateAdminCredentials({ password: 'clave', totp: '', adminPassword: 'clave', totpSecret: secret, now: () => now }).ok, false)
+  assert.equal(validateAdminCredentials({ password: 'mala', totp: code, adminPassword: 'clave', totpSecret: secret, now: () => now }).ok, false)
+  assert.equal(validateAdminCredentials({ password: 'clave', adminPassword: 'clave' }).ok, true)
+}
+
+console.log('SECURITY TESTS OK (8 grupos)')
