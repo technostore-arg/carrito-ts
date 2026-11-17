@@ -183,6 +183,11 @@ export async function getProducts({ activeOnly = true, includeHidden = false } =
         console.warn('[db] Firestore no disponible; sirviendo catálogo de contingencia:', e.message)
         return rows
       }
+      // Catálogo vacío a propósito: no devolver error aunque Firestore falle.
+      if (Array.isArray(fallbackCatalog?.products) && fallbackCatalog.products.length === 0) {
+        console.warn('[db] catálogo vacío (contingencia):', e.message)
+        return []
+      }
     }
     throw e
   }
@@ -200,6 +205,7 @@ export async function getProductById(id) {
     const found = fallbackProducts().find(p =>
       String(p.id || '').toUpperCase() === key || String(p.sku || '').toUpperCase() === key)
     if (found) return found
+    if (Array.isArray(fallbackCatalog?.products) && fallbackCatalog.products.length === 0) return null
     throw e
   }
 }
