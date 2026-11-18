@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { authClient, isAuthConfigured } from '../lib/auth.js'
 
 /** Acceso de clientes con Neon Auth. No reemplaza el login admin. */
-export default function CustomerAuth({ open, onClose }) {
+export default function CustomerAuth({ open, onClose, initialError = '' }) {
   const [mode, setMode] = useState('signin')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -11,6 +11,10 @@ export default function CustomerAuth({ open, onClose }) {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    if (initialError) setError(initialError)
+  }, [initialError])
 
   useEffect(() => {
     if (!open) return

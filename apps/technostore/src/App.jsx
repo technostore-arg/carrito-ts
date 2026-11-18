@@ -26,6 +26,22 @@ export default function App() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [authOpen, setAuthOpen] = useState(false)
+  const [authError, setAuthError] = useState('')
+
+  // Neon Auth puede volver con ?error=... después del login social.
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search)
+    const err = sp.get('error')
+    if (!err) return
+    setAuthError(err === 'state_not_found'
+      ? 'La sesión de acceso venció. Probá iniciar de nuevo.'
+      : `No se pudo completar el ingreso (${err})`)
+    setAuthOpen(true)
+    sp.delete('error')
+    const qs = sp.toString()
+    window.history.replaceState(null, '', `${base}${qs ? `?${qs}` : ''}`)
+  }, [base])
+
   const [categoria, setCategoria] = useState("todos")
   const [marcas, setMarcas] = useState([])
   const [rango, setRango] = useState("todos")
@@ -318,7 +334,7 @@ export default function App() {
       <MobileCartBar onOpenCart={() => setDrawerOpen(true)} onCheckout={openCheckout} />
       <DrawerCart open={drawerOpen} onClose={() => setDrawerOpen(false)} onCheckout={openCheckout} />
       {checkoutOpen && <Checkout onClose={() => setCheckoutOpen(false)} />}
-      <CustomerAuth open={authOpen} onClose={() => setAuthOpen(false)} />
+      <CustomerAuth open={authOpen} onClose={() => setAuthOpen(false)} initialError={authError} />
       {selectedProduct && <ProductDetail producto={selectedProduct} onClose={() => setSelectedProduct(null)} onAddToCart={addToCart} />}
       {toast && <div className="toast" role="status">{toast}</div>}
     </div>
