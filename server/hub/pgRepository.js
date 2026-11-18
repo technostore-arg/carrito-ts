@@ -53,7 +53,7 @@ export function createPgRepository(pool) {
         `INSERT INTO supplier_listings
           (master_product_id, supplier_code, supplier_sku, cost_amount, cost_currency, raw_stock,
            last_synced_at, prev_cost_amount, quarantine_reason, quarantined_at)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9, CASE WHEN $9 IS NOT NULL THEN now() ELSE NULL END)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9, CASE WHEN $9::text IS NOT NULL THEN now() ELSE NULL END)
          ON CONFLICT (supplier_code, supplier_sku) DO UPDATE SET
            cost_amount = EXCLUDED.cost_amount,
            cost_currency = EXCLUDED.cost_currency,

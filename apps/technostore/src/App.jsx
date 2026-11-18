@@ -15,6 +15,7 @@ import { mergeQuotes } from "./data/catalog.js"
 import { SEARCH_DEBOUNCE_MS } from "./config/store"
 import AppleSpotlight from "./components/AppleSpotlight"
 import Footer from "./components/Footer"
+import CustomerAuth from "./components/CustomerAuth"
 import WhatsAppFloat from "./components/WhatsAppFloat"
 import { useCart } from "./context/CartContext"
 
@@ -24,6 +25,7 @@ export default function App() {
   const { products, loading, refreshQuotes } = useCatalog()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [checkoutOpen, setCheckoutOpen] = useState(false)
+  const [authOpen, setAuthOpen] = useState(false)
   const [categoria, setCategoria] = useState("todos")
   const [marcas, setMarcas] = useState([])
   const [rango, setRango] = useState("todos")
@@ -259,6 +261,7 @@ export default function App() {
         activeBrand={categoria === "todos" && marcas.length === 1 && marcas[0] === "Apple" ? "Apple" : ""}
         cartCount={cartCount}
         onCart={() => setDrawerOpen(true)}
+        onAccount={() => setAuthOpen(true)}
         onSelectCategory={handleSelectCategory}
         suggestions={searchSuggests}
         onOpenProduct={openProduct}
@@ -315,6 +318,7 @@ export default function App() {
       <MobileCartBar onOpenCart={() => setDrawerOpen(true)} onCheckout={openCheckout} />
       <DrawerCart open={drawerOpen} onClose={() => setDrawerOpen(false)} onCheckout={openCheckout} />
       {checkoutOpen && <Checkout onClose={() => setCheckoutOpen(false)} />}
+      <CustomerAuth open={authOpen} onClose={() => setAuthOpen(false)} />
       {selectedProduct && <ProductDetail producto={selectedProduct} onClose={() => setSelectedProduct(null)} onAddToCart={addToCart} />}
       {toast && <div className="toast" role="status">{toast}</div>}
     </div>

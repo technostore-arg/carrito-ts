@@ -13,7 +13,7 @@ const NAV = [
   { id: "todos", label: "Ver todo" },
 ]
 
-export default function Header({ search, onSearchChange, onSelectCategory, activeCategory, activeBrand, cartCount = 0, onCart, suggestions = [], onOpenProduct, onSeeAllResults }) {
+export default function Header({ search, onSearchChange, onSelectCategory, activeCategory, activeBrand, cartCount = 0, onCart, onAccount, accountLabel = 'Mi cuenta', suggestions = [], onOpenProduct, onSeeAllResults }) {
   const [open, setOpen] = useState(false)
   const [searchFocus, setSearchFocus] = useState(false)
   const closeAnd = fn => (...a) => { setOpen(false); fn(...a) }
@@ -78,6 +78,8 @@ export default function Header({ search, onSearchChange, onSelectCategory, activ
           {searchField({ onDone: onSeeAllResults })}
         </div>
 
+        <button className="account-btn" onClick={onAccount} aria-label="Mi cuenta">👤 <span>{accountLabel}</span></button>
+
         <button className="cart-btn" onClick={onCart} aria-label={`Carrito (${cartCount})`}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 7h12l-1 11H7L6 7z" /><path d="M9 7V5a3 3 0 0 1 6 0v2" /></svg>
           {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
@@ -106,6 +108,9 @@ export default function Header({ search, onSearchChange, onSelectCategory, activ
               <button onClick={closeAnd(() => onSelectCategory("todos"))} className="mobile-all">Ver todo el catálogo</button>
               <button onClick={closeAnd(onCart)} className="mobile-all" style={{ background: '#fff', color: 'var(--text)', border: '1px solid var(--border)' }}>
                 Carrito {cartCount > 0 ? `(${cartCount})` : ''}
+              </button>
+              <button onClick={closeAnd(onAccount)} className="mobile-all" style={{ background: '#fff', color: 'var(--accent)', border: '1px solid var(--accent)' }}>
+                {accountLabel}
               </button>
             </nav>
           </div>

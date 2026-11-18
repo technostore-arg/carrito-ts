@@ -33,6 +33,8 @@
     "ml:webhooks": "node scripts/ml-sync.mjs --job webhooks"
   },
   "dependencies": {
+    "@neon/auth": "^0.8.2",
+    "@neon/config": "^1.14.3",
     "concurrently": "^10.0.5",
     "express": "^5.2.1",
     "firebase-admin": "^14.3.0",

@@ -2,18 +2,24 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { getPgPool, isPgConfigured, closePgPool } from '../server/hub/pg.js'
+import pg from 'pg'
+import { isPgConfigured } from '../server/hub/pg.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const dir = path.join(__dirname, '..', 'db', 'migrations')
 
 if (!isPgConfigured()) {
-  console.error('Falta DATABASE_URL. Ejecutá: node --env-file=.env scripts/migrate-pg.mjs')
+  console.error('Falta DATABASE_URL. Ejecutá: node --env-file=.env.local scripts/migrate-pg.mjs')
   process.exit(1)
 }
 
+// Migraciones: conexión DIRECTA (sin -pooler). Neon la expone como DATABASE_URL_UNPOOLED.
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL,
+  ssl: process.env.PG_SSL === '0' ? undefined : { rejectUnauthorized: false },
+  max: 1,
+})
 const files = fs.readdirSync(dir).filter(f => f.endsWith('.sql')).sort()
-const pool = getPgPool()
 try {
   for (const file of files) {
     const sql = fs.readFileSync(path.join(dir, file), 'utf8')
@@ -23,5 +29,5 @@ try {
   }
   console.log(`[migrate] ${files.length} migraciones aplicadas`)
 } finally {
-  await closePgPool()
+  await pool.end()
 }
