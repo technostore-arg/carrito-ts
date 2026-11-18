@@ -16,6 +16,7 @@ import { SEARCH_DEBOUNCE_MS } from "./config/store"
 import AppleSpotlight from "./components/AppleSpotlight"
 import Footer from "./components/Footer"
 import CustomerAuth from "./components/CustomerAuth"
+import { authClient } from "./lib/auth.js"
 import WhatsAppFloat from "./components/WhatsAppFloat"
 import { useCart } from "./context/CartContext"
 
@@ -27,6 +28,9 @@ export default function App() {
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [authOpen, setAuthOpen] = useState(false)
   const [authError, setAuthError] = useState('')
+
+  // El wrapper de Neon canjea el neon_auth_session_verifier al llamar getSession.
+  useEffect(() => { authClient.getSession().catch(() => {}) }, [])
 
   // Neon Auth puede volver con ?error=... después del login social.
   useEffect(() => {
