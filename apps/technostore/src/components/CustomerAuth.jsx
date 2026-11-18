@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { authClient, isAuthConfigured } from '../lib/auth.js'
 
 /** Acceso de clientes con Neon Auth. No reemplaza el login admin. */
-export default function CustomerAuth({ open, onClose, initialError = '' }) {
+export default function CustomerAuth({ open, onClose, initialError = '', session = null, onSession }) {
   const [mode, setMode] = useState('signin')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [session, setSession] = useState(null)
+  const [localUser, setLocalUser] = useState(null)
+  const user = session || localUser
+  const setUser = u => { setLocalUser(u); onSession?.(u) }
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
@@ -19,7 +21,7 @@ export default function CustomerAuth({ open, onClose, initialError = '' }) {
   useEffect(() => {
     if (!open) return
     let alive = true
-    authClient.getSession().then(({ data }) => { if (alive) setSession(data?.user || null) }).catch(() => {})
+    authClient.getSession().then(({ data }) => { if (alive) setUser(data?.user || null) }).catch(() => {})
     return () => { alive = false }
   }, [open])
 
@@ -36,7 +38,7 @@ export default function CustomerAuth({ open, onClose, initialError = '' }) {
         setError(res.error.message || 'No se pudo completar la operación')
         return
       }
-      setSession(res?.data?.user || { email })
+      setUser(res?.data?.user || { email })
       setMessage(mode === 'signup' ? '¡Cuenta creada!' : '¡Bienvenido!')
       if (mode === 'signup') setMode('signin')
     } catch (err) {
@@ -62,7 +64,7 @@ export default function CustomerAuth({ open, onClose, initialError = '' }) {
   const signOut = async () => {
     setBusy(true)
     await authClient.signOut().catch(() => {})
-    setSession(null); setMessage('Sesión cerrada'); setBusy(false)
+    setUser(null); setMessage('Sesión cerrada'); setBusy(false)
   }
 
   return (
@@ -72,9 +74,9 @@ export default function CustomerAuth({ open, onClose, initialError = '' }) {
         <button className="icon-btn auth-close" onClick={onClose} aria-label="Cerrar">✕</button>
         <h2>Mi cuenta</h2>
         {!isAuthConfigured && <p className="auth-error">La autenticación no está configurada en este entorno.</p>}
-        {session ? (
+        {user ? (
           <div className="auth-session">
-            <p>Ingresaste como <b>{session.email || session.name}</b></p>
+            <p>Ingresaste como <b>{user.email || user.name}</b></p>
             <button className="btn-primary" onClick={signOut} disabled={busy}>Cerrar sesión</button>
           </div>
         ) : (

@@ -28,9 +28,25 @@ export default function App() {
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [authOpen, setAuthOpen] = useState(false)
   const [authError, setAuthError] = useState('')
+  const [authSession, setAuthSession] = useState(null)
 
   // El wrapper de Neon canjea el neon_auth_session_verifier al llamar getSession.
-  useEffect(() => { authClient.getSession().catch(() => {}) }, [])
+  // Guardamos la sesión en la app para que el modal la vea apenas vuelve de Google.
+  useEffect(() => {
+    let alive = true
+    const load = async () => {
+      try {
+        const { data } = await authClient.getSession()
+        if (alive && data?.user) setAuthSession(data.user)
+      } catch { /* sin sesión */ }
+    }
+    load()
+    if (new URLSearchParams(window.location.search).has('neon_auth_session_verifier')) {
+      const t = setTimeout(load, 1500)
+      return () => { alive = false; clearTimeout(t) }
+    }
+    return () => { alive = false }
+  }, [])
 
   // Neon Auth puede volver con ?error=... después del login social.
   useEffect(() => {
@@ -338,7 +354,7 @@ export default function App() {
       <MobileCartBar onOpenCart={() => setDrawerOpen(true)} onCheckout={openCheckout} />
       <DrawerCart open={drawerOpen} onClose={() => setDrawerOpen(false)} onCheckout={openCheckout} />
       {checkoutOpen && <Checkout onClose={() => setCheckoutOpen(false)} />}
-      <CustomerAuth open={authOpen} onClose={() => setAuthOpen(false)} initialError={authError} />
+      <CustomerAuth open={authOpen} onClose={() => setAuthOpen(false)} initialError={authError} session={authSession} onSession={setAuthSession} />
       {selectedProduct && <ProductDetail producto={selectedProduct} onClose={() => setSelectedProduct(null)} onAddToCart={addToCart} />}
       {toast && <div className="toast" role="status">{toast}</div>}
     </div>
