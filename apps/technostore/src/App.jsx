@@ -111,6 +111,10 @@ export default function App() {
     if (calidad !== "todos") sp.set("cal", calidad)
     if (batMin > 0) sp.set("bat", String(batMin))
     if (disponibilidad === "hoy") sp.set("disp", "hoy")
+    // No pisar el verifier de OAuth mientras se canjea la sesión.
+    const current = new URLSearchParams(window.location.search)
+    const verifier = current.get("neon_auth_session_verifier")
+    if (verifier) sp.set("neon_auth_session_verifier", verifier)
     const qs = sp.toString()
     window.history.replaceState(null, "", qs ? `${base}?${qs}` : base)
   }, [categoria, marcas, rango, qDebounced, orden, cpu, ram, ssd, condicion, calidad, batMin, disponibilidad, base])
