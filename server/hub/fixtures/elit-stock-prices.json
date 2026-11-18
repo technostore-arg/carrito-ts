@@ -1,16 +1,13 @@
 {
-  "success": true,
-  "meta": { "generatedAt": "2026-11-17T09:15:00Z" },
-  "data": {
-    "actualizaciones": [
-      { "codigo": "EL-1001", "moneda": "USD", "precio_usd": 850, "stock": 7 },
-      { "codigo": "EL-1002", "moneda": "USD", "precio_usd": 120, "stock": 2 },
-      { "codigo": "EL-1003", "moneda": "USD", "precio_usd": 45, "stock": 10 },
-      { "codigo": "EL-1004", "moneda": "USD", "precio_usd": 0, "stock": 5 },
-      { "codigo": "EL-1005", "moneda": "USD", "precio_usd": 300, "stock": 4 },
-      { "codigo": "EL-1006", "moneda": "USD", "precio_usd": 90, "stock": 0 },
-      { "codigo": "EL-1007", "moneda": "USD", "precio_usd": 255, "stock": 8 },
-      { "codigo": "EL-1008", "moneda": "USD", "precio_usd": 180, "stock": 1 }
-    ]
-  }
+  "codigo": 200,
+  "productos": [
+    { "id": "EL-1001", "nombre": "Notebook Lenovo IdeaPad Slim 3 15,6\" Ryzen 5 16GB 512GB SSD", "marca": "Lenovo", "categoria": "notebooks", "sub_categoria": "15 pulgadas", "pvp_ars": 1717888, "pvp_usd": 1145, "precio": 850, "moneda": "USD", "stock_total": 7, "stock_deposito_cd": 7, "stock_deposito_cliente": 0, "nivel_stock": "alto", "garantia": 12, "imagenes": ["https://cdn.elit.com.ar/img/EL-1001.jpg"], "atributos": { "ram": "16GB", "ssd": "512GB" }, "link": "https://clientes.elit.com.ar/producto/EL-1001", "actualizado": "2026-11-17T09:15:00Z" },
+    { "id": "EL-1002", "nombre": "Disco SSD M.2 NVMe 1TB 7000MB/s", "marca": "Patriot", "categoria": "almacenamiento", "sub_categoria": "SSD NVMe", "pvp_ars": 205000, "pvp_usd": 137, "precio": 120, "moneda": "USD", "stock_total": 2, "stock_deposito_cd": 2, "stock_deposito_cliente": 0, "nivel_stock": "bajo", "garantia": 24, "imagenes": ["https://cdn.elit.com.ar/img/EL-1002.jpg"], "atributos": { "capacidad": "1TB" }, "link": "https://clientes.elit.com.ar/producto/EL-1002", "actualizado": "2026-11-17T09:15:00Z" },
+    { "id": "EL-1003", "nombre": "Mouse inalámbrico Bluetooth recargable", "marca": "Genérico", "categoria": "accesorios", "sub_categoria": "mouse", "pvp_ars": 67500, "pvp_usd": 45, "precio": 45, "moneda": "USD", "stock_total": 10, "stock_deposito_cd": 10, "stock_deposito_cliente": 0, "nivel_stock": "alto", "garantia": 6, "imagenes": ["https://cdn.elit.com.ar/img/EL-1003.jpg"], "atributos": {}, "link": "https://clientes.elit.com.ar/producto/EL-1003", "actualizado": "2026-11-17T09:15:00Z" },
+    { "id": "EL-1004", "nombre": "Memoria RAM DDR5 16GB 5600MHz", "marca": "Crucial", "categoria": "ram", "sub_categoria": "DDR5", "pvp_ars": 149400, "pvp_usd": 99.6, "precio": 0, "moneda": "USD", "stock_total": 5, "stock_deposito_cd": 5, "stock_deposito_cliente": 0, "nivel_stock": "alto", "garantia": 12, "imagenes": ["https://cdn.elit.com.ar/img/EL-1004.jpg"], "atributos": { "ddr": "DDR5" }, "link": "https://clientes.elit.com.ar/producto/EL-1004", "actualizado": "2026-11-17T09:15:00Z" },
+    { "id": "EL-1005", "nombre": "Placa de video RTX 4060 8GB", "marca": "ASUS", "categoria": "gpus", "sub_categoria": "nvidia", "pvp_ars": 976500, "pvp_usd": 651, "precio": 300, "moneda": "USD", "stock_total": 4, "stock_deposito_cd": 4, "stock_deposito_cliente": 0, "nivel_stock": "alto", "garantia": 24, "imagenes": ["https://cdn.elit.com.ar/img/EL-1005.jpg"], "atributos": { "vram": "8GB" }, "link": "https://clientes.elit.com.ar/producto/EL-1005", "actualizado": "2026-11-17T09:15:00Z" },
+    { "id": "EL-1006", "nombre": "Disco HDD 2TB 5400rpm", "marca": "Western Digital", "categoria": "discos", "sub_categoria": "HDD", "pvp_ars": 135000, "pvp_usd": 90, "precio": 90, "moneda": "USD", "stock_total": 0, "stock_deposito_cd": 0, "stock_deposito_cliente": 0, "nivel_stock": "bajo", "garantia": 24, "imagenes": ["https://cdn.elit.com.ar/img/EL-1006.jpg"], "atributos": { "capacidad": "2TB" }, "link": "https://clientes.elit.com.ar/producto/EL-1006", "actualizado": "2026-11-17T09:15:00Z" },
+    { "id": "EL-1007", "nombre": "Monitor 27\" IPS 165Hz Full HD", "marca": "LG", "categoria": "monitores", "sub_categoria": "27 pulgadas", "pvp_ars": 395250, "pvp_usd": 263.5, "precio": 255, "moneda": "USD", "stock_total": 8, "stock_deposito_cd": 8, "stock_deposito_cliente": 0, "nivel_stock": "alto", "garantia": 12, "imagenes": ["https://cdn.elit.com.ar/img/EL-1007.jpg"], "atributos": { "hz": 165 }, "link": "https://clientes.elit.com.ar/producto/EL-1007", "actualizado": "2026-11-17T09:15:00Z" },
+    { "id": "EL-1008", "nombre": "Motherboard AM5 B650 DDR5", "marca": "ASUS", "categoria": "motherboard", "sub_categoria": "AM5", "pvp_ars": 272700, "pvp_usd": 181.8, "precio": 180, "moneda": "USD", "stock_total": 1, "stock_deposito_cd": 1, "stock_deposito_cliente": 0, "nivel_stock": "bajo", "garantia": 24, "imagenes": ["https://cdn.elit.com.ar/img/EL-1008.jpg"], "atributos": { "socket": "AM5", "ddr": "DDR5" }, "link": "https://clientes.elit.com.ar/producto/EL-1008", "actualizado": "2026-11-17T09:15:00Z" }
+  ]
 }

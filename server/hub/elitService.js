@@ -1,15 +1,12 @@
 /**
- * server/hub/elitService.js — Cliente B2B de la API de Elit.
+ * server/hub/elitService.js — Cliente real de la API de Elit (manual MANUAL_API_CLIENTES).
  *
- * Modos:
- *  - 'sandbox': usa fixtures locales si no hay base URL configurada.
- *  - 'production': llama a la API real con user_id + token (Bearer/Basic).
+ * Base: https://clientes.elit.com.ar/v1/api
+ * Auth: user_id + token en el body (POST) o en la URL (GET/DELETE).
+ * Catálogo: POST /productos con paginación limit/offset. Respuesta OK trae "codigo": 200.
+ * Pedido a proveedor: POST /carrito (items) y POST /carrito/confirmar.
  *
- * Variables de entorno:
- *  ELIT_MODE=sandbox|production
- *  ELIT_USER_ID, ELIT_TOKEN
- *  ELIT_API_BASE_SANDBOX, ELIT_API_BASE_PRODUCTION
- *  ELIT_CATALOG_PATH, ELIT_STOCK_PATH (paths, default /productos y /stock)
+ * Modo fixture (sandbox): sin credenciales usa fixtures locales con el shape real.
  */
 import fs from 'node:fs'
 import path from 'node:path'
@@ -28,37 +25,47 @@ export class ElitApiError extends Error {
   }
 }
 
-/**
- * Normaliza un item de Elit (catalogo o stock) al formato interno.
- * @param {object} raw
- * @returns {object}
- */
+/** Campos reales del manual -> shape interno del hub. */
 export function normalizeElitItem(raw = {}) {
-  const precio = raw.precio_usd ?? raw.precio ?? raw.costo ?? raw.price ?? 0
-  const currency = String(raw.moneda || raw.currency || (raw.precio_usd != null ? 'USD' : 'ARS')).toUpperCase()
+  const images = Array.isArray(raw.imagenes) ? raw.imagenes : (raw.imagen ? [raw.imagen] : [])
+  const attrs = raw.atributos && typeof raw.atributos === 'object' ? raw.atributos : {}
   return {
-    supplierSku: String(raw.codigo || raw.sku || raw.codigo_proveedor || '').trim(),
+    supplierSku: String(raw.id ?? raw.codigo ?? raw.sku ?? raw.code ?? '').trim(),
     ean: raw.ean ? String(raw.ean).trim() : null,
     mpn: raw.mpn ? String(raw.mpn).trim() : null,
-    title: String(raw.descripcion || raw.nombre || raw.title || '').trim(),
-    brand: String(raw.marca || raw.brand || 'Genérica').trim(),
-    category: String(raw.categoria || raw.category || 'accesorios').toLowerCase().trim(),
-    costAmount: Number(precio) || 0,
-    costCurrency: ['USD', 'ARS'].includes(currency) ? currency : 'USD',
-    rawStock: Math.max(0, Math.floor(Number(raw.stock ?? raw.stock_actual) || 0)),
-    imageUrl: raw.imagen_url || raw.imagen || raw.image_url || null,
+    title: String(raw.nombre ?? raw.descripcion ?? raw.name ?? '').trim(),
+    brand: String(raw.marca ?? raw.brand ?? 'Genérica').trim(),
+    category: String(raw.categoria ?? raw.category ?? 'accesorios').toLowerCase().trim(),
+    subcategory: String(raw.sub_categoria ?? raw.subcategory ?? '').trim(),
+    // "precio" es la base sin markup; pvp_* es el sugerido de venta.
+    costAmount: Number(raw.precio ?? raw.pvp_usd ?? raw.pvp_ars) || 0,
+    costCurrency: String(raw.moneda ?? raw.currency ?? 'USD').toUpperCase(),
+    costArs: Number(raw.pvp_ars ?? raw.precio_ars) || 0,
+    listPriceArs: Number(raw.pvp_ars) || 0,
+    listPriceUsd: Number(raw.pvp_usd) || 0,
+    rawStock: Math.max(0, Math.floor(Number(raw.stock_total ?? raw.stock ?? raw.stock_actual) || 0)),
+    stockByWarehouse: {
+      cd: Number(raw.stock_deposito_cd) || 0,
+      cliente: Number(raw.stock_deposito_cliente) || 0,
+    },
+    stockLevel: String(raw.nivel_stock ?? '').toLowerCase() || null,
+    warranty: raw.garantia ?? null,
+    imageUrl: images[0] || raw.imagen_url || raw.imagen || null,
+    images,
+    attributes: attrs,
+    link: raw.link ?? null,
+    updatedAt: raw.actualizado ?? null,
     raw,
   }
 }
 
-/** @param {object} payload @param {string} key */
-function extractItems(payload, key) {
+function extractItems(payload) {
   if (Array.isArray(payload)) return payload
   const data = payload?.data ?? payload
-  if (Array.isArray(data?.[key])) return data[key]
-  if (Array.isArray(data?.productos)) return data.productos
-  if (Array.isArray(data?.actualizaciones)) return data.actualizaciones
-  if (Array.isArray(data?.items)) return data.items
+  if (Array.isArray(data)) return data
+  for (const key of ['productos', 'items', 'products', 'results', 'result']) {
+    if (Array.isArray(data?.[key])) return data[key]
+  }
   return []
 }
 
@@ -68,14 +75,16 @@ async function requestWithRetry(url, options, { attempts = 2, timeoutMs = 15000,
   for (let i = 0; i < attempts; i++) {
     try {
       const res = await fetchImpl(url, { ...options, signal: AbortSignal.timeout(timeoutMs) })
+      const text = await res.text().catch(() => '')
+      let data = null
+      try { data = JSON.parse(text) } catch { /* texto plano */ }
       if (!res.ok) {
-        const text = await res.text().catch(() => '')
-        const err = new ElitApiError(`Elit respondió ${res.status}`, res.status, text.slice(0, 500))
+        const err = new ElitApiError(`Elit respondió ${res.status}`, res.status, data || text)
         if (res.status < 500 && res.status !== 429) throw err
         last = err
         continue
       }
-      return await res.json()
+      return data
     } catch (e) {
       if (e instanceof ElitApiError && e.status < 500 && e.status !== 429) throw e
       last = e
@@ -86,67 +95,72 @@ async function requestWithRetry(url, options, { attempts = 2, timeoutMs = 15000,
 
 /**
  * @param {object} opts
- * @returns {{mode:string, getCatalog:Function, getStockAndPrices:Function}}
+ * @returns {{mode:string, getCatalog:Function, getStockAndPrices:Function, placeOrder:Function, getShipping:Function}}
  */
 export function createElitClient(opts = {}) {
   const mode = opts.mode || process.env.ELIT_MODE || 'sandbox'
   const userId = opts.userId || process.env.ELIT_USER_ID || ''
   const token = opts.token || process.env.ELIT_TOKEN || ''
-  const baseUrl = opts.baseUrl || process.env[mode === 'production' ? 'ELIT_API_BASE_PRODUCTION' : 'ELIT_API_BASE_SANDBOX'] || ''
-  const catalogPath = opts.catalogPath || process.env.ELIT_CATALOG_PATH || '/productos'
-  const stockPath = opts.stockPath || process.env.ELIT_STOCK_PATH || '/stock'
+  const baseUrl = (opts.baseUrl || process.env.ELIT_BASE_URL || 'https://clientes.elit.com.ar/v1/api').replace(/\/$/, '')
+  const fetchImpl = opts.fetchImpl || fetch
 
-  // Sin base URL (o sandbox explícito sin credenciales) => fixtures locales.
-  const useFixture = !!opts.useFixture || (!baseUrl && (mode !== 'production' || !token))
-
+  const useFixture = !!opts.useFixture || (!userId || !token)
   if (useFixture) return createFixtureClient(opts)
 
-  const headers = {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-    'X-User-Id': userId,
+  const headers = { 'Content-Type': 'application/json', Accept: 'application/json' }
+  const creds = { user_id: userId, token }
+
+  async function post(path, body) {
+    return requestWithRetry(`${baseUrl}${path}`, {
+      method: 'POST', headers, body: JSON.stringify({ ...creds, ...(body || {}) }),
+    }, opts)
+  }
+
+  /** Pagina POST /productos hasta agotar (tope 5000 ítems). */
+  async function listProducts(extra = {}) {
+    let out = []
+    let offset = 0
+    const pageSize = 100
+    while (out.length < 5000) {
+      const payload = await post('/productos', { limit: pageSize, offset, ...extra })
+      const items = extractItems(payload)
+      if (!items.length) break
+      out = out.concat(items)
+      if (items.length < pageSize) break
+      offset += pageSize
+    }
+    return out.map(normalizeElitItem)
   }
 
   return {
     mode,
-    async getCatalog({ page = 1, pageSize = 100 } = {}) {
-      const url = `${baseUrl.replace(/\/$/, '')}${catalogPath}?page=${page}&pageSize=${pageSize}`
-      const payload = await requestWithRetry(url, { headers }, opts)
-      return extractItems(payload, 'productos').map(normalizeElitItem)
-    },
+    async getCatalog({ pageSize = 100 } = {}) { return listProducts() },
     async getStockAndPrices({ since } = {}) {
-      const q = since ? `?desde=${encodeURIComponent(since)}` : ''
-      const url = `${baseUrl.replace(/\/$/, '')}${stockPath}${q}`
-      const payload = await requestWithRetry(url, { headers }, opts)
-      return extractItems(payload, 'actualizaciones').map(normalizeElitItem)
+      return listProducts(since ? { actualizacion: since } : {})
     },
-    async placeOrder({ items = [], sandbox = mode !== 'production' } = {}) {
-      const url = `${baseUrl.replace(/\/$/, '')}${opts.orderPath || process.env.ELIT_ORDER_PATH || '/pedidos'}`
-      return requestWithRetry(url, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ items, sandbox }),
-      }, opts)
+    async getShipping() { return post('/envios', {}) },
+    async placeOrder({ items = [] } = {}) {
+      for (const it of items) {
+        await post('/carrito', {
+          code: it.sku, quantity: Math.max(1, Number(it.qty) || 1),
+          ...(it.warehouse ? { warehouse: it.warehouse } : {}),
+        })
+      }
+      return post('/carrito/confirmar', {})
     },
   }
 }
 
-/** Cliente fixture para tests y desarrollo sin credenciales. */
+/** Cliente fixture con el shape real de la API, para tests y desarrollo sin credenciales. */
 export function createFixtureClient(opts = {}) {
   const catalogFile = opts.catalogFile || FIXTURE_CATALOG
   const stockFile = opts.stockFile || FIXTURE_STOCK
+  const read = f => extractItems(JSON.parse(fs.readFileSync(f, 'utf8')))
   return {
     mode: 'fixture',
-    async getCatalog() {
-      const payload = JSON.parse(fs.readFileSync(catalogFile, 'utf8'))
-      return extractItems(payload, 'productos').map(normalizeElitItem)
-    },
-    async getStockAndPrices() {
-      const payload = JSON.parse(fs.readFileSync(stockFile, 'utf8'))
-      return extractItems(payload, 'actualizaciones').map(normalizeElitItem)
-    },
-    async placeOrder({ items = [] } = {}) {
-      return { order_id: `ELIT-FIXTURE-${Date.now()}`, status: 'confirmed', sandbox: true, items }
-    },
+    async getCatalog() { return read(catalogFile).map(normalizeElitItem) },
+    async getStockAndPrices() { return read(stockFile).map(normalizeElitItem) },
+    async placeOrder({ items = [] } = {}) { return { codigo: 200, notas: [{ id: `ELIT-FIXTURE-${Date.now()}`, items }] } },
+    async getShipping() { return { codigo: 200, envios: [] } },
   }
 }

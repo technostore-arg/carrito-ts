@@ -1,0 +1,278 @@
+MANUAL_API_CLIENTES
+Manual de uso — API de Clientes ELIT
+Guía para clientes de ELIT que quieren conectar su tienda o sistema con nuestro catálogo.
+Está escrita en lenguaje simple: no hace falta ser programador para entender las primeras
+secciones. Si tenés un desarrollador, pasale directamente la sección "Referencia rápida" y las
+colecciones de Postman.
+1. ¿Qué es la API de ELIT y para qué sirve?
+Una API es una forma de que tu sistema (tu tienda online, tu planilla, tu programa de gestión)
+le pida datos a ELIT de manera automática, sin que nadie tenga que copiar y pegar a mano.
+Con la API de ELIT podés, principalmente:
+La dirección base de la API es:
+Importante: los precios que devuelve la API son los tuyos (según tu lista, tu markup y la
+cotización del dólar del momento) y el stock es el que tenés disponible como cliente. Cada
+cliente ve su propia información.
+2. Antes de empezar: tus credenciales
+Para usar la API necesitás dos datos que te identifican:
+Dato 	Qué es 	Ejemplo
+user_id Tu número de cliente en ELIT 	12345
+Consultar el catálogo de productos con tus precios y el stock actualizado.
+Descargar el catálogo en un archivo listo para subir a tu tienda (Tienda Nube,
+WooCommerce) o a Meta (Facebook/Instagram).
+Armar un carrito y trabajar con cotizaciones.
+https://clientes.elit.com.ar/v1/api
+
+-- 1 of 9 --
+
+Dato 	Qué es 	Ejemplo
+token 	Una clave secreta personal (como una contraseña para la
+API)
+a1b2c3d4e5f6...
+¿Dónde consigo el token?
+Cuidá tu token como si fuera una contraseña. Cualquiera que lo tenga puede ver tus
+precios y tu stock. Si creés que se filtró, generá uno nuevo (el anterior deja de funcionar).
+3. Cómo probar la API con Postman (paso a paso)
+Postman es un programa gratuito que sirve para "probar" APIs sin programar nada: completás
+unos campos, apretás un botón y ves la respuesta. Es la forma más fácil de familiarizarte antes
+de conectar tu tienda.
+3.1 Instalar Postman
+3.2 Importar las colecciones de ELIT
+Junto a este manual te entregamos dos archivos (están en la carpeta postman/ ):
+Para importarlos:
+3.3 Cargar tus credenciales
+1. Ingresá al portal de clientes de ELIT con tu usuario y contraseña.
+2. Andá a la sección de tu cuenta / configuración de API y generá tu token.
+3. Si no encontrás la opción o tenés dudas, escribinos a soporte@elit.com.ar y te ayudamos.
+1. Entrá a https://www.postman.com/downloads/ y descargá la versión para tu sistema
+(Windows/Mac).
+2. Instalalo y abrilo (podés usarlo sin crear cuenta).
+ELIT_API.postman_collection.json — las pruebas ya armadas.
+ELIT_API.postman_environment.json — donde vas a cargar tus credenciales.
+1. En Postman, arriba a la izquierda, hacé clic en Import.
+2. Arrastrá los dos archivos o buscalos en tu computadora.
+3. Listo: te van a aparecer la colección "ELIT API" y el entorno "ELIT API - Entorno".
+1. Arriba a la derecha, en el selector de entornos, elegí "ELIT API - Entorno".
+
+-- 2 of 9 --
+
+3.4 Tu primera prueba
+Si ves un error, mirá la sección 8 (Preguntas frecuentes y errores).
+4. Consultar productos
+Es la función más usada. Devuelve el catálogo con tus precios y stock.
+Filtros que podés usar (todos son opcionales):
+Filtro 	Para qué sirve 	Ejemplo
+marca 	Traer solo una marca 	Logitech
+categoria 	Traer una categoría 	Perifericos
+sub_categoria 	Afinar por subcategoría 	Teclados
+nombre 	Buscar por texto en el nombre 	mouse gamer
+codigo_producto Buscar un producto puntual 	12345
+limit 	Cuántos productos por página (máx. 100) 50
+offset 	Desde qué producto seguir (para paginar) 50
+actualizacion 	Solo lo modificado desde una fecha 	2026-08-01
+Qué información trae cada producto (los campos más útiles):
+2. Hacé clic en el ícono del ojo 👁 (o en "Environments") y editá los valores:
+user_id → tu número de cliente.
+token → tu token.
+base_url → dejalo como está ( https://clientes.elit.com.ar/v1/api ).
+3. Guardá con Save.
+1. En la colección "ELIT API", abrí "Productos — Buscar catálogo".
+2. Apretá el botón azul Send.
+3. Abajo vas a ver la respuesta: un listado de productos con precios y stock. 🎉
+Qué hace: trae una lista de productos. Podés pedir todo o filtrar por marca, categoría,
+nombre, etc.
+Cómo se pide: es una consulta tipo POST a /productos , enviando tus credenciales y
+(opcionalmente) filtros.
+
+-- 3 of 9 --
+
+Campo 	Significado
+id 	Código del producto en ELIT
+nombre 	Nombre del producto
+marca , categoria , sub_categoria 	Clasificación
+pvp_ars 	Precio de venta sugerido en pesos
+pvp_usd 	Precio de venta sugerido en dólares
+precio 	Precio base (sin markup)
+iva , impuesto_interno 	Impuestos del producto
+stock_total 	Stock disponible para vos
+stock_deposito_cd / stock_deposito_cliente Stock por depósito
+nivel_stock 	"alto" o "bajo"
+garantia 	Garantía en meses
+imagenes , miniaturas 	Fotos del producto
+atributos 	Características técnicas
+link 	Página del producto en la web de ELIT
+actualizado 	Cuándo se actualizó por última vez
+Consejo: si tenés muchos productos, pedilos de a tandas usando limit y offset . Por
+ejemplo, primero limit=100 offset=0 , después limit=100 offset=100 , y así.
+5. Integraciones con tu tienda o Meta
+Además de consultar producto por producto, la API puede darte todo el catálogo en un solo
+archivo (CSV), con el formato exacto que necesita cada plataforma. Un archivo CSV es como
+una planilla de Excel: lo abrís, o lo subís directo a tu tienda.
+Estas descargas se piden desde el navegador o desde tu tienda pegando una dirección web
+(URL) que incluye tus credenciales. La estructura es siempre la misma:
+Podés agregar los mismos filtros que en productos (por ejemplo &marca=Logitech ).
+5.1 Integración con Meta (catálogo de Facebook / Instagram)
+https://clientes.elit.com.ar/v1/api/productos/<PLATAFORMA>?
+user_id=TU_ID&token=TU_TOKEN
+
+-- 4 of 9 --
+
+Para qué sirve: subir tus productos al Catálogo de Meta y usarlos en anuncios y tiendas de
+Facebook e Instagram.
+Tu URL de catálogo:
+Cómo se usa en Meta:
+El archivo ya viene con las columnas que Meta pide: id , title , description ,
+availability (in stock / out of stock), condition , price (en ARS), link , image_link y
+brand .
+Solo se incluyen productos que tienen al menos una imagen.
+5.2 Integración con WooCommerce (tiendas WordPress)
+Para qué sirve: importar el catálogo a una tienda hecha con WooCommerce.
+Tu URL de catálogo:
+Cómo se usa:
+El CSV incluye columnas completas: códigos, categoría, subcategoría, marca, precios (USD y
+ARS), impuestos, peso, EAN, stock por depósito, garantía, imágenes y atributos.
+https://clientes.elit.com.ar/v1/api/productos/meta?
+user_id=TU_ID&token=TU_TOKEN
+1. Entrá al Administrador Comercial de Meta → Catálogos.
+2. Creá o abrí tu catálogo → Agregar productos → opción "Fuente de datos" / "Feed
+programado".
+3. Pegá la URL de arriba como origen del feed.
+4. Programá la frecuencia de actualización (por ejemplo, una vez por día).
+https://clientes.elit.com.ar/v1/api/productos/woocommerce?
+user_id=TU_ID&token=TU_TOKEN
+1. En el panel de WordPress, instalá un plugin de importación de productos por CSV (por
+ejemplo "Product CSV Import Suite" o el importador nativo de WooCommerce).
+2. Como origen, usá la URL de arriba (o descargá el archivo y subilo).
+3. Mapeá las columnas: nombre → Nombre, pvp_ars → Precio, stock_total → Inventario,
+imagen → Imagen, atributos → Atributos, etc.
+4. Programá la importación para que se repita (con el plugin correspondiente).
+
+-- 5 of 9 --
+
+5.3 Integración con Tienda Nube
+Para qué sirve: cargar/actualizar productos en tu Tienda Nube.
+Opción A — Archivo CSV (manual o programado):
+El archivo ya trae los encabezados con los nombres exactos que usa Tienda Nube
+("Nombre", "Precio", "Stock", "SKU", "Categorías", "Peso (kg)", "Marca", etc.), así que:
+Opción B — Integración directa (si tu cuenta la tiene habilitada):
+ELIT cuenta con una conexión directa con Tienda Nube para sincronizar sin planillas. Esta
+opción se activa desde el portal e incluye pasos como:
+Si te interesa la Opción B, escribinos a soporte@elit.com.ar para que te la habilitemos y te
+guiemos, ya que requiere autorizar la conexión desde tu Tienda Nube.
+¿CSV o integración directa? Si recién empezás, el CSV (Opción A) es lo más simple. La
+integración directa conviene cuando querés que todo se actualice solo, sin bajar y subir
+archivos.
+6. Carrito y cotizaciones (uso avanzado)
+Estas funciones son más para quien desarrolla un sistema propio.
+6.1 Carrito
+El ciclo de un carrito tiene cuatro momentos, y todos están disponibles en la API por token
+(con tu user_id y token ): agregar productos, ver lo que hay adentro, vaciar si querés
+empezar de nuevo, y confirmar para transformarlo en una orden (nota de venta).
+https://clientes.elit.com.ar/v1/api/productos/tiendanube?
+user_id=TU_ID&token=TU_TOKEN
+1. Descargá el CSV desde esa URL.
+2. En Tienda Nube: Productos → Exportar/Importar → Importar por planilla.
+3. Subí el archivo y confirmá.
+Instalar / conectar tu Tienda Nube con ELIT.
+Ver estado de la conexión.
+Sincronizar y publicar productos automáticamente.
+
+-- 6 of 9 --
+
+Todas las operaciones de carrito viajan con las credenciales en el cuerpo (body) de la
+consulta, incluida la de vaciar (que es un DELETE con body, no con datos en la URL).
+Agregar un producto — POST /v1/api/carrito
+Ver el carrito — POST /v1/api/carrito/ver
+Vaciar el carrito — DELETE /v1/api/carrito
+Confirmar el carrito — POST /v1/api/carrito/confirmar
+6.2 Cotizaciones
+Permiten armar listas de productos con precio para presupuestar, y consultarlas o modificarlas.
+Están disponibles en la API por token (ver la tabla de la sección 7).
+En las colecciones de Postman te dejamos ejemplos listos de las operaciones por token. Los
+detalles técnicos completos están en el documento API_REFERENCE.md .
+Qué hace: suma un producto (con su cantidad) a tu carrito. El sistema elige solo de qué
+depósito sale el stock.
+Body: user_id , token , code (código de producto), quantity (cantidad). Opcional
+warehouse para forzar un depósito.
+Ojo: quantity reemplaza la cantidad de ese producto en el depósito, no la suma.
+Qué hace: devuelve tus carritos activos con el detalle de productos y los totales (subtotal,
+impuestos, envío, total).
+Body: user_id , token .
+Si no tenés nada en el carrito, responde con items: 0 y details vacío.
+Qué hace: vacía el carrito.
+Body: user_id , token . Opcional warehouse para vaciar solo un depósito (si no lo
+mandás, vacía el carrito correspondiente).
+Recordá: es un DELETE que lleva las credenciales en el body, no en la URL.
+Qué hace: cierra el carrito y genera la(s) nota(s) de venta. Responde con notas (los
+datos de cada nota generada).
+Body: user_id , token . Opcional warehouse para confirmar el carrito de un depósito
+puntual.
+Si no hay un carrito activo, responde con error "No cart available".
+
+-- 7 of 9 --
+
+7. Referencia rápida (para tu desarrollador)
+Acción 	Método Ruta 	Credenciales
+Buscar productos 	POST 	/productos 	En el cuerpo
+(JSON)
+Catálogo CSV
+genérico
+GET 	/productos/csv 	En la URL
+Catálogo Meta 	GET 	/productos/meta 	En la URL
+Catálogo Tienda
+Nube
+GET 	/productos/tiendanube 	En la URL
+Catálogo
+WooCommerce
+GET 	/productos/woocommerce 	En la URL
+Agregar al carrito 	POST 	/carrito 	En el cuerpo
+Ver el carrito 	POST 	/carrito/ver 	En el cuerpo
+Confirmar el carrito 	POST 	/carrito/confirmar 	En el cuerpo
+Vaciar el carrito 	DELETE /carrito 	En el cuerpo
+Métodos de envío 	POST 	/envios 	En el cuerpo
+Listar cotizaciones 	POST 	/cotizaciones 	En el cuerpo
+Ver una cotización 	POST 	/cotizaciones/:id 	En el cuerpo
+Agregar producto a
+cotización
+POST 	/cotizaciones/:id/productos 	En el cuerpo
+Quitar producto de
+cotización
+DELETE /cotizaciones/:id/productos/:code En la URL
+Borrar cotización 	DELETE /cotizaciones/:id 	En la URL
+Autenticación: en las consultas POST los datos user_id y token van en el cuerpo JSON; en
+las GET / DELETE van en la URL (query string). Las respuestas de éxito traen "codigo": 200 .
+Documento técnico completo: API_REFERENCE.md .
+8. Preguntas frecuentes y errores comunes
+"¿Necesito saber programar para usar esto?"
+Para probar en Postman y para las descargas CSV (Meta, WooCommerce, Tienda Nube), no.
+Para conectar tu propio sistema a /productos o al carrito, sí conviene tener un desarrollador.
+
+-- 8 of 9 --
+
+"Me aparece API is disabled ."
+La API está temporalmente desactivada para tu cuenta. Escribinos a soporte@elit.com.ar.
+"Me aparece Bad Credentials ."
+El token es incorrecto o venció. Verificá que copiaste bien el token (sin espacios) y que
+corresponde a tu user_id . Si hace falta, generá uno nuevo desde el portal.
+"Me aparece Invalid user_id o User not found / Cliente Deshabilitado ."
+El número de cliente no es correcto o tu cuenta no está habilitada para la API. Contactá a
+soporte.
+"Los precios no son los que esperaba."
+Los precios salen de tu lista, tu markup y la cotización del dólar vigente. Si algo no cuadra,
+consultanos con un ejemplo concreto (código de producto).
+"El stock no coincide con la web."
+El stock se calcula por depósito según tu cuenta. Revisá stock_total , stock_deposito_cd y
+stock_deposito_cliente .
+"¿Cada cuánto se actualizan los datos?"
+Precios y stock se actualizan de forma continua. Para las tiendas, programá la importación (por
+ejemplo, una vez por día) según tu volumen.
+"¿Puedo traer solo lo que cambió?"
+Sí: usá el filtro actualizacion con una fecha para traer únicamente lo modificado desde ese
+momento.
+"Se me filtró el token, ¿qué hago?"
+Generá uno nuevo desde el portal: el anterior deja de funcionar automáticamente. Después
+actualizá el token en Postman y en tu tienda.
+¿Dudas? Escribinos a soporte@elit.com.ar. Si sos desarrollador, mirá también
+API_REFERENCE.md para el detalle técnico de cada endpoint.
+
+-- 9 of 9 --
+
