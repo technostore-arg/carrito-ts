@@ -37,6 +37,8 @@ import { createLlmClient } from './agent/llmClient.js'
 import { answerMlQuestions, handleSalesChat } from './agent/orchestrator.js'
 import { processPendingSupplierOrders, resolveApproval, verifyApprovalToken } from './agent/orderFulfillmentAgent.js'
 import { createElitClient } from './hub/elitService.js'
+import { syncElitCatalog, syncElitStockAndPrices } from './hub/sync.js'
+import { createPgRepository } from './hub/pgRepository.js'
 import { getPublicCatalogFromHub, getPublicProductFromHub } from './hub/publicCatalog.js'
 import { placeWebOrder } from './hub/orderService.js'
 import { withAdvisoryLock } from './hub/advisoryLock.js'
@@ -543,6 +545,24 @@ app.get('/api/ml/auth/callback', async (req, res) => {
     const client = createMlClient({ repo })
     const result = await client.exchangeCode(code)
     res.json({ ok: true, ...result })
+  } catch (e) {
+    res.status(502).json({ error: e.message })
+  }
+})
+
+// 1) Cron interno: sincronización de Elit (fixture en sandbox, API real en production).
+app.post('/api/cron/elit-sync', cronAuth, async (req, res) => {
+  const repo = isPgConfigured() ? createPgRepository(getPgPool()) : null
+  if (!repo) return res.status(503).json({ error: 'Hub PostgreSQL no configurado' })
+  try {
+    const mode = String(req.body?.mode || 'stock') === 'catalog' ? 'catalog' : 'stock'
+    const locked = await withAdvisoryLock(getPgPool(), `elit-sync:${mode}`, async () => {
+      const client = createElitClient()
+      return mode === 'catalog'
+        ? syncElitCatalog({ client, repo })
+        : syncElitStockAndPrices({ client, repo })
+    })
+    res.json(locked.skipped ? { skipped: true, reason: 'already_running' } : locked.result)
   } catch (e) {
     res.status(502).json({ error: e.message })
   }
