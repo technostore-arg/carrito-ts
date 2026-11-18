@@ -29,7 +29,10 @@ async function request(path, { method = 'GET', body } = {}) {
 
 export const authClient = {
   signUp: { email: ({ name, email, password }) => request('/sign-up/email', { method: 'POST', body: { name, email, password } }) },
-  signIn: { email: ({ email, password }) => request('/sign-in/email', { method: 'POST', body: { email, password } }) },
+  signIn: {
+    email: ({ email, password }) => request('/sign-in/email', { method: 'POST', body: { email, password } }),
+    social: ({ provider, callbackURL }) => request('/sign-in/social', { method: 'POST', body: { provider, callbackURL } }),
+  },
   getSession: () => request('/get-session'),
   signOut: () => request('/sign-out', { method: 'POST', body: {} }),
 }
