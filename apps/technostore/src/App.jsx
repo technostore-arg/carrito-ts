@@ -19,6 +19,7 @@ import { SEARCH_DEBOUNCE_MS } from "./config/store"
 import AppleSpotlight from "./components/AppleSpotlight"
 import Footer from "./components/Footer"
 import CustomerAuth from "./components/CustomerAuth"
+import AsesoramientoModal from "./components/AsesoramientoModal"
 import { authClient } from "./lib/auth.js"
 import WhatsAppFloat from "./components/WhatsAppFloat"
 import { useCart } from "./context/CartContext"
@@ -35,6 +36,7 @@ export default function App() {
   const [stitchCatalog, setStitchCatalog] = useState(true)
   const [stitchExtra, setStitchExtra] = useState(null)
   const [stitchMode, setStitchMode] = useState(true)
+  const [asesoramientoOpen, setAsesoramientoOpen] = useState(false)
   const [stitchScreen, setStitchScreen] = useState('home')
 
   // El wrapper de Neon canjea el neon_auth_session_verifier al llamar getSession.
@@ -337,7 +339,8 @@ export default function App() {
             onAction={(action) => {
               if (action === 'cart') setDrawerOpen(true)
               if (action === 'account') setAuthOpen(true)
-              if (action === 'catalog') setStitchScreen('catalogo-filtros')
+              if (action === 'catalog') scrollToCatalog()
+              if (action === 'advisory') setAsesoramientoOpen(true)
             }}
             onProduct={(sku) => {
               const p = allProducts.find(x => x.sku === sku)
@@ -411,6 +414,7 @@ export default function App() {
       <DrawerCart open={drawerOpen} onClose={() => setDrawerOpen(false)} onCheckout={openCheckout} />
       {checkoutOpen && <Checkout onClose={() => setCheckoutOpen(false)} />}
       <CustomerAuth open={authOpen} onClose={() => setAuthOpen(false)} initialError={authError} session={authSession} onSession={setAuthSession} />
+      <AsesoramientoModal open={asesoramientoOpen} onClose={() => setAsesoramientoOpen(false)} />
       {selectedProduct && <ProductDetail producto={selectedProduct} onClose={() => setSelectedProduct(null)} onAddToCart={addToCart} />}
       {(authOpen || checkoutOpen || drawerOpen || selectedProduct || stitchExtra) && (
         <StitchView

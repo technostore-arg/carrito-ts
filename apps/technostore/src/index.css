@@ -897,6 +897,10 @@ body:has(.modal-backdrop) .whatsapp-float { display: none !important; }
 .auth-form label { display: grid; gap: 5px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
 .auth-form input { width: 100%; padding: 11px 13px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; text-transform: none; letter-spacing: normal; }
 .auth-form input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,113,227,.1); }
+.auth-form select, .auth-form textarea { width: 100%; padding: 11px 13px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; text-transform: none; letter-spacing: normal; background: #fff; color: var(--text); }
+.auth-form select:focus, .auth-form textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,113,227,.1); }
+.asesor-card { width: min(480px, 100%); }
+.asesor-hint { font-size: 12.5px !important; color: var(--muted) !important; text-transform: none !important; letter-spacing: normal !important; line-height: 1.45; }
 .auth-error { margin-top: 12px; font-size: 12.5px; color: var(--red); }
 .auth-ok { margin-top: 12px; font-size: 12.5px; color: var(--green); font-weight: 600; }
 .auth-session { display: grid; gap: 14px; }

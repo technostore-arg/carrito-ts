@@ -15,7 +15,10 @@ function categoryCard(c, img, count) {
 function productCard(p) {
   const brand = esc(p.marca || 'TechnoStore')
   const stock = Number(p.stock) > 0 ? 'En Stock' : 'A pedido'
-  return `<div class="bg-surface-pure rounded-2xl p-5 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between group relative" data-sku="${esc(p.sku)}">
+  const precio = Number(p.precio_transferencia ?? p.precio) || 0
+  const lista = Number(p.precio_lista ?? p.precio_mercadopago) || 0
+  const oferta = lista > precio ? 1 : 0
+  return `<div class="bg-surface-pure rounded-2xl p-5 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between group relative" data-sku="${esc(p.sku)}" data-catalog-item data-cat="${esc(p.categoria || '')}" data-marca="${brand}" data-precio="${precio}" data-oferta="${oferta}" data-nombre="${esc(p.nombre || p.sku || '')}" data-stock="${Number(p.stock) || 0}">
   <div class="flex items-center justify-between mb-3"><span class="px-2.5 py-1 bg-surface-container-high text-primary font-label-sm text-label-sm rounded-md font-bold flex items-center gap-1">${brand}</span><span class="px-2 py-0.5 bg-secondary-fixed/30 text-secondary font-label-sm text-label-sm rounded-md font-semibold">${stock}</span></div>
   <div class="w-full h-48 bg-surface-container-low rounded-xl p-4 flex items-center justify-center overflow-hidden mb-4 relative"><img class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" src="${esc(p.imagenes?.[0] || '')}" alt=""></div>
   <div class="flex flex-col flex-1"><h3 class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight mt-0.5">${esc(p.nombre || p.sku || '')}</h3>
@@ -26,11 +29,22 @@ function productCard(p) {
 }
 
 function simplifyStitch(doc) {
+  // Sacar el sub-menú superior (Laptops & Mac, Smartphones, Audio Hi-Fi, ...).
+  const header = doc.querySelector('header')
+  const submenu = header?.lastElementChild
+  if (submenu && /Laptops & Mac|Smartphones & iPhone|Monitores & Accesorios/i.test(submenu.textContent || '')) {
+    submenu.remove()
+    const main = doc.querySelector('main')
+    if (main) main.className = main.className.replace(/\bpt-44\b/, 'pt-32')
+  }
   // Quitar seciones "de relleno" que cargan visualmente la home sin aportar a la búsqueda.
   for (const section of [...doc.querySelectorAll('section')]) {
     const t = section.textContent || ''
     if (/La confianza de nuestra comunidad/i.test(t)) section.remove()
     else if (/Necesit.s asesoramiento personalizado/i.test(t)) section.remove()
+    // El catálogo unificado reemplaza estas secciones redundantes.
+    else if (/Explor.*Categor.as Populares/i.test(t)) section.remove()
+    else if (/M.s Vendidos|Productos destacados/i.test(t)) section.remove()
   }
 }
 
@@ -74,9 +88,9 @@ function addSearch(doc) {
 function seasonalAndHero(doc, products = []) {
   // HERO: copy breve (antes: "Renová tu setup con tecnología oficial y financiación garantizada.")
   const h1 = doc.querySelector('h1')
-  if (h1) h1.innerHTML = 'Tu setup, <span class="text-primary-container">a otro nivel</span>.'
+  if (h1) h1.innerHTML = 'Tu sitio de confianza para <span class="text-primary-container">compras tech</span>.'
   const sub = doc.querySelector('h1')?.parentElement?.querySelector('p.font-body-lg')
-  if (sub) sub.innerHTML = 'GPUs, workstations y memorias con stock real, garantía escrita y envío a todo el país.'
+  if (sub) sub.innerHTML = 'Armado de computadoras, computadoras gamer y componentes con stock real. ¿No sabés qué elegir? Te asesoramos sin cargo.'
 
   // Decoración navideña sutil (franja + copitos), sin invadir el diseño.
   if (!doc.querySelector('[data-xmas-ribbon]')) {
@@ -89,18 +103,6 @@ function seasonalAndHero(doc, products = []) {
     else doc.body.prepend(ribbon)
   }
 
-  // Carrusel de imágenes de productos destacados (debajo del hero).
-  if (products.length && !doc.querySelector('[data-stitch-carousel]')) {
-    const hero = doc.querySelector('section')
-    const featured = products.filter(p => Number(p.precio_transferencia ?? p.precio) > 0).slice(0, 8)
-    const sec = doc.createElement('section')
-    sec.setAttribute('data-stitch-carousel', '')
-    sec.className = 'w-full px-margin py-space-md'
-    sec.innerHTML = `<div class="flex items-center justify-between mb-3"><div class="flex items-center gap-2 text-primary font-label-md font-bold uppercase tracking-wider"><span class="material-symbols-outlined text-base">auto_awesome</span>Destacados de la semana</div><div class="flex gap-2"><button type="button" data-carousel="prev" aria-label="Anterior" class="w-9 h-9 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center"><span class="material-symbols-outlined">chevron_left</span></button><button type="button" data-carousel="next" aria-label="Siguiente" class="w-9 h-9 rounded-lg bg-primary-container text-on-primary flex items-center justify-center"><span class="material-symbols-outlined">chevron_right</span></button></div></div>
-    <div data-carousel-track class="flex gap-4 overflow-x-auto pb-2">${featured.map(p => `<button type="button" class="shrink-0 w-40 rounded-xl bg-surface-pure border border-border-subtle p-3 text-left hover:shadow-md transition-shadow" data-path="detalle-de-producto" data-sku="${esc(p.sku)}"><img class="w-full h-28 object-contain bg-surface-container-low rounded-lg mb-2" src="${esc(p.imagenes?.[0] || '')}" alt=""><b class="block text-label-md text-on-surface truncate">${esc(p.nombre || '')}</b><span class="text-body-sm font-bold text-primary">$${Number((p.precio_transferencia ?? p.precio) || 0).toLocaleString('es-AR')}</span></button>`).join('')}</div>`
-    if (hero) hero.after(sec)
-    else doc.body.prepend(sec)
-  }
 }
 
 // Imágenes grandes y reales de Elit (catálogo completo) para el banner principal.
@@ -161,7 +163,17 @@ function reworkHome(doc, products = []) {
       const h1 = left.querySelector('h1')
       if (h1) { h1.style.fontSize = '22px'; h1.style.lineHeight = '1.2' }
       for (const p of left.querySelectorAll('p')) { p.style.fontSize = '13px'; p.style.marginTop = '2px' }
-      for (const a of left.querySelectorAll('a')) { a.style.height = '36px'; a.style.fontSize = '12px'; a.style.paddingLeft = '14px'; a.style.paddingRight = '14px' }
+      const ctas = left.querySelectorAll('a')
+      for (const a of ctas) { a.style.height = '36px'; a.style.fontSize = '12px'; a.style.paddingLeft = '14px'; a.style.paddingRight = '14px' }
+      if (ctas[0]) {
+        ctas[0].textContent = 'Ver todos los productos →'
+        ctas[0].setAttribute('data-path', 'catalogo-de-productos')
+      }
+      if (ctas[1]) {
+        ctas[1].textContent = 'Solicitar asesoramiento'
+        ctas[1].setAttribute('data-path', 'asesoramiento')
+        ctas[1].className = ctas[1].className.replace(/bg-secondary(\/\S+)?/, 'bg-primary-container').replace('text-on-secondary', 'text-on-primary')
+      }
       const chips = left.querySelector('.grid')
       if (chips) {
         chips.className = 'grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1'
@@ -201,45 +213,54 @@ function reworkHome(doc, products = []) {
   if (trust && footer) { trust.remove(); footer.before(trust) }
 }
 
+function buildCatalog(products = [], categorias = []) {
+  const items = products.filter(p => Number(p.precio_transferencia ?? p.precio) > 0)
+  const counts = new Map()
+  for (const p of items) counts.set(p.categoria, (counts.get(p.categoria) || 0) + 1)
+  const cats = categorias
+    .filter(c => c.id !== 'todos' && counts.get(c.id))
+    .sort((a, b) => (counts.get(b.id) || 0) - (counts.get(a.id) || 0))
+  const marcas = [...new Set(items.map(p => p.marca).filter(Boolean))].sort()
+  const opt = (v, l) => `<option value="${esc(v)}">${esc(l)}</option>`
+  const f = 'bg-surface-container-low border border-border-subtle rounded-lg px-3 py-2 text-label-md text-on-surface outline-none'
+  return `<section id="catalogo" class="w-full px-margin py-space-xl" data-catalog>
+  <div class="flex items-end justify-between mb-4 gap-3 flex-wrap">
+    <div><div class="text-primary font-label-md font-bold uppercase tracking-widest">Catálogo completo</div><h2 class="font-headline-lg text-headline-lg font-bold text-on-surface">Todos los productos</h2></div>
+    <span class="font-label-md text-on-surface-variant"><b data-catalog-count>${items.length}</b> productos</span>
+  </div>
+  <div class="bg-surface-pure rounded-xl shadow-sm p-4 mb-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3" data-catalog-filters>
+    <label class="flex flex-col gap-1"><span class="font-label-sm text-on-surface-variant">Categoría</span><select data-filter="cat" class="${f}">${opt('todos', 'Todas')}${cats.map(c => opt(c.id, c.label || c.id)).join('')}</select></label>
+    <label class="flex flex-col gap-1"><span class="font-label-sm text-on-surface-variant">Marca</span><select data-filter="marca" class="${f}">${opt('todos', 'Todas')}${marcas.map(m => opt(m, m)).join('')}</select></label>
+    <label class="flex flex-col gap-1"><span class="font-label-sm text-on-surface-variant">Precio</span><select data-filter="precio" class="${f}">
+      ${opt('todos', 'Todos')}${opt('0-100000', 'Hasta $100.000')}${opt('100000-500000', '$100.000 – $500.000')}${opt('500000-1000000', '$500.000 – $1.000.000')}${opt('1000000+', 'Más de $1.000.000')}
+    </select></label>
+    <label class="flex flex-col gap-1"><span class="font-label-sm text-on-surface-variant">Oferta</span><select data-filter="oferta" class="${f}">${opt('todos', 'Todas')}${opt('si', 'Solo en oferta')}</select></label>
+    <label class="flex flex-col gap-1"><span class="font-label-sm text-on-surface-variant">Ordenar por</span><select data-order class="${f}">
+      ${opt('destacados', 'Destacados')}${opt('oferta', 'En oferta')}${opt('precio-asc', 'Menor precio')}${opt('precio-desc', 'Mayor precio')}${opt('nombre', 'Nombre A — Z')}
+    </select></label>
+    <div class="flex items-end"><button type="button" data-catalog-reset class="h-10 w-full px-4 rounded-lg border border-border-subtle text-on-surface-variant font-label-md hover:bg-surface-container transition-colors">Limpiar filtros</button></div>
+  </div>
+  <div data-catalog-grid class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+    ${items.map(productCard).join('')}
+  </div>
+</section>`
+}
+
 export function hydrateStitch(doc, { products = [], categorias = [] } = {}) {
   simplifyStitch(doc)
   addSearch(doc)
   seasonalAndHero(doc, products)
   reworkHome(doc, products)
-  // Categorías reales en la grilla de "Categorías Populares"
-  const catSection = [...doc.querySelectorAll('section')].find(s => /Explor.*Categor/i.test(s.textContent || ''))
-  if (catSection && categorias.length) {
-    const grid = catSection.querySelector('div.grid')
-    if (grid) {
-      const counts = new Map()
-      for (const p of products) counts.set(p.categoria, (counts.get(p.categoria) || 0) + 1)
-      const prefer = ['hardware', 'computadoras', 'memorias', 'almacenamiento', 'perifericos', 'audio', 'imagen', 'gpus']
-      const cats = categorias
-        .filter(c => c.id !== 'todos')
-        .sort((a, b) => {
-          const pa = prefer.indexOf(a.id), pb = prefer.indexOf(b.id)
-          if (pa !== -1 || pb !== -1) return (pa === -1 ? 99 : pa) - (pb === -1 ? 99 : pb)
-          return (counts.get(b.id) || 0) - (counts.get(a.id) || 0)
-        })
-        .slice(0, 6)
-      grid.innerHTML = cats.map(c => {
-        const items = products.filter(p => p.categoria === c.id)
-        return categoryCard(c, items[0]?.imagenes?.[0], items.length)
-      }).join('')
-    }
-  }
-
-  // Productos reales en grillas con precios (Home "Más Vendidos" y catálogos)
-  const real = products.filter(p => Number(p.stock) > 0 && Number(p.precio_transferencia ?? p.precio) > 0).slice(0, 12)
-  if (real.length) {
-    for (const grid of doc.querySelectorAll('div.grid')) {
-      if (grid.querySelector('[data-sku]')) continue
-      const cards = [...grid.children]
-      if (cards.length < 2) continue
-      const priceLike = cards.filter(c => /\$[\d.,]{4,}/.test(c.textContent || '')).length
-      if (priceLike < 2) continue
-      grid.innerHTML = real.slice(0, cards.length).map(productCard).join('')
-    }
+  // Catálogo único con filtros: reemplaza "categorías + destacados + más vendidos".
+  if (products.length && !doc.querySelector('[data-catalog]')) {
+    const trust = [...doc.querySelectorAll('section')].find(s => /Seguridad de nivel corporativo/i.test(s.textContent || ''))
+    const footer = doc.querySelector('footer')
+    const holder = doc.createElement('div')
+    holder.innerHTML = buildCatalog(products, categorias)
+    const node = holder.firstElementChild
+    if (trust) trust.before(node)
+    else if (footer) footer.before(node)
+    else doc.querySelector('main')?.appendChild(node) || doc.body.appendChild(node)
   }
   return doc
 }

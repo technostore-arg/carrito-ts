@@ -71,6 +71,59 @@ export default function StitchView({ name, inline = false, products = [], catego
     return () => root.removeEventListener('click', onClick)
   }, [html, onClose, onAction, onProduct, onAdd])
 
+  // Catálogo unificado: filtros (categoría, marca, precio, oferta) y orden.
+  useEffect(() => {
+    if (!html || !ref.current) return
+    const root = ref.current
+    const catalog = root.querySelector('[data-catalog]')
+    if (!catalog) return
+    const grid = catalog.querySelector('[data-catalog-grid]')
+    const items = [...grid.querySelectorAll('[data-catalog-item]')]
+    const count = catalog.querySelector('[data-catalog-count]')
+    const val = sel => catalog.querySelector(`[data-filter="${sel}"]`)?.value || 'todos'
+    const apply = () => {
+      const cat = val('cat'), marca = val('marca'), precio = val('precio'), oferta = val('oferta')
+      const orden = catalog.querySelector('[data-order]')?.value || 'destacados'
+      let vis = 0
+      for (const el of items) {
+        const d = el.dataset
+        const p = Number(d.precio) || 0
+        const ok = (cat === 'todos' || d.cat === cat)
+          && (marca === 'todos' || d.marca === marca)
+          && (oferta !== 'si' || d.oferta === '1')
+          && (precio === 'todos'
+            || (precio === '0-100000' && p <= 100000)
+            || (precio === '100000-500000' && p >= 100000 && p <= 500000)
+            || (precio === '500000-1000000' && p >= 500000 && p <= 1000000)
+            || (precio === '1000000+' && p > 1000000))
+        el.style.display = ok ? '' : 'none'
+        if (ok) vis++
+      }
+      if (count) count.textContent = String(vis)
+      const cmp = (a, b) => {
+        const da = a.dataset, db = b.dataset
+        if (orden === 'precio-asc') return Number(da.precio) - Number(db.precio)
+        if (orden === 'precio-desc') return Number(db.precio) - Number(da.precio)
+        if (orden === 'nombre') return (da.nombre || '').localeCompare(db.nombre || '')
+        if (orden === 'oferta') return (Number(db.oferta) - Number(da.oferta)) || (Number(db.precio) - Number(da.precio))
+        return (Number(db.stock) - Number(da.stock)) || ((da.nombre || '').localeCompare(db.nombre || ''))
+      }
+      for (const el of [...items].sort(cmp)) grid.appendChild(el)
+    }
+    const onChange = e => { if (e.target.matches('[data-filter], [data-order]')) apply() }
+    const onClick = e => {
+      if (!e.target.closest('[data-catalog-reset]')) return
+      for (const s of catalog.querySelectorAll('[data-filter]')) s.value = 'todos'
+      const order = catalog.querySelector('[data-order]')
+      if (order) order.value = 'destacados'
+      apply()
+    }
+    root.addEventListener('change', onChange)
+    root.addEventListener('click', onClick)
+    apply()
+    return () => { root.removeEventListener('change', onChange); root.removeEventListener('click', onClick) }
+  }, [html])
+
   // Auto-avance del carrusel de imágenes del banner.
   useEffect(() => {
     if (!html || !ref.current) return
