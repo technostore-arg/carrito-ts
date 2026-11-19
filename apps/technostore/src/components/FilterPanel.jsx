@@ -5,7 +5,7 @@
  */
 import { useState } from "react"
 
-const CATEGORIAS = [
+export const CATEGORIAS = [
   { id: "todos", label: "Todos" },
   { id: "celulares", label: "Celulares" },
   { id: "notebooks", label: "Notebooks" },
@@ -19,6 +19,33 @@ const CATEGORIAS = [
   { id: "watercooling", label: "Watercooling" },
   { id: "accesorios", label: "Accesorios" },
 ]
+
+export const HARDWARE_CATS = ["gpus", "procesadores", "ram", "ram-sodimm", "memorias", "ssd", "ssd-nvme", "ssd-sata", "coolers", "gabinetes", "watercooling"]
+export function isHardware(c) { return HARDWARE_CATS.includes(String(c || "").toLowerCase()) }
+
+export const ORDENES = [
+  { id: "relevancia", label: "Relevancia" },
+  { id: "precio-asc", label: "Menor precio" },
+  { id: "precio-desc", label: "Mayor precio" },
+  { id: "nombre-asc", label: "A — Z" },
+]
+
+// Compat: acepta ids viejos ("0-400", "ram", ...) y rangos dinámicos "min-max"/"min+"
+export function rangoMatch(precio, rango) {
+  if (!rango || rango === "todos") return true
+  const p = Number(precio) || 0
+  let m = String(rango).match(/^(\d+)-(\d+)$/)
+  if (m) {
+    const mult = Number(m[2]) <= 10000 ? 1000 : 1
+    return p >= Number(m[1]) * mult && p <= Number(m[2]) * mult
+  }
+  m = String(rango).match(/^(\d+)\+$/)
+  if (m) {
+    const mult = Number(m[1]) <= 10000 ? 1000 : 1
+    return p > Number(m[1]) * mult
+  }
+  return true
+}
 
 function Facet({ title, hint, children }) {
   return (

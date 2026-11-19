@@ -35,7 +35,7 @@ export default function ProductDetail({ producto, onClose, onAddToCart }) {
         <div className="ts-detail">
           <div className="ts-detail-gallery">
             {gallery.length ? gallery.map((im, i) => (
-              <ProductMedia key={i} src={im} alt={i === 0 ? nombre : ''} className={i === 0 ? 'ts-detail-gallery__main' : 'ts-detail-gallery__thumb'} eager={i === 0} />
+              <ProductMedia key={i} src={im} alt={nombre} className={i === 0 ? 'ts-detail-gallery__main' : 'ts-detail-gallery__thumb'} eager={i === 0} />
             )) : <ProductMedia src={producto.imagenes?.[0]} alt={nombre} className="ts-detail-gallery__main" eager />}
           </div>
 
