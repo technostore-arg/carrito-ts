@@ -24,6 +24,8 @@ export function buildPublicProduct(input) {
     fabricante: m.brand || 'Genérica',
     category: m.category,
     categoria: m.category,
+    categoria_elit: staticData.categoria_elit || m.category,
+    subcategoria: staticData.subcategoria_elit || '',
     price: quote.price_transfer,
     precio: quote.price_transfer,
     precio_transferencia: quote.price_transfer,

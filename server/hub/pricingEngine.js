@@ -24,6 +24,10 @@ export const CORE_HARDWARE_CATEGORIES = new Set([
   'motherboard', 'motherboards', 'mothers', 'ram', 'ram-sodimm', 'memorias',
   'ssd', 'ssd-nvme', 'ssd-sata', 'almacenamiento', 'discos', 'storage',
   'computadoras',
+  // Categorías genéricas de tecnología / alias de Elit (fallback cuando Elit no informa IVA).
+  'computacion', 'componentes', 'gpus', 'placas-de-video', 'tarjetas-de-video',
+  'memorias-ram', 'memoria-ram', 'discos-rigidos', 'unidades-de-estado-solido',
+  'workstations', 'servidores',
 ])
 
 export const DEFAULT_CONFIG = Object.freeze({
@@ -130,7 +134,8 @@ export function computeQuote(input = {}) {
   const master = input.master_product || {}
   const config = { ...DEFAULT_CONFIG, ...(input.pricing_config || {}) }
   const sku = String(master.sku || master.sku_interno || '')
-  const vatRate = vatRateFor(master.category, config)
+  // IVA real del producto (Elit) cuando está disponible; si no, regla por categoría.
+  const vatRate = Number(master.vatRate) > 0 ? Number(master.vatRate) : vatRateFor(master.category, config)
   const margin = marginFor(master.category, config)
   const base = {
     sku,

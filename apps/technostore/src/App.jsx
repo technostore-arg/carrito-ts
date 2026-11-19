@@ -144,7 +144,20 @@ export default function App() {
     scopedProducts === null ? [] : Array.from(new Set(scopedProducts.map(getBrand))).sort(),
   [scopedProducts])
 
-  const validCatIds = useMemo(() => new Set(CATEGORIAS.map(c => c.id)), [])
+  // Categorías reales del catálogo (vienen de Elit) — la lista hardcodeada queda como fallback.
+  const categorias = useMemo(() => {
+    const out = [{ id: "todos", label: "Todos" }]
+    const seen = new Set()
+    for (const p of allProducts) {
+      const id = canonCat(p.categoria)
+      if (!id || seen.has(id) || id === "todos") continue
+      seen.add(id)
+      out.push({ id, label: String(id).replace(/-/g, ' ').replace(/\b\w/g, m => m.toUpperCase()) })
+    }
+    return out
+  }, [allProducts])
+
+  const validCatIds = useMemo(() => new Set(categorias.map(c => c.id)), [categorias])
   const hasUsed = useMemo(() => (scopedProducts ?? []).some(p => p.condicion === "usado"), [scopedProducts])
 
   useEffect(() => {
@@ -335,7 +348,7 @@ export default function App() {
                 onMarcas={setMarcas} onRango={setRango} onOrden={setOrden} onCpu={setCpu} onRam={setRam} onSsd={setSsd}
                 onCondicion={setCondicion} onCalidad={setCalidad} onBatMin={setBatMin} onDisponibilidad={setDisponibilidad}
                 marcasDisponibles={marcasDisponibles} marcaCounts={marcaCounts}
-                cpuOptions={specOpts.cpus} ramOptions={specOpts.rams} ssdOptions={specOpts.ssds} rangeOptions={rangeOpts} visibleSpecs={visibleSpecs} counts={counts}
+                cpuOptions={specOpts.cpus} ramOptions={specOpts.rams} ssdOptions={specOpts.ssds} rangeOptions={rangeOpts} visibleSpecs={visibleSpecs} counts={counts} categorias={categorias}
                 hasUsed={hasUsed} chips={chips}
                 totalVisibles={visibles.length} totalAll={allProducts.length}
                 hasFiltros={hasFiltros} onLimpiar={limpiarFiltros}

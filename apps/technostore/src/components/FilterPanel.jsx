@@ -76,7 +76,7 @@ export default function FilterPanel({
   categoria, marcas, rango, orden, cpu, ram, ssd, condicion, calidad, batMin, disponibilidad,
   onCategoria, onMarcas, onRango, onOrden, onCpu, onRam, onSsd, onCondicion, onCalidad, onBatMin, onDisponibilidad,
   marcasDisponibles, marcaCounts, cpuOptions, ramOptions, ssdOptions, rangeOptions,
-  visibleSpecs, counts, hasUsed, chips, totalVisibles, totalAll, hasFiltros, onLimpiar, children,
+  visibleSpecs, counts, categorias, hasUsed, chips, totalVisibles, totalAll, hasFiltros, onLimpiar, children,
 }) {
   const [sheetOpen, setSheetOpen] = useState(false)
   const closeSheet = () => setSheetOpen(false)
@@ -94,7 +94,7 @@ export default function FilterPanel({
     <div className="facet-list">
       <Facet title="Categoría">
         <div className="facet-opts" role="radiogroup">
-          {CATEGORIAS.map(c => (
+          {(categorias || CATEGORIAS).map(c => (
             <FacetOpt key={c.id} active={categoria === c.id} label={c.label} count={counts[c.id] ?? 0} onClick={() => onCategoria(c.id)} />
           ))}
         </div>

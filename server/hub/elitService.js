@@ -30,19 +30,9 @@ function slug(s) {
     .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
-/** Mapea la categoría de Elit al slug interno del hub. */
+/** Categoría de Elit tal cual (normalizada a slug) — sin heurísticos por nombre de producto. */
 function mapElitCategory(raw = {}) {
-  const name = `${raw.categoria ?? ''} ${raw.sub_categoria ?? ''}`.toLowerCase()
-  if (/notebook|laptop|macbook/.test(name)) return 'notebooks'
-  if (/placa de video|tarjeta gráfica|tarjeta de video|\bgpu\b/.test(name)) return 'gpus'
-  if (/memoria ram/.test(name)) return 'ram'
-  if (/ssd|nvme|disco|almacen/.test(name)) return 'almacenamiento'
-  if (/procesador|\bcpu\b/.test(name)) return 'procesadores'
-  if (/mother|placa madre/.test(name)) return 'motherboard'
-  if (/monitor/.test(name)) return 'monitores'
-  if (/celular|smartphone/.test(name)) return 'celulares'
-  if (/computadora|all in one|aio/.test(name)) return 'computadoras'
-  return slug(raw.categoria) || 'accesorios'
+  return slug(raw.categoria) || 'tecnologia'
 }
 
 /** Campos reales del manual -> shape interno del hub. */
@@ -57,6 +47,7 @@ export function normalizeElitItem(raw = {}) {
     title: String(raw.nombre ?? '').trim(),
     brand: String(raw.marca ?? 'Genérica').trim(),
     category: mapElitCategory(raw),
+    categoryRaw: String(raw.categoria ?? '').trim(),
     subcategory: String(raw.sub_categoria ?? '').trim(),
     // "precio" es la base sin markup (USD); pvp_* es el sugerido con markup.
     costAmount: Number(raw.precio) || 0,
@@ -185,7 +176,13 @@ function normalizeCsvRow(row) {
     title: firstDefined(row, ['Nombre', 'nombre', 'name', 'product_name']),
     brand: firstDefined(row, ['Marca', 'marca', 'brand']),
     category: mapCsvCategory(firstDefined(row, ['Categorías', 'categoría', 'categoria', 'category', 'Categorias']) || ''),
+    categoryRaw: String(firstDefined(row, ['Categorías', 'categoría', 'categoria', 'category', 'Categorias']) || '').trim(),
     subcategory: firstDefined(row, ['Subcategoría', 'subcategoría', 'subcategoria', 'sub_categoria']),
+    vatRate: (() => {
+      const v = Number(firstDefined(row, ['iva', 'IVA']))
+      if (!Number.isFinite(v) || v <= 0) return null
+      return v < 1 ? v : (v <= 100 ? v / 100 : null)
+    })(),
     costAmount: Number(firstDefined(row, ['Precio', 'precio', 'pvp_usd', 'price', 'price_usd']) || 0),
     costCurrency: 'USD',
     rawStock: Math.max(0, Math.floor(Number(firstDefined(row, ['Stock', 'stock_total', 'stock', 'cantidad']) || 0))),

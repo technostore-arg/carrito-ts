@@ -20,6 +20,8 @@ function masterFromItem(item, config) {
       descripcion: item.description || '',
       imagenes: item.images || [],
       fuente_origen: 'elit',
+      categoria_elit: item.categoryRaw || item.category || '',
+      subcategoria_elit: item.subcategory || '',
     },
   }
 }
