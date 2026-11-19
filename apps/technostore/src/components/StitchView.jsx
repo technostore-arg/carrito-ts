@@ -38,6 +38,21 @@ export default function StitchView({ name, inline = false, products = [], catego
       const path = el.getAttribute('data-path') || ''
       const text = (el.innerText || '').toLowerCase()
       if (/cerrar|close|volver|atrás|atras/.test(text)) { e.preventDefault(); onClose?.(); return }
+      const heroNav = el.closest('[data-hero-next], [data-hero-prev], [data-hero-dot]')
+      if (heroNav) {
+        e.preventDefault()
+        const slider = heroNav.closest('[data-hero-slider]')
+        const slides = [...(slider?.querySelectorAll('[data-hero-slide]') || [])]
+        if (slides.length) {
+          const active = slides.findIndex(s => s.classList.contains('is-active'))
+          const step = heroNav.hasAttribute('data-hero-next') ? 1 : heroNav.hasAttribute('data-hero-prev') ? -1 : 0
+          const dot = heroNav.getAttribute('data-hero-dot')
+          const idx = dot !== null ? Number(dot) : (active + step + slides.length) % slides.length
+          slides.forEach((s, i) => s.classList.toggle('is-active', i === idx))
+          slider.querySelectorAll('[data-hero-dot]').forEach((d, i) => d.classList.toggle('is-active', i === idx))
+        }
+        return
+      }
       const carousel = el.closest('[data-carousel]')
       if (carousel) {
         e.preventDefault()
@@ -55,6 +70,22 @@ export default function StitchView({ name, inline = false, products = [], catego
     root.addEventListener('click', onClick)
     return () => root.removeEventListener('click', onClick)
   }, [html, onClose, onAction, onProduct, onAdd])
+
+  // Auto-avance del carrusel de imágenes del banner.
+  useEffect(() => {
+    if (!html || !ref.current) return
+    const slider = ref.current.querySelector('[data-hero-slider]')
+    if (!slider) return
+    const id = setInterval(() => {
+      const slides = [...slider.querySelectorAll('[data-hero-slide]')]
+      if (!slides.length) return
+      const active = slides.findIndex(s => s.classList.contains('is-active'))
+      const idx = (active + 1) % slides.length
+      slides.forEach((s, i) => s.classList.toggle('is-active', i === idx))
+      slider.querySelectorAll('[data-hero-dot]').forEach((d, i) => d.classList.toggle('is-active', i === idx))
+    }, 5000)
+    return () => clearInterval(id)
+  }, [html])
 
   // Búsqueda en vivo con sugerencias (delegada, porque el HTML se inyecta como string).
   useEffect(() => {

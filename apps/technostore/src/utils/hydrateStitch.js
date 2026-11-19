@@ -36,6 +36,27 @@ function simplifyStitch(doc) {
 
 function addSearch(doc) {
   if (doc.querySelector('[data-stitch-search]')) return
+  const wrapSuggest = (input, wrap) => {
+    input.setAttribute('data-stitch-search', '')
+    input.setAttribute('aria-label', 'Buscar productos')
+    wrap.setAttribute('data-stitch-search-wrap', '')
+    wrap.style.position = 'relative'
+    const box = doc.createElement('div')
+    box.setAttribute('data-stitch-suggest', '')
+    box.className = 'hidden absolute z-50 top-full mt-2 w-full bg-surface-pure rounded-xl shadow-lg border border-border-subtle overflow-hidden'
+    wrap.appendChild(box)
+  }
+  // El header nativo de Stitch es fixed y tapa cualquier header inyectado:
+  // conectamos la búsqueda en vivo directamente a SU input.
+  const nativeInput = doc.querySelector('header input[placeholder^="Buscar"]')
+  if (nativeInput) {
+    const wrap = nativeInput.parentElement
+    wrapSuggest(nativeInput, wrap)
+    const btn = wrap.querySelector('button')
+    if (btn) btn.setAttribute('data-path', 'catalogo-de-productos')
+    return
+  }
+  // Fallback para pantallas sin header nativo.
   const header = doc.createElement('div')
   header.className = 'sticky top-0 z-40 w-full bg-surface-pure/95 backdrop-blur border-b border-border-subtle px-margin py-3'
   header.innerHTML = `<div class="w-full max-w-[1440px] mx-auto flex items-center gap-4">
@@ -61,9 +82,11 @@ function seasonalAndHero(doc, products = []) {
   if (!doc.querySelector('[data-xmas-ribbon]')) {
     const ribbon = doc.createElement('div')
     ribbon.setAttribute('data-xmas-ribbon', '')
-    ribbon.className = 'xmas-ribbon px-margin py-1.5 text-center font-label-md font-bold'
+    ribbon.className = 'xmas-ribbon px-margin py-1.5 mb-3 text-center font-label-md font-bold'
     ribbon.innerHTML = '🎄 Navidad TechnoStore · Elegí tu próximo upgrade y recibilo antes del 24'
-    doc.body.prepend(ribbon)
+    const main = doc.querySelector('main')
+    if (main) main.prepend(ribbon)
+    else doc.body.prepend(ribbon)
   }
 
   // Carrusel de imágenes de productos destacados (debajo del hero).
@@ -80,6 +103,30 @@ function seasonalAndHero(doc, products = []) {
   }
 }
 
+// Imágenes grandes y reales de Elit (catálogo completo) para el banner principal.
+const HERO_SLIDES = [
+  { tag: 'Notebook Gaming', name: 'GIGABYTE AERO X16', img: 'https://images.elit.com.ar/p/21030/i/G1K47_l.webp' },
+  { tag: 'Monitor Gaming', name: 'ASUS TUF Gaming 34"', img: 'https://images.elit.com.ar/p/20742/i/x53KW_l.webp' },
+  { tag: 'Auriculares Gaming', name: 'ASUS ROG Delta II', img: 'https://images.elit.com.ar/p/20736/i/JL0vC_l.webp' },
+  { tag: 'Memoria RGB', name: 'ADATA XPG Lancer RGB', img: 'https://images.elit.com.ar/p/19517/i/PDnA2_l.webp' },
+  { tag: 'Procesador', name: 'AMD Ryzen 7 7800X3D', img: 'https://images.elit.com.ar/p/16801/i/Sdpa5_l.webp' },
+  { tag: 'Mini PC', name: 'ASUS NUC Ultra 7', img: 'https://images.elit.com.ar/p/20765/i/YM6N2_l.webp' },
+]
+
+function buildHeroSlider() {
+  return `<div class="hero-slider relative w-full" data-hero-slider>
+  <div class="relative w-full h-[340px] sm:h-[380px] rounded-2xl overflow-hidden bg-surface-container-low shadow-xl">
+    ${HERO_SLIDES.map((s, i) => `<a class="hero-slide absolute inset-0 flex items-center justify-center${i === 0 ? ' is-active' : ''}" data-hero-slide="${i}" data-path="catalogo-de-productos" href="#">
+      <img class="w-full h-full object-contain p-8" src="${esc(s.img)}" alt="${esc(s.name)}">
+      <span class="absolute bottom-0 left-0 right-0 p-4 pt-10 bg-gradient-to-t from-black/70 to-transparent text-white"><small class="block uppercase tracking-wider opacity-80 text-xs">${esc(s.tag)}</small><b class="text-lg">${esc(s.name)}</b></span>
+    </a>`).join('')}
+    <button type="button" data-hero-prev aria-label="Anterior" class="hero-slider__arrow hero-slider__arrow--prev">‹</button>
+    <button type="button" data-hero-next aria-label="Siguiente" class="hero-slider__arrow hero-slider__arrow--next">›</button>
+    <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">${HERO_SLIDES.map((_, i) => `<button type="button" data-hero-dot="${i}" aria-label="Imagen ${i + 1}" class="hero-slider__dot${i === 0 ? ' is-active' : ''}"></button>`).join('')}</div>
+  </div>
+</div>`
+}
+
 function reworkHome(doc, products = []) {
   // 1) Sacar reclamos no respaldados (cuotas fijas / envío en el día).
   for (const el of [...doc.querySelectorAll('span, div, p, li, a')]) {
@@ -92,19 +139,15 @@ function reworkHome(doc, products = []) {
     if (/Más Vendidos/i.test(h.textContent || '')) h.textContent = 'Productos destacados'
   }
 
-  // 2) Hero chico con carrusel de imágenes de productos reales.
+  // 2) Banner principal: carrusel grande de imágenes de productos reales.
+  //    Reemplaza TODA la columna derecha para eliminar los badges viejos
+  //    ("10% OFF", "12x Sin Interés", "Apple & Sony Pro Setup", garantía, etc.).
   const hero = doc.querySelector('section')
-  if (hero && products.length) {
+  if (hero) {
     hero.classList.add('hero-compact')
-    const media = hero.querySelector('img[data-alt], video')
-    if (media) {
-      const wrap = doc.createElement('div')
-      wrap.setAttribute('data-stitch-carousel', '')
-      wrap.className = 'w-full'
-      const featured = products.filter(p => Number(p.precio_transferencia ?? p.precio) > 0).slice(0, 8)
-      wrap.innerHTML = `<div class="flex items-center justify-between mb-2"><span class="font-label-sm font-bold uppercase tracking-wider text-primary">Lo que vendemos</span><div class="flex gap-1"><button type="button" data-carousel="prev" aria-label="Anterior" class="w-8 h-8 rounded-lg bg-surface-container text-on-surface">‹</button><button type="button" data-carousel="next" aria-label="Siguiente" class="w-8 h-8 rounded-lg bg-primary-container text-on-primary">›</button></div></div><div data-carousel-track class="flex gap-3 overflow-x-auto pb-2">${featured.map(p => `<button type="button" class="shrink-0 w-36 rounded-xl bg-surface-pure border border-border-subtle p-2" data-path="detalle-de-producto" data-sku="${esc(p.sku)}"><img class="w-full h-24 object-contain bg-surface-container-low rounded-lg" src="${esc(p.imagenes?.[0] || '')}" alt=""></button>`).join('')}</div>`
-      media.replaceWith(wrap)
-    }
+    const grid = hero.querySelector('.grid')
+    const right = grid?.children?.[1]
+    if (right) right.innerHTML = buildHeroSlider()
   }
 
   // 3) Marcas como tira divisoria fina (no un bloque).
