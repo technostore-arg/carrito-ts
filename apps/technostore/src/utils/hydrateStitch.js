@@ -153,6 +153,25 @@ const HERO_SLIDES = [
   { tag: 'Mini PC', name: 'ASUS NUC Ultra 7', img: '/banner/banner-minipc.webp' },
 ]
 
+// Stickers navideños: trazo fino, azul/menta, en zonas periféricas (nunca sobre el producto).
+const XMAS_STICKERS = {
+  gift: '<span class="xmas-sticker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#00A651" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="12" rx="2"/><path d="M3 13h18M12 9v12M12 9C9 5 5 6 5 8c0 1 3 1 7 1Zm0 0c3-4 7-3 7-1 0 1-3 1-7 1Z"/></svg></span>',
+  snow: '<span class="xmas-sticker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="1.3" stroke-linecap="round"><path d="M12 2v20M4 6l16 12M20 6 4 18M12 2 9 5m3-3 3 3M12 22l-3-3m3 3 3-3M4 6l.4 3.6M4 6l3.6-.4M20 18l-.4-3.6M20 18l-3.6.4M20 6l-3.6-.4M20 6l-.4 3.6M4 18l3.6.4M4 18l.4-3.6"/></svg></span>',
+  star: '<span class="xmas-sticker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#00A651" stroke-width="1.4" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5 5 19"/></svg></span>',
+  pine: '<span class="xmas-sticker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#00A651" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 5 11h3l-4 6h16l-4-6h3L12 2Z"/><path d="M12 17v5"/></svg></span>',
+}
+
+function addXmasStickers(doc) {
+  const title = doc.querySelector('[data-catalog] h2')
+  if (title) title.insertAdjacentHTML('afterend', XMAS_STICKERS.gift)
+  const count = doc.querySelector('[data-catalog-count]')
+  if (count?.parentElement) count.parentElement.insertAdjacentHTML('beforeend', XMAS_STICKERS.snow)
+  const trust = doc.querySelector('[data-cybertrust] div')
+  if (trust) trust.insertAdjacentHTML('beforeend', XMAS_STICKERS.star)
+  const fiscal = doc.querySelector('footer > div.bg-surface-subtle .flex')
+  if (fiscal) fiscal.insertAdjacentHTML('beforeend', XMAS_STICKERS.pine)
+}
+
 function buildHeroSlider() {
   return `<div class="hero-slider relative w-full" data-hero-slider>
   <div class="relative w-full h-[340px] sm:h-[380px] rounded-2xl overflow-hidden bg-surface-container-low shadow-xl">
@@ -362,5 +381,6 @@ export function hydrateStitch(doc, { products = [], categorias = [] } = {}) {
     else if (footer) footer.before(node)
     else doc.querySelector('main')?.appendChild(node) || doc.body.appendChild(node)
   }
+  addXmasStickers(doc)
   return doc
 }

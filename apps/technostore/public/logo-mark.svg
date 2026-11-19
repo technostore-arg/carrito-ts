@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="TechnoStore">
-  <!-- Rombo con esquinas redondeadas -->
-  <path d="M32 3.5c2.1 0 4.1.8 5.6 2.3l22.6 22.6c1.5 1.5 2.3 3.5 2.3 5.6s-.8 4.1-2.3 5.6L37.6 62.2c-1.5 1.5-3.5 2.3-5.6 2.3s-4.1-.8-5.6-2.3L3.8 39.6C2.3 38.1 1.5 36.1 1.5 34s.8-4.1 2.3-5.6L26.4 5.8C27.9 4.3 29.9 3.5 32 3.5Z" fill="#66FF8E"/>
+  <!-- Rombo con esquinas redondeadas, relleno transparente y trazo grueso -->
+  <path d="M32 3.5c2.1 0 4.1.8 5.6 2.3l22.6 22.6c1.5 1.5 2.3 3.5 2.3 5.6s-.8 4.1-2.3 5.6L37.6 62.2c-1.5 1.5-3.5 2.3-5.6 2.3s-4.1-.8-5.6-2.3L3.8 39.6C2.3 38.1 1.5 36.1 1.5 34s.8-4.1 2.3-5.6L26.4 5.8C27.9 4.3 29.9 3.5 32 3.5Z" fill="none" stroke="#0066FF" stroke-width="6" stroke-linejoin="round"/>
   <!-- T en trazo fino -->
-  <g fill="none" stroke="#0066FF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+  <g fill="none" stroke="#00A651" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
     <path d="M21 24.5h22"/>
     <path d="M32 24.5v17"/>
   </g>
