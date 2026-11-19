@@ -855,20 +855,8 @@ app.post('/api/mp/create-preference', async (req, res) => {
   }
 })
 
-app.post('/api/mp/webhook', async (req, res) => {
-  try {
-    const body = req.body || {}
-    const data = body.data || {}
-    const ref = data.external_reference || body.external_reference || null
-    await logMpPayment({ code: ref, preferenceId: String(data.id ?? ''), payload: body })
-    if (ref && (body.type === 'payment' || body.action?.includes('payment'))) {
-      await updateOrderStatusByCode(ref, 'pagado')
-    }
-  } catch (e) {
-    console.error('[mp webhook]', e.message)
-  }
-  res.sendStatus(200)
-})
+// webhook legacy eliminado: marcaba pedidos como pagados desde un body sin verificar firma ni consultar la API de MercadoPago.
+// Flujo activo: /api/checkout/webhook - verifica el pago contra la API de MercadoPago.
 
 /* ---------------- Checkout (Mercado Pago) ---------------- */
 
