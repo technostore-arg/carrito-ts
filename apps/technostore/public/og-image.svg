@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="TechnoStore">
-  <rect width="1200" height="630" fill="#030305"/>
-  <g font-family="Inter, sans-serif" fill="#f2f2f5">
-    <text x="80" y="120" font-size="46" font-weight="800" letter-spacing="-1">TechnoStore</text>
-    <text x="80" y="175" font-size="28" fill="#7c7c88">Hardware de IA — GPUs, RAM ECC y Workstations</text>
-    <text x="80" y="470" font-size="44" font-weight="700" fill="#00e5b0">RTX 4090 · DDR5 ECC · Workstations para IA</text>
-    <text x="80" y="540" font-size="26" fill="#b8b8c2">Envío a todo el país · Facturación A/B · Garantía escrita</text>
-  </g>
-</svg>

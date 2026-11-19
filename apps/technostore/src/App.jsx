@@ -15,8 +15,6 @@ import { mergeQuotes } from "./data/catalog.js"
 import { SEARCH_DEBOUNCE_MS } from "./config/store"
 import AppleSpotlight from "./components/AppleSpotlight"
 import Footer from "./components/Footer"
-import TrustBar from "./components/TrustBar"
-import Nosotros from "./components/Nosotros"
 import CustomerAuth from "./components/CustomerAuth"
 import { authClient } from "./lib/auth.js"
 import WhatsAppFloat from "./components/WhatsAppFloat"
@@ -31,7 +29,6 @@ export default function App() {
   const [authOpen, setAuthOpen] = useState(false)
   const [authError, setAuthError] = useState('')
   const [authSession, setAuthSession] = useState(null)
-  const [view, setView] = useState("home")
 
   // El wrapper de Neon canjea el neon_auth_session_verifier al llamar getSession.
   // Guardamos la sesión en la app para que el modal la vea apenas vuelve de Google.
@@ -77,7 +74,6 @@ export default function App() {
   const [calidad, setCalidad] = useState("todos")
   const [batMin, setBatMin] = useState(0)
   const [disponibilidad, setDisponibilidad] = useState("todos")
-  const [vram, setVram] = useState("")
   const [selectedProduct, setSelectedProduct] = useState(null)
 
   // El input responde al instante; el filtrado espera 250ms (CRO + CPU).
@@ -187,7 +183,6 @@ export default function App() {
     if (!visibleSpecs.includes("cpu") && cpu) setCpu("")
     if (!visibleSpecs.includes("ram") && ram) setRam("")
     if (!visibleSpecs.includes("ssd") && ssd) setSsd("")
-    if (!visibleSpecs.includes("vram") && vram) setVram("")
   }, [categoria]) // eslint-disable-line
 
   const visibles = useMemo(() => {
@@ -201,7 +196,6 @@ export default function App() {
       if (p.tipo_venta === "directa" && !rangoMatch(p.precio_transferencia ?? p.precio, rango)) return false
       if (p.tipo_venta === "encargo" && rango !== "todos") return false
       if (condicion !== "todos" && (p.condicion === "usado" ? "usado" : "nuevo") !== condicion) return false
-      if (vram !== "" && !matchVram(p, Number(vram))) return false
       if (calidad !== "todos" && p.especificaciones?._calidad !== calidad) return false
       if (batMin > 0 && (Number(p.especificaciones?._bateria_min ?? p.especificaciones?._bateria) || 0) < batMin) return false
       if (!matchCpu(p, cpu)) return false
@@ -221,10 +215,10 @@ export default function App() {
     return out
   }, [categoria, marcas, rango, condicion, calidad, batMin, disponibilidad, qDebounced, orden, cpu, ram, ssd, source, allProducts])
 
-  const hasFiltros = categoria !== "todos" || marcas.length > 0 || rango !== "todos" || qDebounced.trim() !== "" || orden !== "relevancia" || cpu !== "" || ram !== "" || ssd !== "" || condicion !== "todos" || calidad !== "todos" || batMin > 0 || disponibilidad !== "todos" || vram !== ""
+  const hasFiltros = categoria !== "todos" || marcas.length > 0 || rango !== "todos" || qDebounced.trim() !== "" || orden !== "relevancia" || cpu !== "" || ram !== "" || ssd !== "" || condicion !== "todos" || calidad !== "todos" || batMin > 0 || disponibilidad !== "todos"
   const limpiarFiltros = () => {
     setCategoria("todos"); setMarcas([]); setRango("todos"); setQ(""); setOrden("relevancia")
-    setCpu(""); setRam(""); setSsd(""); setCondicion("todos"); setCalidad("todos"); setBatMin(0); setDisponibilidad("todos"); setVram("")
+    setCpu(""); setRam(""); setSsd(""); setCondicion("todos"); setCalidad("todos"); setBatMin(0); setDisponibilidad("todos")
   }
 
   const chips = useMemo(() => {
@@ -312,17 +306,10 @@ export default function App() {
         suggestions={searchSuggests}
         onOpenProduct={openProduct}
         onSeeAllResults={scrollToCatalog}
-        view={view}
-        onSelectView={setView}
       />
 
       <main>
-        {view === "nosotros" ? (
-          <Nosotros onBack={() => setView("home")} />
-        ) : (
-          <>
-            <TrustBar />
-            <Hero onExplore={scrollToCatalog} />
+        <Hero onExplore={scrollToCatalog} />
         {source !== null && categoria === "todos" && marcas.length === 0 && !qDebounced.trim() && (
           <AppleSpotlight products={allProducts} onOpen={openProduct} onVerTodos={handleApple} />
         )}
@@ -347,7 +334,6 @@ export default function App() {
                 onCategoria={c => { setCategoria(c); scrollToCatalog() }}
                 onMarcas={setMarcas} onRango={setRango} onOrden={setOrden} onCpu={setCpu} onRam={setRam} onSsd={setSsd}
                 onCondicion={setCondicion} onCalidad={setCalidad} onBatMin={setBatMin} onDisponibilidad={setDisponibilidad}
-                onVram={setVram} vramOptions={specOpts.vrams}
                 marcasDisponibles={marcasDisponibles} marcaCounts={marcaCounts}
                 cpuOptions={specOpts.cpus} ramOptions={specOpts.rams} ssdOptions={specOpts.ssds} rangeOptions={rangeOpts} visibleSpecs={visibleSpecs} counts={counts}
                 hasUsed={hasUsed} chips={chips}
@@ -364,8 +350,6 @@ export default function App() {
             </>
           )}
         </section>
-            </>
-          )}
       </main>
 
       <Footer onSelectCategory={handleSelectCategory} />
