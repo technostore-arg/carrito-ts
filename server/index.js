@@ -45,6 +45,7 @@ import { withAdvisoryLock } from './hub/advisoryLock.js'
 import { safeCompareSecret, createRateLimiter, rateLimitMiddleware,
   signOAuthState, verifyOAuthState, verifyWhatsappSignature, validateMlWebhookPayload } from './hub/security.js'
 import { validateAdminCredentials } from './hub/adminAuth.js'
+import { makeAdminSessionToken, verifyAdminSessionToken } from './adminSessions.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3001
@@ -54,6 +55,8 @@ const ADMIN_TOTP_SECRET = process.env.ADMIN_TOTP_SECRET || ''
 const ADMIN_SESSION_TTL_MS = Number(process.env.ADMIN_SESSION_TTL_MS) || 8 * 60 * 60 * 1000
 const MP_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN || ''
 const CRON_SECRET = process.env.CRON_SECRET || ''
+const ADMIN_SESSION_SECRET = process.env.ADMIN_SESSION_SECRET || process.env.CRON_SECRET || ''
+if (!ADMIN_SESSION_SECRET) console.warn('[security] ADMIN_SESSION_SECRET no configurada: el login de admin está deshabilitado hasta que se setee la variable')
 
 /** Helper: repo MLA sólo si el hub PostgreSQL está configurado. */
 function mlRepo() {
@@ -129,15 +132,10 @@ app.use(express.json({
   verify: (req, _res, buf) => { req.rawBody = buf.toString('utf8') },
 }))
 
-const sessions = new Map()
-
 function auth(req, res, next) {
   const token = (req.headers.authorization || '').replace('Bearer ', '')
-  const issuedAt = token ? sessions.get(token) : null
-  if (!issuedAt || Date.now() - issuedAt > ADMIN_SESSION_TTL_MS) {
-    if (token) sessions.delete(token)
-    return res.status(401).json({ error: 'No autorizado' })
-  }
+  const issuedAt = token ? verifyAdminSessionToken(token, ADMIN_SESSION_SECRET, { ttlMs: ADMIN_SESSION_TTL_MS }) : null
+  if (!issuedAt) return res.status(401).json({ error: 'No autorizado' })
   next()
 }
 
@@ -169,6 +167,7 @@ function loginFail(ip) {
 }
 
 app.post('/api/admin/login', (req, res) => {
+  if (!ADMIN_SESSION_SECRET) return res.status(503).json({ error: 'Autenticación no configurada: setea ADMIN_SESSION_SECRET o CRON_SECRET' })
   const ip = clientIp(req)
   if (loginBlocked(ip)) {
     return res.status(429).json({ error: 'Demasiados intentos — probá de nuevo en unos minutos' })
@@ -180,8 +179,7 @@ app.post('/api/admin/login', (req, res) => {
     return res.status(401).json({ error: result.error })
   }
   loginFails.delete(ip)
-  const token = randomBytes(24).toString('hex')
-  sessions.set(token, Date.now())
+  const token = makeAdminSessionToken(ADMIN_SESSION_SECRET)
   res.json({ token })
 })
 
