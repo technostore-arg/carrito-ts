@@ -65,6 +65,7 @@ export async function syncElitCatalog({ client, repo }) {
   const summary = {
     job: 'syncElitCatalog', supplier: 'ELIT', status: errors.length ? 'warning' : 'ok',
     processed: items.length, created, updated, quarantined, errors, durationMs: Date.now() - started,
+    mode: client.mode, debug: client.lastCall || null,
   }
   await repo.log(summary)
   return summary
@@ -114,6 +115,7 @@ export async function syncElitStockAndPrices({ client, repo }) {
     job: 'syncElitStockAndPrices', supplier: 'ELIT', status: errors.length ? 'warning' : 'ok',
     processed, updated, skipped, quarantined, errors, durationMs: Date.now() - started,
     priceDropGuard: `${Math.round(MAX_PRICE_DROP_RATIO * 100)}%`,
+    mode: client.mode, debug: client.lastCall || null,
   }
   await repo.log(summary)
   return summary

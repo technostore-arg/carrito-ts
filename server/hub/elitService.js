@@ -109,11 +109,21 @@ export function createElitClient(opts = {}) {
 
   const headers = { 'Content-Type': 'application/json', Accept: 'application/json' }
   const creds = { user_id: userId, token }
+  let lastCall = { mode: 'production', path: null, ok: false, codigo: null, keys: [], items: 0, sample: null }
 
   async function post(path, body) {
-    return requestWithRetry(`${baseUrl}${path}`, {
+    const data = await requestWithRetry(`${baseUrl}${path}`, {
       method: 'POST', headers, body: JSON.stringify({ ...creds, ...(body || {}) }),
     }, opts)
+    const items = extractItems(data)
+    lastCall = {
+      mode: 'production', path, ok: true,
+      codigo: data?.codigo ?? data?.code ?? null,
+      keys: Object.keys(data || {}),
+      items: items.length,
+      sample: items[0] ? Object.keys(items[0]) : null,
+    }
+    return data
   }
 
   /** Pagina POST /productos hasta agotar (tope 5000 ítems). */
@@ -134,6 +144,7 @@ export function createElitClient(opts = {}) {
 
   return {
     mode,
+    get lastCall() { return lastCall },
     async getCatalog({ pageSize = 100 } = {}) { return listProducts() },
     async getStockAndPrices({ since } = {}) {
       return listProducts(since ? { actualizacion: since } : {})
