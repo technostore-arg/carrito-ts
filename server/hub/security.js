@@ -37,8 +37,15 @@ export function createRateLimiter({ max = 15, windowMs = 60_000, now = () => Dat
   }
 }
 
+/** Clave del rate limiter: X-Forwarded-For (sin confiar en req.ip, ej. sin trust proxy). */
+function rateLimitKeyFn(req) {
+  const fwd = req.headers['x-forwarded-for']
+  const ip = (Array.isArray(fwd) ? fwd[0] : String(fwd || '')).split(',')[0].trim()
+  return ip || req.ip || req.socket?.remoteAddress || 'unknown'
+}
+
 /** Middleware Express para rate limiting por IP. */
-export function rateLimitMiddleware(limiter, keyFn = req => req.ip || req.socket?.remoteAddress || 'unknown') {
+export function rateLimitMiddleware(limiter, keyFn = rateLimitKeyFn) {
   return (req, res, next) => {
     const result = limiter.check(keyFn(req))
     res.setHeader('X-RateLimit-Remaining', String(result.remaining))
