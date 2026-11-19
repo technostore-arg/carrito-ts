@@ -439,13 +439,13 @@ app.post('/api/borradores', auth, async (req, res) => {
 app.post('/api/borradores/:id/aplicar', auth, async (req, res) => {
   try {
     const skus = Array.isArray(req.body?.skus) ? req.body.skus : null
-    const b = await aplicarBorrador({ id: req.params.id, skusAprobados: skus, aprobadoPor: req.headers['x-admin-user'] || 'admin' })
+    const b = await aplicarBorrador({ id: req.params.id, skusAprobados: skus, aprobadoPor: 'admin' })
     res.json({ ok: true, borrador: b })
   } catch (e) { res.status(400).json({ error: e.message }) }
 })
 app.post('/api/borradores/:id/descartar', auth, async (req, res) => {
   try {
-    const b = await descartarBorrador({ id: req.params.id, por: req.headers['x-admin-user'] || 'admin' })
+    const b = await descartarBorrador({ id: req.params.id, por: 'admin' })
     res.json({ ok: true, borrador: b })
   } catch (e) { res.status(400).json({ error: e.message }) }
 })
