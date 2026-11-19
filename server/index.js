@@ -88,8 +88,12 @@ function cronAuth(req, res, next) {
 // Ventana deslizante en memoria: 15 req/min por IP.
 const chatLimiter = createRateLimiter({ max: 15, windowMs: 60_000 })
 const orderLimiter = createRateLimiter({ max: 15, windowMs: 60_000 })
+const liveLimiter = createRateLimiter({ max: 20, windowMs: 60_000 })
+const webhooksLimiter = createRateLimiter({ max: 20, windowMs: 60_000 })
 const rateLimitChat = rateLimitMiddleware(chatLimiter)
 const rateLimitOrders = rateLimitMiddleware(orderLimiter)
+const rateLimitLive = rateLimitMiddleware(liveLimiter)
+const rateLimitWebhooks = rateLimitMiddleware(webhooksLimiter)
 
 const CATEGORIES = ['celulares', 'notebooks', 'computadoras', 'gpus', 'memorias', 'accesorios', 'coolers', 'ram', 'ram-sodimm', 'ssd', 'ssd-nvme', 'ssd-sata', 'gabinetes', 'watercooling', 'procesadores']
 
@@ -186,7 +190,7 @@ app.post('/api/admin/login', (req, res) => {
 /* ---------------- Products ---------------- */
 
 // Precios/stock en tiempo real (sin caché): separados del catálogo cacheable.
-app.post('/api/products/live', async (req, res) => {
+app.post('/api/products/live', rateLimitLive, async (req, res) => {
   try {
     const skus = Array.isArray(req.body?.skus) ? req.body.skus.slice(0, 200).map(String) : []
     if (!skus.length) return res.json({ quotes: {}, updatedAt: new Date().toISOString() })
@@ -606,7 +610,7 @@ app.post('/api/cron/ml-webhooks', cronAuth, async (req, res) => {
 })
 
 // 4) Webhook público: idempotente y responde 200 rápido (no procesa acá).
-app.post('/api/ml/webhooks', async (req, res) => {
+app.post('/api/ml/webhooks', rateLimitWebhooks, async (req, res) => {
   const validation = validateMlWebhookPayload(req.body || {}, process.env.ML_SELLER_ID || '')
   if (!validation.valid) return res.status(401).json({ error: 'Webhook no autorizado', reason: validation.reason })
   const repo = mlRepo()
