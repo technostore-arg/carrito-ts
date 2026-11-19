@@ -48,7 +48,8 @@ import { validateAdminCredentials } from './hub/adminAuth.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3001
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'technostore2026'
+const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || '').trim()
+if (!ADMIN_PASSWORD) console.warn('[security] ADMIN_PASSWORD no configurada: el login de admin está deshabilitado hasta que se setee la variable en Vercel')
 const ADMIN_TOTP_SECRET = process.env.ADMIN_TOTP_SECRET || ''
 const ADMIN_SESSION_TTL_MS = Number(process.env.ADMIN_SESSION_TTL_MS) || 8 * 60 * 60 * 1000
 const MP_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN || ''
