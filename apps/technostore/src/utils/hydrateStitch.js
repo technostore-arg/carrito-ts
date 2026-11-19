@@ -74,7 +74,7 @@ function normalizeCopy(doc) {
 function replaceLogo(doc) {
   const wrap = [...doc.querySelectorAll('div.flex.items-center.gap-2')]
     .find(d => /memory/.test(d.textContent || '') && /Techno/.test(d.textContent || ''))
-  if (wrap) wrap.innerHTML = '<img src="/logo-mark.png" alt="" class="h-9 w-9 object-contain shrink-0"><span class="font-extrabold text-xl tracking-tight text-on-surface whitespace-nowrap">Techno<span class="text-primary-container">Store</span></span>'
+  if (wrap) wrap.innerHTML = '<img src="/logo-mark.png" alt="" class="h-9 w-9 object-contain shrink-0"><span class="font-normal text-xl tracking-wide text-on-surface whitespace-nowrap">Techno<span class="text-primary-container">Store</span></span>'
 }
 
 function simplifyStitch(doc) {
@@ -158,17 +158,15 @@ function buildHeroSlider() {
   <div class="relative w-full h-[340px] sm:h-[380px] rounded-2xl overflow-hidden bg-surface-container-low shadow-xl">
     ${HERO_SLIDES.map((s, i) => `<a class="hero-slide absolute inset-0 flex items-center justify-center${i === 0 ? ' is-active' : ''}" data-hero-slide="${i}" data-path="catalogo-de-productos" href="#">
       <img class="hero-slide__img relative z-[1] w-full h-full object-cover" src="${esc(s.img)}" alt="${esc(s.name)}">
-      <span class="xmas-deco" aria-hidden="true">
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-          <path d="M13 45C17 25 30 12 51 12C45 25 36 36 22 45Z" fill="#E02424"/>
-          <rect x="9" y="41" width="36" height="11" rx="5.5" fill="#FFFFFF"/>
-          <circle cx="51" cy="12" r="7" fill="#FFFFFF"/>
-          <circle cx="49" cy="10" r="2.4" fill="#E9EDFF"/>
-        </svg>
-      </span>
-      <span class="xmas-flakes" aria-hidden="true">❄ ❄ ❄</span>
       <span class="absolute bottom-0 left-0 right-0 z-10 p-4 pt-10 bg-gradient-to-t from-black/60 to-transparent text-white text-left"><small class="block uppercase tracking-wider opacity-80 text-xs">${esc(s.tag)}</small><b class="text-lg">${esc(s.name)}</b></span>
     </a>`).join('')}
+    <span class="hero-slider__frost" aria-hidden="true"></span>
+    <div class="xmas-editorial" aria-label="Felices Fiestas">
+      <img src="/logo-mark.png" alt="" class="h-4 w-4 object-contain">
+      <span>Felices Fiestas</span>
+      <span class="xmas-editorial__sep"></span>
+      <span class="xmas-editorial__brand">TechnoStore</span>
+    </div>
     <button type="button" data-hero-prev aria-label="Anterior" class="hero-slider__arrow hero-slider__arrow--prev">‹</button>
     <button type="button" data-hero-next aria-label="Siguiente" class="hero-slider__arrow hero-slider__arrow--next">›</button>
     <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">${HERO_SLIDES.map((_, i) => `<button type="button" data-hero-dot="${i}" aria-label="Imagen ${i + 1}" class="hero-slider__dot${i === 0 ? ' is-active' : ''}"></button>`).join('')}</div>

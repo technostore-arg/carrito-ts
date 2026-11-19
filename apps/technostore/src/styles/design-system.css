@@ -166,10 +166,11 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 .stitch-view { min-height: 100vh; }
 .stitch-switch { position: fixed; left: 12px; bottom: 12px; z-index: 80; background: var(--ds-trust-shield); color: #fff; border: 0; border-radius: 999px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: var(--ds-shadow-lg); }
 
-/* Navidad: iconos sutiles sobre las imágenes del banner (sin franjas) */
-.xmas-deco { position: absolute; top: 14px; right: 68px; z-index: 6; width: 52px; height: 52px; pointer-events: none; transform: rotate(-14deg); filter: drop-shadow(0 3px 5px rgba(0,0,0,.22)); }
-.xmas-deco svg { width: 100%; height: 100%; display: block; }
-.xmas-flakes { position: absolute; top: 18px; left: 20px; z-index: 6; color: rgba(255,255,255,.85); font-size: 17px; letter-spacing: 12px; pointer-events: none; text-shadow: 0 1px 4px rgba(0,0,0,.25); }
+/* Navidad: capa editorial ligera + escarcha en el borde del banner */
+.hero-slider__frost { position: absolute; inset: 0; z-index: 5; border-radius: 1rem; pointer-events: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,.22), inset 0 0 50px rgba(255,255,255,.10); }
+.xmas-editorial { position: absolute; top: 16px; left: 18px; z-index: 7; display: flex; align-items: center; gap: 9px; padding: 6px 12px; border-radius: 999px; background: rgba(11,25,44,.68); backdrop-filter: blur(8px); color: #fff; font-size: 12px; font-weight: 400; letter-spacing: .08em; pointer-events: none; }
+.xmas-editorial__sep { width: 1px; height: 12px; background: rgba(102,255,142,.7); }
+.xmas-editorial__brand { color: #66FF8E; }
 [data-carousel-track] { scroll-snap-type: x mandatory; scrollbar-width: none; }
 [data-carousel-track]::-webkit-scrollbar { display: none; }
 [data-carousel-track] > * { scroll-snap-align: start; }
