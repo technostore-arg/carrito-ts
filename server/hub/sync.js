@@ -32,41 +32,64 @@ export async function syncElitCatalog({ client, repo }) {
   const started = Date.now()
   const items = await client.getCatalog()
   const config = await repo.getConfig()
-  let created = 0, updated = 0, quarantined = 0
-  const errors = []
 
-  for (const item of items) {
-    try {
-      if (!item.supplierSku) { errors.push('item sin supplierSku'); continue }
-      let master = await repo.findMaster({ ean: item.ean, mpn: item.mpn, supplierSku: item.supplierSku })
-      if (!master) {
-        master = await repo.upsertMaster(masterFromItem(item, config))
-        created++
-      } else {
-        await repo.upsertMaster({ ...masterFromItem(item, config), sku: master.sku })
-        updated++
-      }
-      const reason = quarantineReason({ ...item, prevCostAmount: master?.prevCostAmount })
-      if (reason) quarantined++
-      await repo.upsertListing(master.id || master.sku, {
+  let summary
+  if (typeof repo.importCatalogue === 'function') {
+    // Fast path: importa en bloque (el catálogo completo es ~2k ítems).
+    const entries = items.filter(i => i.supplierSku).map(item => ({
+      master: masterFromItem(item, config),
+      listing: {
         supplierCode: 'ELIT',
         supplierSku: item.supplierSku,
         costAmount: item.costAmount,
         costCurrency: item.costCurrency,
         rawStock: item.rawStock,
-        lastSyncedAt: new Date().toISOString(),
-        quarantineReason: reason,
-      })
-    } catch (e) {
-      errors.push(`${item.supplierSku}: ${e.message}`)
+        quarantineReason: quarantineReason({ ...item, prevCostAmount: null }),
+      },
+    }))
+    const imported = await repo.importCatalogue(entries)
+    summary = {
+      job: 'syncElitCatalog', supplier: 'ELIT', status: 'ok',
+      processed: items.length, created: imported.created, updated: imported.updated,
+      quarantined: imported.quarantined, errors: [], durationMs: Date.now() - started,
+      mode: client.mode, debug: client.lastCall ? { ...client.lastCall, csv: client.lastCsv || null } : null,
+    }
+  } else {
+    let created = 0, updated = 0, quarantined = 0
+    const errors = []
+    for (const item of items) {
+      try {
+        if (!item.supplierSku) { errors.push('item sin supplierSku'); continue }
+        let master = await repo.findMaster({ ean: item.ean, mpn: item.mpn, supplierSku: item.supplierSku })
+        if (!master) {
+          master = await repo.upsertMaster(masterFromItem(item, config))
+          created++
+        } else {
+          await repo.upsertMaster({ ...masterFromItem(item, config), sku: master.sku })
+          updated++
+        }
+        const reason = quarantineReason({ ...item, prevCostAmount: master?.prevCostAmount })
+        if (reason) quarantined++
+        await repo.upsertListing(master.id || master.sku, {
+          supplierCode: 'ELIT',
+          supplierSku: item.supplierSku,
+          costAmount: item.costAmount,
+          costCurrency: item.costCurrency,
+          rawStock: item.rawStock,
+          lastSyncedAt: new Date().toISOString(),
+          quarantineReason: reason,
+        })
+      } catch (e) {
+        errors.push(`${item.supplierSku}: ${e.message}`)
+      }
+    }
+    summary = {
+      job: 'syncElitCatalog', supplier: 'ELIT', status: errors.length ? 'warning' : 'ok',
+      processed: items.length, created, updated, quarantined, errors, durationMs: Date.now() - started,
+      mode: client.mode, debug: client.lastCall ? { ...client.lastCall, csv: client.lastCsv || null } : null,
     }
   }
 
-  const summary = {
-    job: 'syncElitCatalog', supplier: 'ELIT', status: errors.length ? 'warning' : 'ok',
-    processed: items.length, created, updated, quarantined, errors, durationMs: Date.now() - started,
-    mode: client.mode, debug: client.lastCall || null,
-  }
   await repo.log(summary)
   return summary
 }
@@ -115,7 +138,7 @@ export async function syncElitStockAndPrices({ client, repo }) {
     job: 'syncElitStockAndPrices', supplier: 'ELIT', status: errors.length ? 'warning' : 'ok',
     processed, updated, skipped, quarantined, errors, durationMs: Date.now() - started,
     priceDropGuard: `${Math.round(MAX_PRICE_DROP_RATIO * 100)}%`,
-    mode: client.mode, debug: client.lastCall || null,
+    mode: client.mode, debug: client.lastCall ? { ...client.lastCall, csv: client.lastCsv || null } : null,
   }
   await repo.log(summary)
   return summary

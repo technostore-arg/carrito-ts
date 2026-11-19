@@ -151,7 +151,11 @@ function parseCsvLine(line) {
 }
 
 function parseCsv(text) {
-  const lines = text.split(/\r?\n/).filter(l => l.trim() !== '')
+  const lines = text.split(/\r?\n/).filter(l => {
+    const t = l.trim()
+    // Elit devuelve `sep=,` como primera línea (formato Excel): no es cabecera.
+    return t !== '' && !/^sep\s*=/i.test(t)
+  })
   if (!lines.length) return []
   const header = lines[0].split(',').map(h => h.trim().toLowerCase())
   return lines.slice(1).map(l => {
@@ -174,6 +178,7 @@ function mapCsvCategory(raw) {
 
 function normalizeCsvRow(row) {
   const weight = Number(firstDefined(row, ['Peso (kg)', 'peso', 'weight', 'weight_kg']))
+  const imageUrl = firstDefined(row, ['Imagen', 'imagen', 'link', 'uri', 'image_link', 'uri_producto'])
   return {
     supplierSku: firstDefined(row, ['SKU', 'sku', 'codigo_alfa', 'codigo_producto', 'code', 'id']),
     ean: firstDefined(row, ['ean', 'code_bar', 'barcode']),
@@ -184,7 +189,8 @@ function normalizeCsvRow(row) {
     costAmount: Number(firstDefined(row, ['Precio', 'precio', 'pvp_usd', 'price', 'price_usd']) || 0),
     costCurrency: 'USD',
     rawStock: Math.max(0, Math.floor(Number(firstDefined(row, ['Stock', 'stock_total', 'stock', 'cantidad']) || 0))),
-    imageUrl: firstDefined(row, ['Imagen', 'imagen', 'link', 'uri', 'image_link', 'uri_producto']),
+    imageUrl,
+    images: imageUrl ? [imageUrl] : [],
     attributes: {},
     weightKg: Number.isFinite(weight) && weight > 0 ? weight : null,
   }
@@ -208,6 +214,7 @@ export function createElitClient(opts = {}) {
   const creds = { user_id: userId, token }
   let lastCall = { mode: 'production', path: null, ok: false, codigo: null, keys: [], items: 0, sample: null, firstItemPreview: null, paginador: null, pages: [] }
   let debugPages = []
+  let lastCsv = null
 
   async function post(path, body) {
     const data = await requestWithRetry(`${baseUrl}${path}`, {
@@ -239,14 +246,16 @@ export function createElitClient(opts = {}) {
       return []
     }
     const text = await res.text().catch(() => '')
-    lastCall = {
-      mode: 'production', path: '/productos/csv', ok: res.ok, status: res.status,
-      codigo: null, keys: ['csv'], items: 0, sample: ['csv'],
-      firstItemPreview: text.slice(0, 400), paginador: null, pages: debugPages,
+    lastCsv = {
+      ok: res.ok,
+      status: res.status,
+      path: '/productos/csv',
+      chars: text.length,
+      firstPreview: text.slice(0, 500),
     }
     if (!res.ok) return []
     const rows = parseCsv(text)
-    lastCall.items = rows.length
+    lastCsv.rows = rows.length
     return rows
   }
 
@@ -259,6 +268,7 @@ export function createElitClient(opts = {}) {
     let offset = 0
     const pageSize = 40
     const maxItems = 5000
+    let stalled = false
     while (out.length < maxItems) {
       const payload = await post('/productos', { limit: pageSize, offset, ...extra })
       const raw = extractItems(payload)
@@ -266,14 +276,29 @@ export function createElitClient(opts = {}) {
       const total = Number(payload?.paginador?.total)
       const limit = Number(payload?.paginador?.limit) || pageSize
       pages.push({ offset, requested: raw.length, newItems: items.length, total, limit })
-      if (!items.length) break
+      if (!items.length) {
+        // Si ya tenemos items y Elit no devolvió nuevos en esta página,
+        // el offset no avanza: marcamos estancamiento para el brute force.
+        stalled = out.length > 0 && offset > 0
+        break
+      }
       for (const x of items) seen.add(x.codigo_alfa)
       out = out.concat(items)
-      const ended = items.length === 0
-        || (Number.isFinite(total) && out.length >= total)
+      const ended = (Number.isFinite(total) && out.length >= total)
         || (raw.length < limit)
       if (ended) break
       offset += raw.length
+    }
+    if (stalled) {
+      // Fallback brute: probamos limit=1838 (el total de paginador) en offset 0.
+      const payload = await post('/productos', { limit: 1838, offset: 0, ...extra }).catch(() => null)
+      const raw2 = extractItems(payload)
+      const brute = raw2.filter(x => !seen.has(x.codigo_alfa))
+      pages.push({ brute: true, offset: 0, requested: raw2.length, newItems: brute.length, total: Number(payload?.paginador?.total) })
+      if (brute.length) {
+        for (const x of brute) seen.add(x.codigo_alfa)
+        out = out.concat(brute)
+      }
     }
     return out.map(normalizeElitItem)
   }
@@ -281,6 +306,7 @@ export function createElitClient(opts = {}) {
   return {
     mode,
     get lastCall() { return lastCall },
+    get lastCsv() { return lastCsv },
     async getCatalog({ pageSize = 100 } = {}) {
       const csvRows = await fetchCatalogCsv()
       const fromCsv = csvRows.map(normalizeCsvRow).filter(i => i.supplierSku)
@@ -288,6 +314,9 @@ export function createElitClient(opts = {}) {
       return listProducts()
     },
     async getStockAndPrices({ since } = {}) {
+      const csvRows = await fetchCatalogCsv()
+      const fromCsv = csvRows.map(normalizeCsvRow).filter(i => i.supplierSku)
+      if (fromCsv.length >= 10) return fromCsv
       return listProducts(since ? { actualizacion: since } : {})
     },
     async getShipping() { return post('/envios', {}) },
