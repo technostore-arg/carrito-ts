@@ -50,10 +50,16 @@ export function rateLimitMiddleware(limiter, keyFn = req => req.ip || req.socket
   }
 }
 
+function hmacKey(secret, name) {
+  const key = (secret || '').trim()
+  if (!key) throw new Error(name + ' no configurada')
+  return key
+}
+
 /** OAuth state firmado (anti-CSRF), válido 10 minutos por defecto. */
 export function signOAuthState(secret, { nonce = randomBytes(8).toString('hex'), ts = Date.now() } = {}) {
   const payload = Buffer.from(JSON.stringify({ nonce, ts })).toString('base64url')
-  const sig = createHmac('sha256', secret || 'dev-secret').update(payload).digest('base64url')
+  const sig = createHmac('sha256', hmacKey(secret, 'CRON_SECRET')).update(payload).digest('base64url')
   return `${payload}.${sig}`
 }
 
@@ -62,7 +68,7 @@ export function verifyOAuthState(state, secret, { maxAgeMs = 10 * 60 * 1000, now
   try {
     const [payload, sig] = String(state || '').split('.')
     if (!payload || !sig) return false
-    if (!safeCompareSecret(sig, createHmac('sha256', secret || 'dev-secret').update(payload).digest('base64url'))) return false
+    if (!safeCompareSecret(sig, createHmac('sha256', hmacKey(secret, 'CRON_SECRET')).update(payload).digest('base64url'))) return false
     const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'))
     return Number.isFinite(data.ts) && now() - data.ts <= maxAgeMs && now() >= data.ts - 60_000
   } catch {
