@@ -229,14 +229,20 @@ export function createElitClient(opts = {}) {
 
   /** Catálogo COMPLETO usando el CSV que devuelve Elit (sin paginado problemático). */
   async function fetchCatalogCsv() {
-    const res = await fetchImpl(`${baseUrl}/productos/csv?${new URLSearchParams(creds)}`, {
-      method: 'GET', headers: { Accept: 'text/csv, application/json' },
-    })
+    let res
+    try {
+      res = await fetchImpl(`${baseUrl}/productos/csv?${new URLSearchParams(creds)}`, {
+        method: 'GET', headers: { Accept: 'text/csv, application/json' },
+      })
+    } catch (e) {
+      lastCall = { mode: 'production', path: '/productos/csv', ok: false, error: e.message, items: 0 }
+      return []
+    }
     const text = await res.text().catch(() => '')
     lastCall = {
-      mode: 'production', path: '/productos/csv', ok: res.ok,
-      codigo: null, keys: ['csv'], items: 0, sample: ['csv'], firstItemPreview: null,
-      paginador: null, pages: debugPages, csvChars: text.length,
+      mode: 'production', path: '/productos/csv', ok: res.ok, status: res.status,
+      codigo: null, keys: ['csv'], items: 0, sample: ['csv'],
+      firstItemPreview: text.slice(0, 400), paginador: null, pages: debugPages,
     }
     if (!res.ok) return []
     const rows = parseCsv(text)
