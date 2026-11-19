@@ -181,9 +181,9 @@ export function createElitClient(opts = {}) {
       if (!items.length) break
       for (const x of items) seen.add(x.codigo_alfa)
       out = out.concat(items)
-      const ended = (raw.length < limit && items.length === 0)
-        || items.length === 0
+      const ended = items.length === 0
         || (Number.isFinite(total) && out.length >= total)
+        || (raw.length < limit)
       if (ended) break
       offset += raw.length
     }
