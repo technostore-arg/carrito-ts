@@ -698,7 +698,10 @@ app.get('/api/agent/approvals/:id/resolve', async (req, res) => {
   const token = String(req.query.token || '')
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
   const page = (title, body) => `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>body{font-family:-apple-system,Inter,sans-serif;background:#fbfbfd;color:#1d1d1f;margin:0;padding:32px}.card{max-width:520px;margin:auto;background:#fff;border:1px solid #e8e8ed;border-radius:18px;padding:28px}h1{font-size:20px;margin:0 0 8px}p{color:#6e6e73;font-size:14px;line-height:1.6}.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e8e8ed;font-size:14px}.btns{display:flex;gap:10px;margin-top:22px}button{flex:1;padding:13px;border-radius:999px;font-size:14px;font-weight:600;border:1px solid #0071e3;cursor:pointer}.ok{background:#0071e3;color:#fff}.no{background:#fff;color:#0071e3}</style></head><body><div class="card">${body}</div></body></html>`
-  if (!verifyApprovalToken(token, req.params.id, process.env.APPROVAL_SECRET || 'dev-secret')) {
+  if (!process.env.APPROVAL_SECRET) {
+    return res.status(403).send(page('Sin configuración', '<h1>Sin configuración</h1><p>El servidor no tiene APPROVAL_SECRET configurada.</p>'))
+  }
+  if (!verifyApprovalToken(token, req.params.id, process.env.APPROVAL_SECRET)) {
     return res.status(403).send(page('Link inválido', '<h1>Link no válido</h1><p>El enlace de aprobación venció o no es válido.</p>'))
   }
   try {

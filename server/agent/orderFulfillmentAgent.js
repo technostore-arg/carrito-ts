@@ -13,8 +13,14 @@ export const APPROVAL_TOKEN_TTL_MS = 24 * 60 * 60 * 1000
  * Token HMAC con expiración opcional (24 hs en el flujo de aprobación).
  * El formato sin expiración se mantiene por compatibilidad con tokens viejos.
  */
+function approvalKey(secret) {
+  const key = (secret || '').trim()
+  if (!key) throw new Error('APPROVAL_SECRET no configurada')
+  return key
+}
+
 export function signApprovalToken(id, secret, expiresAtMs = null) {
-  const key = secret || 'dev-secret'
+  const key = approvalKey(secret)
   if (!expiresAtMs) return createHmac('sha256', key).update(String(id)).digest('base64url')
   const payload = Buffer.from(`${id}:${expiresAtMs}`).toString('base64url')
   const sig = createHmac('sha256', key).update(payload).digest('base64url')
@@ -24,7 +30,7 @@ export function signApprovalToken(id, secret, expiresAtMs = null) {
 /** @param {string} token @param {string|number} id @param {string} secret */
 export function verifyApprovalToken(token, id, secret, { now = () => Date.now() } = {}) {
   const raw = String(token || '')
-  const key = secret || 'dev-secret'
+  const key = approvalKey(secret)
   if (!raw.includes('.')) {
     return safeCompareSecret(raw, createHmac('sha256', key).update(String(id)).digest('base64url'))
   }
@@ -69,7 +75,7 @@ export async function processPendingSupplierOrders({
   const dailyCap = Number(config.dailyAutoSpendCapUsd ?? process.env.DAILY_AUTO_SPEND_CAP_USD) || DEFAULT_DAILY_SPEND_CAP_USD
   let spentLast24h = Number(await repo.getAutoSpendLast24h?.()) || 0
   const usdRate = Number(config.usdArsRate) || 1550
-  const approvalSecret = config.approvalSecret || process.env.APPROVAL_SECRET || 'dev-secret'
+  const approvalSecret = config.approvalSecret || process.env.APPROVAL_SECRET; if (!approvalSecret) throw new Error('APPROVAL_SECRET no configurada')
   const baseUrl = (config.approvalBaseUrl || process.env.APPROVAL_BASE_URL || 'https://carrito-ts-neon.vercel.app').replace(/\/$/, '')
   const notify = notifier || createTelegramNotifier()
   const orders = await repo.getPendingSupplierOrders({ limit })
@@ -131,7 +137,7 @@ export async function processPendingSupplierOrders({
 
 /** Resuelve una aprobación por token firmado (aprobar / rechazar). */
 export async function resolveApproval({ repo, approvalId, token, action, elitClient, config = {} } = {}) {
-  const secret = config.approvalSecret || process.env.APPROVAL_SECRET || 'dev-secret'
+  const secret = config.approvalSecret || process.env.APPROVAL_SECRET; if (!secret) throw new Error('APPROVAL_SECRET no configurada')
   if (!verifyApprovalToken(token, approvalId, secret)) return { ok: false, error: 'TOKEN_INVALIDO' }
   const approval = await repo.getApprovalById(approvalId)
   if (!approval) return { ok: false, error: 'APROBACION_NO_ENCONTRADA' }
