@@ -125,6 +125,71 @@ async function requestWithRetry(url, options, { attempts = 2, timeoutMs = 15000,
   throw last instanceof Error ? last : new ElitApiError('Error de red con Elit', 0)
 }
 
+/** Transforma una fila de CSV de Meta/Tienda Nube/WooCommerce a shape del hub. */
+function parseCsvLine(line) {
+  const out = []
+  let i = 0
+  while (i < line.length) {
+    let field = ''
+    if (line[i] === '"') {
+      i++
+      while (i < line.length) {
+        if (line[i] === '"' && line[i + 1] === '"') { field += '"'; i += 2 }
+        else if (line[i] === '"') { i++; break }
+        else { field += line[i]; i++ }
+      }
+    } else {
+      const start = i
+      while (i < line.length && line[i] !== ',' && line[i] !== '\n') { field += line[i]; i++ }
+      if (line[i] === '\n') break
+    }
+    out.push(field)
+    if (line[i] === ',') i++
+    else break
+  }
+  return out
+}
+
+function parseCsv(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim() !== '')
+  if (!lines.length) return []
+  const header = lines[0].split(',').map(h => h.trim().toLowerCase())
+  return lines.slice(1).map(l => {
+    const row = parseCsvLine(l)
+    const o = {}
+    for (let i = 0; i < header.length; i++) o[header[i]] = row[i] ?? ''
+    return o
+  })
+}
+
+function firstDefined(row, keys) {
+  for (const k of keys) if (row[k] != null && String(row[k]).trim() !== '') return String(row[k]).trim()
+  return null
+}
+
+/** Mapea CSV de plataformas de Meta a slugs internos del hub. */
+function mapCsvCategory(raw) {
+  return mapElitCategory({ nombre: `${raw} ${''}`, categoria: raw })
+}
+
+function normalizeCsvRow(row) {
+  const weight = Number(firstDefined(row, ['Peso (kg)', 'peso', 'weight', 'weight_kg']))
+  return {
+    supplierSku: firstDefined(row, ['SKU', 'sku', 'codigo_alfa', 'codigo_producto', 'code', 'id']),
+    ean: firstDefined(row, ['ean', 'code_bar', 'barcode']),
+    title: firstDefined(row, ['Nombre', 'nombre', 'name', 'product_name']),
+    brand: firstDefined(row, ['Marca', 'marca', 'brand']),
+    category: mapCsvCategory(firstDefined(row, ['Categorías', 'categoría', 'categoria', 'category', 'Categorias']) || ''),
+    subcategory: firstDefined(row, ['Subcategoría', 'subcategoría', 'subcategoria', 'sub_categoria']),
+    costAmount: Number(firstDefined(row, ['Precio', 'precio', 'pvp_usd', 'price', 'price_usd']) || 0),
+    costCurrency: 'USD',
+    rawStock: Math.max(0, Math.floor(Number(firstDefined(row, ['Stock', 'stock_total', 'stock', 'cantidad']) || 0))),
+    imageUrl: firstDefined(row, ['Imagen', 'imagen', 'link', 'uri', 'image_link', 'uri_producto']),
+    attributes: {},
+    weightKg: Number.isFinite(weight) && weight > 0 ? weight : null,
+  }
+}
+
 /**
  * @param {object} opts
  * @returns {{mode:string, getCatalog:Function, getStockAndPrices:Function, placeOrder:Function, getShipping:Function}}
@@ -162,7 +227,24 @@ export function createElitClient(opts = {}) {
     return data
   }
 
-  /** Pagina POST /productos (servers cappean el limit, leemos paginador.total). */
+  /** Catálogo COMPLETO usando el CSV que devuelve Elit (sin paginado problemático). */
+  async function fetchCatalogCsv() {
+    const res = await fetchImpl(`${baseUrl}/productos/csv?${new URLSearchParams(creds)}`, {
+      method: 'GET', headers: { Accept: 'text/csv, application/json' },
+    })
+    const text = await res.text().catch(() => '')
+    lastCall = {
+      mode: 'production', path: '/productos/csv', ok: res.ok,
+      codigo: null, keys: ['csv'], items: 0, sample: ['csv'], firstItemPreview: null,
+      paginador: null, pages: debugPages, csvChars: text.length,
+    }
+    if (!res.ok) return []
+    const rows = parseCsv(text)
+    lastCall.items = rows.length
+    return rows
+  }
+
+  /** Pagina POST /productos (fallback cuando no hay CSV). */
   async function listProducts(extra = {}) {
     let out = []
     const seen = new Set()
@@ -177,7 +259,7 @@ export function createElitClient(opts = {}) {
       const items = raw.filter(x => !seen.has(x.codigo_alfa))
       const total = Number(payload?.paginador?.total)
       const limit = Number(payload?.paginador?.limit) || pageSize
-      pages.push({ offset, requested: raw.length, newItems: items.length, total, limit, paginatorOffset: payload?.paginador?.offset ?? null })
+      pages.push({ offset, requested: raw.length, newItems: items.length, total, limit })
       if (!items.length) break
       for (const x of items) seen.add(x.codigo_alfa)
       out = out.concat(items)
@@ -193,7 +275,12 @@ export function createElitClient(opts = {}) {
   return {
     mode,
     get lastCall() { return lastCall },
-    async getCatalog({ pageSize = 100 } = {}) { return listProducts() },
+    async getCatalog({ pageSize = 100 } = {}) {
+      const csvRows = await fetchCatalogCsv()
+      const fromCsv = csvRows.map(normalizeCsvRow).filter(i => i.supplierSku)
+      if (fromCsv.length >= 10) return fromCsv
+      return listProducts()
+    },
     async getStockAndPrices({ since } = {}) {
       return listProducts(since ? { actualizacion: since } : {})
     },
