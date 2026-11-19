@@ -63,8 +63,14 @@ function extractItems(payload) {
   if (Array.isArray(payload)) return payload
   const data = payload?.data ?? payload
   if (Array.isArray(data)) return data
-  for (const key of ['productos', 'items', 'products', 'results', 'result']) {
-    if (Array.isArray(data?.[key])) return data[key]
+  for (const key of ['productos', 'resultado', 'items', 'products', 'results', 'result']) {
+    const v = data?.[key]
+    if (Array.isArray(v)) return v
+    if (v && typeof v === 'object') {
+      for (const inner of ['productos', 'items', 'results', 'lista', 'datos']) {
+        if (Array.isArray(v[inner])) return v[inner]
+      }
+    }
   }
   return []
 }
@@ -122,6 +128,7 @@ export function createElitClient(opts = {}) {
       keys: Object.keys(data || {}),
       items: items.length,
       sample: items[0] ? Object.keys(items[0]) : null,
+      firstItemPreview: items[0] ? JSON.stringify(items[0]).slice(0, 500) : null,
     }
     return data
   }
