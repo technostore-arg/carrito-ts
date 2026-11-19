@@ -231,6 +231,8 @@ function reworkHome(doc, products = []) {
       title: card.querySelector('h2')?.textContent.trim() || '',
       badge: [...card.querySelectorAll('span')].map(s => s.textContent.trim()).find(t => /OFF|Cuotas|Cabal|Tech/i.test(t)) || '',
     }))
+    // Openpay BBVA se eliminó con el claim de "12 cuotas"; se reincorpora sin promesas.
+    if (!cards.some(c => /Openpay/i.test(c.title))) cards.unshift({ icon: 'account_balance', title: 'Openpay BBVA', badge: '' })
     pay.className = 'w-full px-margin py-2 bg-surface-subtle border-b border-border-subtle'
     pay.innerHTML = `<div class="w-full flex flex-wrap items-center justify-center gap-x-8 gap-y-2 py-1">
       ${cards.map(c => `<div class="flex items-center gap-2 shrink-0">
@@ -321,7 +323,7 @@ function buildCatalog(products = [], categorias = []) {
   return `<section id="catalogo" class="w-full px-margin py-space-xl" data-catalog>
   <div class="flex items-end justify-between mb-4 gap-3 flex-wrap">
     <div><div class="text-primary font-label-md font-bold uppercase tracking-widest">Catálogo completo</div><h2 class="font-headline-lg text-headline-lg font-bold text-on-surface">Todos los productos</h2></div>
-    <span class="font-label-md text-on-surface-variant"><b data-catalog-count>${items.length}</b> productos</span>
+    <span class="font-label-md text-on-surface-variant"><b data-catalog-count>${items.length}</b> productos · <span data-catalog-updated>actualizando…</span></span>
   </div>
   <div class="bg-surface-pure rounded-xl shadow-sm p-4 mb-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3" data-catalog-filters>
     <label class="flex flex-col gap-1"><span class="font-label-sm text-on-surface-variant">Categoría</span><select data-filter="cat" class="${f}">${opt('todos', 'Todas')}${cats.map(c => opt(c.id, c.label || c.id)).join('')}</select></label>

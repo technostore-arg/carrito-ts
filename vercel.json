@@ -1,5 +1,9 @@
 {
   "version": 2,
+  "crons": [
+    { "path": "/api/cron/elit-sync", "schedule": "*/15 * * * *" },
+    { "path": "/api/cron/elit-catalog", "schedule": "0 3 * * *" }
+  ],
   "builds": [
     {
       "src": "server/index.js",

@@ -66,15 +66,18 @@ export function buildPublicCatalog(inputs = []) {
 }
 
 /** Carga los inputs del hub para el catálogo público. */
-export async function loadPublicInputs(pool, { limit = 500, sku = null } = {}) {
+export async function loadPublicInputs(pool, { limit = null, sku = null } = {}) {
   const config = await getPricingConfig(pool)
-  const params = [Math.min(Math.max(limit, 1), 5000)]
+  const params = []
   let where = 'is_active = TRUE'
-  if (sku) { where += ' AND (sku_interno = $2 OR CAST(id AS TEXT) = $2)'; params.push(String(sku)) }
-  const { rows } = await pool.query(
-    `SELECT id, sku_interno, ean, mpn, title, brand, category, vat_rate, static_data_json
-       FROM master_products WHERE ${where} ORDER BY id LIMIT $1`, params
-  )
+  if (sku) { where += ' AND (sku_interno = $1 OR CAST(id AS TEXT) = $1)'; params.push(String(sku)) }
+  let sql = `SELECT id, sku_interno, ean, mpn, title, brand, category, vat_rate, static_data_json
+       FROM master_products WHERE ${where} ORDER BY id`
+  if (limit != null) {
+    params.push(Math.min(Math.max(limit, 1), 5000))
+    sql += ` LIMIT $${params.length}`
+  }
+  const { rows } = await pool.query(sql, params)
   if (!rows.length) return []
   const { rows: listings } = await pool.query(
     'SELECT * FROM supplier_listings WHERE master_product_id = ANY($1)', [rows.map(r => r.id)]
@@ -99,8 +102,9 @@ export async function loadPublicInputs(pool, { limit = 500, sku = null } = {}) {
 }
 
 export async function getPublicCatalogFromHub(pool) {
-  // Sin tope de 500: las memorias y otras categorías pueden estar más adelante en el id.
-  return buildPublicCatalog(await loadPublicInputs(pool, { limit: 5000 }))
+  // Sin límite: el número de productos solo cambia por datos reales de Elit,
+  // nunca por un tope arbitrario de filas.
+  return buildPublicCatalog(await loadPublicInputs(pool))
 }
 
 export async function getPublicProductFromHub(skuOrId, pool) {

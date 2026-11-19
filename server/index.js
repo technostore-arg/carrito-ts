@@ -232,6 +232,37 @@ app.post('/api/products/live', rateLimitLive, async (req, res) => {
   }
 })
 
+// Transparencia: regla de publicación, cantidad y últimas sincronizaciones.
+let catalogStatsCache = { at: 0, data: null }
+app.get('/api/catalog/stats', async (req, res) => {
+  try {
+    if (!isPgConfigured()) return res.status(503).json({ error: 'Hub PostgreSQL no configurado' })
+    const now = Date.now()
+    if (!catalogStatsCache.data || now - catalogStatsCache.at > 60000) {
+      const rows = await getPublicCatalogFromHub(getPgPool())
+      const byCategory = {}
+      for (const p of rows) byCategory[p.categoria] = (byCategory[p.categoria] || 0) + 1
+      const logs = await getPgPool().query(
+        `SELECT job_name, status, items_processed, items_quarantined, finished_at
+           FROM sync_logs WHERE supplier_code = 'ELIT' ORDER BY finished_at DESC LIMIT 6`)
+      catalogStatsCache = {
+        at: now,
+        data: {
+          published: rows.length,
+          byCategory,
+          rule: 'Se publican todos los productos activos con precio válido. El stock y los costos se actualizan desde Elit cada 15 minutos; el catálogo completo se importa una vez al día.',
+          syncs: logs.rows.map(r => ({
+            job: r.job_name, status: r.status, processed: r.items_processed,
+            quarantined: r.items_quarantined, finishedAt: r.finished_at,
+          })),
+        },
+      }
+    }
+    res.setHeader('Cache-Control', 'public, s-maxage=60')
+    res.json(catalogStatsCache.data)
+  } catch (e) { res.status(503).json({ error: e.message }) }
+})
+
 app.get('/api/products', async (req, res) => {
   try {
     // El admin pide incluirOcultos=1 para ver también los archivados.
@@ -561,21 +592,32 @@ app.get('/api/ml/auth/callback', async (req, res) => {
 })
 
 // 1) Cron interno: sincronización de Elit (fixture en sandbox, API real en production).
-app.post('/api/cron/elit-sync', cronAuth, async (req, res) => {
+async function runElitSync(mode) {
   const repo = isPgConfigured() ? createPgRepository(getPgPool()) : null
-  if (!repo) return res.status(503).json({ error: 'Hub PostgreSQL no configurado' })
+  if (!repo) return { status: 503, error: 'Hub PostgreSQL no configurado' }
+  const locked = await withAdvisoryLock(getPgPool(), `elit-sync:${mode}`, async () => {
+    const client = createElitClient()
+    return mode === 'catalog'
+      ? syncElitCatalog({ client, repo })
+      : syncElitStockAndPrices({ client, repo })
+  })
+  return locked.skipped ? { skipped: true, reason: 'already_running' } : locked.result
+}
+const replySync = res => result => result?.status === 503
+  ? res.status(503).json({ error: result.error })
+  : res.json(result)
+
+// Vercel Cron (GET) y disparo manual (POST).
+app.all('/api/cron/elit-sync', cronAuth, async (req, res) => {
   try {
-    const mode = String(req.body?.mode || 'stock') === 'catalog' ? 'catalog' : 'stock'
-    const locked = await withAdvisoryLock(getPgPool(), `elit-sync:${mode}`, async () => {
-      const client = createElitClient()
-      return mode === 'catalog'
-        ? syncElitCatalog({ client, repo })
-        : syncElitStockAndPrices({ client, repo })
-    })
-    res.json(locked.skipped ? { skipped: true, reason: 'already_running' } : locked.result)
-  } catch (e) {
-    res.status(502).json({ error: e.message })
-  }
+    const mode = String(req.query?.mode || req.body?.mode || 'stock') === 'catalog' ? 'catalog' : 'stock'
+    replySync(res)(await runElitSync(mode))
+  } catch (e) { res.status(502).json({ error: e.message }) }
+})
+// Diario: fichas, imágenes y categorías completas desde Elit.
+app.get('/api/cron/elit-catalog', cronAuth, async (req, res) => {
+  try { replySync(res)(await runElitSync('catalog')) }
+  catch (e) { res.status(502).json({ error: e.message }) }
 })
 
 // 2) Cron interno: sincronización Hub -> MLA (lote acotado).

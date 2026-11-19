@@ -156,6 +156,22 @@ export default function StitchView({ name, inline = false, products = [], catego
     return () => { root.removeEventListener('change', onChange); root.removeEventListener('click', onClick) }
   }, [html])
 
+  // Transparencia: última actualización del catálogo.
+  useEffect(() => {
+    if (!html || !ref.current) return
+    const el = ref.current.querySelector('[data-catalog-updated]')
+    if (!el) return
+    fetch('/api/catalog/stats')
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        const last = d?.syncs?.find(s => /stock/i.test(s.job || '')) || d?.syncs?.[0]
+        if (!last?.finishedAt) { el.textContent = ''; return }
+        const f = new Date(last.finishedAt)
+        el.textContent = `Actualizado ${f.toLocaleDateString('es-AR')} ${f.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`
+      })
+      .catch(() => { el.textContent = '' })
+  }, [html])
+
   // Auto-avance del carrusel de imágenes del banner.
   useEffect(() => {
     if (!html || !ref.current) return
