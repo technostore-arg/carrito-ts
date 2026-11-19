@@ -1,0 +1,13 @@
+/* Medios de pago y promociones — se integra con el checkout existente (tema claro). */
+.pay-option { display: grid; grid-template-columns: auto auto 1fr; gap: 10px; align-items: center; }
+.pay-logo { height: 24px; width: auto; border-radius: 4px; }
+.pay-promos { margin-top: 14px; padding: 14px; background: #f6f7f9; border: 1px solid #e5e7eb; border-radius: 10px; }
+.pay-promos h4 { font-size: 14px; margin: 0 0 12px; }
+.pay-promos ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.pay-promos li { display: grid; grid-template-columns: 60px 1fr; gap: 10px; align-items: start; }
+.pay-promo__logo { height: 26px; width: auto; border-radius: 4px; }
+.pay-promos b { display: block; font-size: 13px; }
+.pay-promos small { display: block; font-size: 11px; color: #6b7280; margin-top: 2px; }
+.pay-promos p { font-size: 12px; color: #4b5563; margin: 4px 0; }
+.pay-promos a { font-size: 12px; color: #0a7a4b; font-weight: 600; }
+.pay-promos__note { font-size: 11px; color: #6b7280; margin: 12px 0 0; padding-top: 10px; border-top: 1px solid #e5e7eb; }

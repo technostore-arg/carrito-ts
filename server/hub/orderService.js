@@ -6,6 +6,9 @@ import { randomBytes } from 'node:crypto'
 import { computeQuote } from './pricingEngine.js'
 import { COUPONS, shippingCost, FREE_SHIPPING_THRESHOLD } from '../../apps/technostore/src/config/store.js'
 
+/** Medios de pago con tarjeta/financiación: usan precio lista (el resto, precio transferencia con impuestos). */
+const CARD_PAYMENT_METHODS = new Set(['tarjeta', 'mercadopago', 'mercadocredito', 'openpay', 'sipago'])
+
 /** Descuento del cupón sobre el subtotal real. */
 export function couponDiscount(code, subtotal) {
   const c = COUPONS[String(code || '').trim().toUpperCase()]
@@ -32,7 +35,9 @@ export async function placeWebOrder({ repo, customer = {}, items = [], paymentMe
     const quote = computeQuote(input)
     if (quote.quarantined || quote.price_transfer == null) throw new Error(`Producto ${sku} en revisión`)
     if (quote.stock < qty) throw new Error(`Stock insuficiente para ${sku}`)
-    const unit = paymentMethod === 'tarjeta' ? (quote.price_list || quote.price_transfer) : quote.price_transfer
+    const unit = CARD_PAYMENT_METHODS.has(String(paymentMethod || '').toLowerCase())
+      ? (quote.price_list || quote.price_transfer)
+      : quote.price_transfer
     subtotal += unit * qty
     authoritative.push({
       sku,

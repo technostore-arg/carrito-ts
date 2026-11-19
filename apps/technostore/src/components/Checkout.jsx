@@ -5,17 +5,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useCart } from '../context/CartContext.jsx'
 import { ars } from '../utils/format.js'
-import { shippingZone, INSTALLMENTS } from '../config/store.js'
+import { shippingZone } from '../config/store.js'
 import { validarCheckout } from '../utils/validation.js'
-import { installment } from '../utils/pricing.js'
 import ProductMedia from './ProductMedia.jsx'
 import FreeShippingProgress from './FreeShippingProgress.jsx'
-
-const PAGOS = [
-  { id: 'transferencia', label: 'Transferencia', detalle: 'Menor precio' },
-  { id: 'efectivo', label: 'Efectivo', detalle: 'Al recibir o retirar' },
-  { id: 'tarjeta', label: 'Tarjeta', detalle: 'Hasta 12 cuotas' },
-]
+import { PaymentMethods, PaymentPromos } from './PaymentPromos.jsx'
 
 /** @param {{onClose:()=>void}} props */
 export default function Checkout({ onClose }) {
@@ -33,7 +27,6 @@ export default function Checkout({ onClose }) {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState(null)
   const [order, setOrder] = useState(null)
-  const [cuotas, setCuotas] = useState(INSTALLMENTS[0])
   const [comprobante, setComprobante] = useState(null)
   const closeRef = useRef(null)
 
@@ -77,7 +70,6 @@ export default function Checkout({ onClose }) {
           cp: form.cp, city: zona?.label || form.cp || '', address: form.direccion,
           tipoEntrega: form.tipoEntrega, paymentMethod: metodoPago,
           documento: form.factura ? `${form.tipoDocumento} ${form.documento}` : null,
-          cuotas: metodoPago === 'tarjeta' ? cuotas : null,
           cupon: cupon?.code || null,
         },
         items: items.map(p => ({ id: p.sku, nombre: p.nombre, qty: p.qty, precio: getPrice(p) })),
@@ -209,21 +201,8 @@ export default function Checkout({ onClose }) {
             )}
 
             <h3 className="checkout-step">3 · Método de pago</h3>
-            <div className="pay-options">
-              {PAGOS.map(p => (
-                <button type="button" key={p.id} className={`pay-option ${metodoPago === p.id ? 'active' : ''}`} onClick={() => setMetodoPago(p.id)}>
-                  <span className="pay-radio" aria-hidden />
-                  <span><b>{p.label}</b><small>{p.detalle}</small></span>
-                </button>
-              ))}
-            </div>
-            {metodoPago === 'tarjeta' && (
-              <div className="field"><label htmlFor="ck-cuotas">Cuotas</label>
-                <select id="ck-cuotas" value={cuotas} onChange={e => setCuotas(Number(e.target.value))}>
-                  {INSTALLMENTS.map(n => <option key={n} value={n}>{n} cuotas de {ars(installment(getPrice({ precio_lista: items[0]?.precio_lista, precio_mercadopago: items[0]?.precio_mercadopago, precio_transferencia: items[0]?.precio_transferencia }) || total, n))}</option>)}
-                </select>
-              </div>
-            )}
+            <PaymentMethods value={metodoPago} onChange={setMetodoPago} />
+            <PaymentPromos />
             {metodoPago === 'transferencia' && (
               <div className="pay-note">
                 <b>Datos para transferir</b><br />Alias <code>TECNOSTORE.PAGOS</code> · CBU <code>0000003100000000000000</code>
