@@ -1,8 +1,8 @@
 {
   "version": 2,
   "crons": [
-    { "path": "/api/cron/elit-sync", "schedule": "*/15 * * * *" },
-    { "path": "/api/cron/elit-catalog", "schedule": "0 3 * * *" }
+    { "path": "/api/cron/elit-catalog", "schedule": "0 3 * * *" },
+    { "path": "/api/cron/elit-sync", "schedule": "0 4 * * *" }
   ],
   "builds": [
     {
