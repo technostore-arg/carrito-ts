@@ -50,9 +50,40 @@ function addSearch(doc) {
   doc.body.prepend(header)
 }
 
+function seasonalAndHero(doc, products = []) {
+  // HERO: copy breve (antes: "Renová tu setup con tecnología oficial y financiación garantizada.")
+  const h1 = doc.querySelector('h1')
+  if (h1) h1.innerHTML = 'Tu setup, <span class="text-primary-container">a otro nivel</span>.'
+  const sub = doc.querySelector('h1')?.parentElement?.querySelector('p.font-body-lg')
+  if (sub) sub.innerHTML = 'GPUs, workstations y memorias con stock real, garantía escrita y envío a todo el país.'
+
+  // Decoración navideña sutil (franja + copitos), sin invadir el diseño.
+  if (!doc.querySelector('[data-xmas-ribbon]')) {
+    const ribbon = doc.createElement('div')
+    ribbon.setAttribute('data-xmas-ribbon', '')
+    ribbon.className = 'xmas-ribbon px-margin py-1.5 text-center font-label-md font-bold'
+    ribbon.innerHTML = '🎄 Navidad TechnoStore · Elegí tu próximo upgrade y recibilo antes del 24'
+    doc.body.prepend(ribbon)
+  }
+
+  // Carrusel de imágenes de productos destacados (debajo del hero).
+  if (products.length && !doc.querySelector('[data-stitch-carousel]')) {
+    const hero = doc.querySelector('section')
+    const featured = products.filter(p => Number(p.precio_transferencia ?? p.precio) > 0).slice(0, 8)
+    const sec = doc.createElement('section')
+    sec.setAttribute('data-stitch-carousel', '')
+    sec.className = 'w-full px-margin py-space-md'
+    sec.innerHTML = `<div class="flex items-center justify-between mb-3"><div class="flex items-center gap-2 text-primary font-label-md font-bold uppercase tracking-wider"><span class="material-symbols-outlined text-base">auto_awesome</span>Destacados de la semana</div><div class="flex gap-2"><button type="button" data-carousel="prev" aria-label="Anterior" class="w-9 h-9 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center"><span class="material-symbols-outlined">chevron_left</span></button><button type="button" data-carousel="next" aria-label="Siguiente" class="w-9 h-9 rounded-lg bg-primary-container text-on-primary flex items-center justify-center"><span class="material-symbols-outlined">chevron_right</span></button></div></div>
+    <div data-carousel-track class="flex gap-4 overflow-x-auto pb-2">${featured.map(p => `<button type="button" class="shrink-0 w-40 rounded-xl bg-surface-pure border border-border-subtle p-3 text-left hover:shadow-md transition-shadow" data-path="detalle-de-producto" data-sku="${esc(p.sku)}"><img class="w-full h-28 object-contain bg-surface-container-low rounded-lg mb-2" src="${esc(p.imagenes?.[0] || '')}" alt=""><b class="block text-label-md text-on-surface truncate">${esc(p.nombre || '')}</b><span class="text-body-sm font-bold text-primary">$${Number((p.precio_transferencia ?? p.precio) || 0).toLocaleString('es-AR')}</span></button>`).join('')}</div>`
+    if (hero) hero.after(sec)
+    else doc.body.prepend(sec)
+  }
+}
+
 export function hydrateStitch(doc, { products = [], categorias = [] } = {}) {
   simplifyStitch(doc)
   addSearch(doc)
+  seasonalAndHero(doc, products)
   // Categorías reales en la grilla de "Categorías Populares"
   const catSection = [...doc.querySelectorAll('section')].find(s => /Explor.*Categor/i.test(s.textContent || ''))
   if (catSection && categorias.length) {

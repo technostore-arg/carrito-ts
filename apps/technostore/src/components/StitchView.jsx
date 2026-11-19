@@ -38,6 +38,13 @@ export default function StitchView({ name, inline = false, products = [], catego
       const path = el.getAttribute('data-path') || ''
       const text = (el.innerText || '').toLowerCase()
       if (/cerrar|close|volver|atrás|atras/.test(text)) { e.preventDefault(); onClose?.(); return }
+      const carousel = el.closest('[data-carousel]')
+      if (carousel) {
+        e.preventDefault()
+        const track = carousel.closest('[data-stitch-carousel]')?.querySelector('[data-carousel-track]')
+        track?.scrollBy({ left: carousel.getAttribute('data-carousel') === 'next' ? 340 : -340, behavior: 'smooth' })
+        return
+      }
       const add = el.closest('[data-add]')
       if (add) { e.preventDefault(); onAdd?.(add.getAttribute('data-add')); return }
       const sku = el.closest('[data-sku]')
