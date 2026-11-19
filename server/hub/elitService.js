@@ -30,13 +30,17 @@ function slug(s) {
     .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
-/** Categoría de Elit tal cual (normalizada a slug) — sin heurísticos por nombre de producto. */
-function mapElitCategory(raw = {}) {
-  return slug(raw.categoria) || 'tecnologia'
+/**
+ * Categoría de Elit: uri oficial devuelta por POST /categorias cuando está disponible;
+ * si no, slug del nombre. Sin heurísticos por nombre de producto.
+ */
+function mapElitCategory(raw = {}, catMap = null) {
+  const nombre = String(raw.categoria ?? '').trim()
+  return (catMap && catMap[nombre]) || slug(nombre) || 'tecnologia'
 }
 
 /** Campos reales del manual -> shape interno del hub. */
-export function normalizeElitItem(raw = {}) {
+export function normalizeElitItem(raw = {}, catMap = null) {
   const images = Array.isArray(raw.imagenes) ? raw.imagenes : (raw.uri ? [raw.uri] : [])
   const attrs = raw.atributos && typeof raw.atributos === 'object' ? raw.atributos : {}
   const iva = Number(raw.iva)
@@ -46,7 +50,7 @@ export function normalizeElitItem(raw = {}) {
     mpn: raw.codigo_producto ? String(raw.codigo_producto).trim() : null,
     title: String(raw.nombre ?? '').trim(),
     brand: String(raw.marca ?? 'Genérica').trim(),
-    category: mapElitCategory(raw),
+    category: mapElitCategory(raw, catMap),
     categoryRaw: String(raw.categoria ?? '').trim(),
     subcategory: String(raw.sub_categoria ?? '').trim(),
     // "precio" es la base sin markup (USD); pvp_* es el sugerido con markup.
@@ -162,12 +166,12 @@ function firstDefined(row, keys) {
   return null
 }
 
-/** Mapea CSV de plataformas de Meta a slugs internos del hub. */
-function mapCsvCategory(raw) {
-  return mapElitCategory({ nombre: `${raw} ${''}`, categoria: raw })
+/** Mapea categoría CSV usando los uri oficiales de Elit cuando están disponibles. */
+function mapCsvCategory(raw, catMap) {
+  return mapElitCategory({ categoria: raw }, catMap)
 }
 
-function normalizeCsvRow(row) {
+function normalizeCsvRow(row, catMap = null) {
   const weight = Number(firstDefined(row, ['Peso (kg)', 'peso', 'weight', 'weight_kg']))
   const imageUrl = firstDefined(row, ['Imagen', 'imagen', 'link', 'uri', 'image_link', 'uri_producto'])
   return {
@@ -175,7 +179,7 @@ function normalizeCsvRow(row) {
     ean: firstDefined(row, ['ean', 'code_bar', 'barcode']),
     title: firstDefined(row, ['Nombre', 'nombre', 'name', 'product_name']),
     brand: firstDefined(row, ['Marca', 'marca', 'brand']),
-    category: mapCsvCategory(firstDefined(row, ['Categorías', 'categoría', 'categoria', 'category', 'Categorias']) || ''),
+    category: mapCsvCategory(firstDefined(row, ['Categorías', 'categoría', 'categoria', 'category', 'Categorias']) || '', catMap),
     categoryRaw: String(firstDefined(row, ['Categorías', 'categoría', 'categoria', 'category', 'Categorias']) || '').trim(),
     subcategory: firstDefined(row, ['Subcategoría', 'subcategoría', 'subcategoria', 'sub_categoria']),
     vatRate: (() => {
@@ -213,8 +217,9 @@ export function createElitClient(opts = {}) {
   let debugPages = []
   let lastCsv = null
 
-  async function post(path, body) {
-    const data = await requestWithRetry(`${baseUrl}${path}`, {
+  async function post(path, body, query) {
+    const qs = query && Object.keys(query).length ? `?${new URLSearchParams(query)}` : ''
+    const data = await requestWithRetry(`${baseUrl}${path}${qs}`, {
       method: 'POST', headers, body: JSON.stringify({ ...creds, ...(body || {}) }),
     }, opts)
     const items = extractItems(data)
@@ -231,7 +236,27 @@ export function createElitClient(opts = {}) {
     return data
   }
 
-  /** Catálogo COMPLETO usando el CSV que devuelve Elit (sin paginado problemático). */
+  /** Mapa nombre -> uri oficial de categorías y subcategorías de Elit (POST /categorias). */
+  let categoriesCache = null
+  async function fetchCategoryMap() {
+    if (categoriesCache) return categoriesCache
+    try {
+      const data = await post('/categorias', {})
+      const map = {}
+      for (const c of data?.categorias || []) {
+        if (c?.nombre && c?.uri) map[String(c.nombre).trim()] = c.uri
+        for (const s of c?.sub_categorias || []) {
+          if (s?.nombre && s?.uri) map[String(s.nombre).trim()] = s.uri
+        }
+      }
+      categoriesCache = map
+      return map
+    } catch {
+      return {}
+    }
+  }
+
+  /** Catálogo COMPLETO usando el CSV que devuelve Elit (fallback). */
   async function fetchCatalogCsv() {
     let res
     try {
@@ -256,65 +281,71 @@ export function createElitClient(opts = {}) {
     return rows
   }
 
-  /** Pagina POST /productos (fallback cuando no hay CSV). */
-  async function listProducts(extra = {}) {
+  /**
+   * Pagina POST /productos según la doc: limit/offset son QUERY PARAMS, limit máx. 100,
+   * offset múltiplo de limit y la PRIMERA página no envía offset (0 no es válido).
+   * Trae descripción e imágenes desde la API (el CSV genérico no incluye descripción).
+   */
+  async function listProducts({ limit = 100, imagenes = 'all', ...filters } = {}) {
     let out = []
     const seen = new Set()
     const pages = []
     debugPages = pages
-    let offset = 0
-    const pageSize = 40
-    const maxItems = 5000
-    let stalled = false
-    while (out.length < maxItems) {
-      const payload = await post('/productos', { limit: pageSize, offset, ...extra })
+    const pageSize = Math.min(Math.max(Number(limit) || 100, 1), 100)
+    const maxItems = 20000
+    const maxPages = 100
+    let total = Infinity
+    for (let page = 0; page < maxPages && out.length < maxItems && out.length < total; page++) {
+      const offset = page === 0 ? undefined : page * pageSize
+      const query = {
+        limit: pageSize,
+        ...(offset !== undefined ? { offset } : {}),
+        ...(imagenes ? { imagenes } : {}),
+        ...filters,
+      }
+      const payload = await post('/productos', {}, query)
       const raw = extractItems(payload)
-      const items = raw.filter(x => !seen.has(x.codigo_alfa))
-      const total = Number(payload?.paginador?.total)
-      const limit = Number(payload?.paginador?.limit) || pageSize
-      pages.push({ offset, requested: raw.length, newItems: items.length, total, limit })
-      if (!items.length) {
-        // Si ya tenemos items y Elit no devolvió nuevos en esta página,
-        // el offset no avanza: marcamos estancamiento para el brute force.
-        stalled = out.length > 0 && offset > 0
-        break
-      }
-      for (const x of items) seen.add(x.codigo_alfa)
+      const items = raw.filter(x => !seen.has(String(x.codigo_alfa ?? x.id)))
+      const pag = payload?.paginador || {}
+      const reportedTotal = Number(pag.total)
+      if (Number.isFinite(reportedTotal)) total = reportedTotal
+      const returned = Number(pag.limit) || raw.length
+      pages.push({ page, offset: offset ?? 0, requested: raw.length, newItems: items.length, total, limit: returned })
+      if (!raw.length) break
+      for (const x of items) seen.add(String(x.codigo_alfa ?? x.id))
       out = out.concat(items)
-      const ended = (Number.isFinite(total) && out.length >= total)
-        || (raw.length < limit)
-      if (ended) break
-      offset += raw.length
+      if (raw.length < pageSize || out.length >= total) break
     }
-    if (stalled) {
-      // Fallback brute: probamos limit=1838 (el total de paginador) en offset 0.
-      const payload = await post('/productos', { limit: 1838, offset: 0, ...extra }).catch(() => null)
-      const raw2 = extractItems(payload)
-      const brute = raw2.filter(x => !seen.has(x.codigo_alfa))
-      pages.push({ brute: true, offset: 0, requested: raw2.length, newItems: brute.length, total: Number(payload?.paginador?.total) })
-      if (brute.length) {
-        for (const x of brute) seen.add(x.codigo_alfa)
-        out = out.concat(brute)
-      }
-    }
-    return out.map(normalizeElitItem)
+    const catMap = await fetchCategoryMap()
+    return out.map(r => normalizeElitItem(r, catMap))
   }
 
   return {
     mode,
     get lastCall() { return lastCall },
     get lastCsv() { return lastCsv },
-    async getCatalog({ pageSize = 100 } = {}) {
+    async getCatalog({ pageSize, ...rest } = {}) {
+      try {
+        const items = await listProducts({ ...rest, limit: pageSize || 100, imagenes: 'all' })
+        if (items.length >= 10) return items
+      } catch (e) {
+        lastCall = { mode: 'production', path: '/productos', ok: false, error: e.message, items: 0 }
+      }
+      // Fallback al CSV genérico (no trae descripción).
+      const catMap = await fetchCategoryMap()
       const csvRows = await fetchCatalogCsv()
-      const fromCsv = csvRows.map(normalizeCsvRow).filter(i => i.supplierSku)
-      if (fromCsv.length >= 10) return fromCsv
-      return listProducts()
+      return csvRows.map(r => normalizeCsvRow(r, catMap)).filter(i => i.supplierSku)
     },
     async getStockAndPrices({ since } = {}) {
+      try {
+        const items = await listProducts({ imagenes: null, ...(since ? { actualizacion: since } : {}) })
+        if (items.length >= 10) return items
+      } catch (e) {
+        lastCall = { mode: 'production', path: '/productos', ok: false, error: e.message, items: 0 }
+      }
+      const catMap = await fetchCategoryMap()
       const csvRows = await fetchCatalogCsv()
-      const fromCsv = csvRows.map(normalizeCsvRow).filter(i => i.supplierSku)
-      if (fromCsv.length >= 10) return fromCsv
-      return listProducts(since ? { actualizacion: since } : {})
+      return csvRows.map(r => normalizeCsvRow(r, catMap)).filter(i => i.supplierSku)
     },
     async getShipping() { return post('/envios', {}) },
     async placeOrder({ items = [] } = {}) {
