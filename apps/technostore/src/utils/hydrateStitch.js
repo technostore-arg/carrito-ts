@@ -105,20 +105,20 @@ function seasonalAndHero(doc, products = []) {
 
 // Imágenes grandes y reales de Elit (catálogo completo) para el banner principal.
 const HERO_SLIDES = [
-  { tag: 'Notebook Gaming', name: 'GIGABYTE AERO X16', img: 'https://images.elit.com.ar/p/21030/i/G1K47_l.webp' },
-  { tag: 'Monitor Gaming', name: 'ASUS TUF Gaming 34"', img: 'https://images.elit.com.ar/p/20742/i/x53KW_l.webp' },
-  { tag: 'Auriculares Gaming', name: 'ASUS ROG Delta II', img: 'https://images.elit.com.ar/p/20736/i/JL0vC_l.webp' },
-  { tag: 'Memoria RGB', name: 'ADATA XPG Lancer RGB', img: 'https://images.elit.com.ar/p/19517/i/PDnA2_l.webp' },
-  { tag: 'Procesador', name: 'AMD Ryzen 7 7800X3D', img: 'https://images.elit.com.ar/p/16801/i/Sdpa5_l.webp' },
-  { tag: 'Mini PC', name: 'ASUS NUC Ultra 7', img: 'https://images.elit.com.ar/p/20765/i/YM6N2_l.webp' },
+  { tag: 'Notebook Gaming', name: 'GIGABYTE AERO X16', img: '/banner/banner-notebook.webp' },
+  { tag: 'Monitor Gaming', name: 'ASUS TUF Gaming 34"', img: '/banner/banner-monitor.webp' },
+  { tag: 'Auriculares Gaming', name: 'ASUS ROG Delta II', img: '/banner/banner-auriculares.webp' },
+  { tag: 'Memoria RGB', name: 'ADATA XPG Lancer RGB', img: '/banner/banner-memoria.webp' },
+  { tag: 'Procesador', name: 'AMD Ryzen 7 7800X3D', img: '/banner/banner-procesador.webp' },
+  { tag: 'Mini PC', name: 'ASUS NUC Ultra 7', img: '/banner/banner-minipc.webp' },
 ]
 
 function buildHeroSlider() {
   return `<div class="hero-slider relative w-full" data-hero-slider>
   <div class="relative w-full h-[340px] sm:h-[380px] rounded-2xl overflow-hidden bg-surface-container-low shadow-xl">
     ${HERO_SLIDES.map((s, i) => `<a class="hero-slide absolute inset-0 flex items-center justify-center${i === 0 ? ' is-active' : ''}" data-hero-slide="${i}" data-path="catalogo-de-productos" href="#">
-      <img class="w-full h-full object-contain p-8" src="${esc(s.img)}" alt="${esc(s.name)}">
-      <span class="absolute bottom-0 left-0 right-0 p-4 pt-10 bg-gradient-to-t from-black/70 to-transparent text-white"><small class="block uppercase tracking-wider opacity-80 text-xs">${esc(s.tag)}</small><b class="text-lg">${esc(s.name)}</b></span>
+      <img class="hero-slide__img relative z-[1] w-full h-full object-cover" src="${esc(s.img)}" alt="${esc(s.name)}">
+      <span class="absolute bottom-0 left-0 right-0 z-10 p-4 pt-10 bg-gradient-to-t from-black/60 to-transparent text-white text-left"><small class="block uppercase tracking-wider opacity-80 text-xs">${esc(s.tag)}</small><b class="text-lg">${esc(s.name)}</b></span>
     </a>`).join('')}
     <button type="button" data-hero-prev aria-label="Anterior" class="hero-slider__arrow hero-slider__arrow--prev">‹</button>
     <button type="button" data-hero-next aria-label="Siguiente" class="hero-slider__arrow hero-slider__arrow--next">›</button>
@@ -139,15 +139,53 @@ function reworkHome(doc, products = []) {
     if (/Más Vendidos/i.test(h.textContent || '')) h.textContent = 'Productos destacados'
   }
 
-  // 2) Banner principal: carrusel grande de imágenes de productos reales.
-  //    Reemplaza TODA la columna derecha para eliminar los badges viejos
+  // 2) Banner principal: IMÁGENES a todo lo ancho arriba, texto chico abajo.
+  //    Se reemplaza toda la columna derecha para eliminar los badges viejos
   //    ("10% OFF", "12x Sin Interés", "Apple & Sony Pro Setup", garantía, etc.).
   const hero = doc.querySelector('section')
   if (hero) {
     hero.classList.add('hero-compact')
     const grid = hero.querySelector('.grid')
+    const left = grid?.children?.[0]
     const right = grid?.children?.[1]
-    if (right) right.innerHTML = buildHeroSlider()
+    if (grid && left && right) {
+      right.innerHTML = buildHeroSlider()
+      // Imagen arriba, a todo el ancho; texto abajo y en segundo plano.
+      grid.className = 'w-full flex flex-col gap-4 relative z-10'
+      right.className = 'w-full order-1'
+      left.className = 'w-full order-2 flex flex-col gap-2'
+      grid.insertBefore(right, left)
+      const box = right.querySelector('[data-hero-slider] > div')
+      if (box) box.style.height = 'clamp(260px, 32vw, 430px)'
+      for (const img of right.querySelectorAll('[data-hero-slide] img')) img.className = 'hero-slide__img relative z-[1] w-full h-full object-cover'
+      const h1 = left.querySelector('h1')
+      if (h1) { h1.style.fontSize = '22px'; h1.style.lineHeight = '1.2' }
+      for (const p of left.querySelectorAll('p')) { p.style.fontSize = '13px'; p.style.marginTop = '2px' }
+      for (const a of left.querySelectorAll('a')) { a.style.height = '36px'; a.style.fontSize = '12px'; a.style.paddingLeft = '14px'; a.style.paddingRight = '14px' }
+      const chips = left.querySelector('.grid')
+      if (chips) {
+        chips.className = 'grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1'
+        for (const chip of chips.children) chip.style.padding = '4px 8px'
+      }
+    }
+  }
+
+  // 2b) Medios de pago: tira fina y discreta (sin descripciones ni cajas de color).
+  const pay = [...doc.querySelectorAll('section')].find(s => /SiPago Credicoop|Transferencia \/ DEBIN/i.test(s.textContent || ''))
+  if (pay) {
+    pay.className = 'w-full px-margin py-2 bg-surface-subtle border-b border-border-subtle'
+    for (const card of pay.querySelectorAll('.grid > div')) {
+      card.className = 'flex items-center gap-2 py-1 px-2'
+      const icon = card.querySelector('div.w-10')
+      if (icon) {
+        icon.className = 'w-6 h-6 rounded-md bg-surface-container text-on-surface-variant flex items-center justify-center shrink-0'
+        const sym = icon.querySelector('span')
+        if (sym) sym.className = 'material-symbols-outlined text-sm'
+      }
+      for (const p of card.querySelectorAll('p')) p.remove()
+      for (const h of card.querySelectorAll('h2')) h.className = 'font-label-sm text-label-sm text-on-surface-variant truncate'
+      for (const b of card.querySelectorAll('span.px-2')) b.className = 'font-label-sm text-label-sm text-on-surface-variant'
+    }
   }
 
   // 3) Marcas como tira divisoria fina (no un bloque).
