@@ -166,8 +166,10 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 .stitch-view { min-height: 100vh; }
 .stitch-switch { position: fixed; left: 12px; bottom: 12px; z-index: 80; background: var(--ds-trust-shield); color: #fff; border: 0; border-radius: 999px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: var(--ds-shadow-lg); }
 
-/* Navidad: franja sutil + carrusel con snap */
-.xmas-ribbon { background: #7f1d1d; color: #fff; letter-spacing: .01em; }
+/* Navidad: iconos sutiles sobre las imágenes del banner (sin franjas) */
+.xmas-deco { position: absolute; top: 14px; right: 68px; z-index: 6; width: 52px; height: 52px; pointer-events: none; transform: rotate(-14deg); filter: drop-shadow(0 3px 5px rgba(0,0,0,.22)); }
+.xmas-deco svg { width: 100%; height: 100%; display: block; }
+.xmas-flakes { position: absolute; top: 18px; left: 20px; z-index: 6; color: rgba(255,255,255,.85); font-size: 17px; letter-spacing: 12px; pointer-events: none; text-shadow: 0 1px 4px rgba(0,0,0,.25); }
 [data-carousel-track] { scroll-snap-type: x mandatory; scrollbar-width: none; }
 [data-carousel-track]::-webkit-scrollbar { display: none; }
 [data-carousel-track] > * { scroll-snap-align: start; }

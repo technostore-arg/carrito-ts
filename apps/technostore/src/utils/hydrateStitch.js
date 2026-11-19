@@ -53,6 +53,8 @@ const COPY_FIXES = [
   [/garant[ií]a\s+oficial\s+directa\s+del\s+fabricante\s+por\s+12\s+meses/gi, 'garantía del fabricante'],
   [/garant[ií]a\s+integral\s+de\s+12\s+meses/gi, 'garantía'],
   [/Garant[ií]a\s+Oficial\s+12\s+Meses/gi, 'Productos originales con factura'],
+  [/soporte\s+t[eé]cnico\s+oficial/gi, 'soporte técnico'],
+  [/Distribuidores\s+Oficiales\s+Certificados/gi, 'Distribuidores'],
 ]
 
 function normalizeCopy(doc) {
@@ -67,6 +69,12 @@ function normalizeCopy(doc) {
     for (const [re, rep] of COPY_FIXES) after = after.replace(re, rep)
     if (after !== before) node.nodeValue = after.replace(/[ \t]{2,}/g, ' ')
   }
+}
+
+function replaceLogo(doc) {
+  const wrap = [...doc.querySelectorAll('div.flex.items-center.gap-2')]
+    .find(d => /memory/.test(d.textContent || '') && /Techno/.test(d.textContent || ''))
+  if (wrap) wrap.innerHTML = '<img src="/logo-mark.png" alt="" class="h-9 w-9 object-contain shrink-0"><span class="font-extrabold text-xl tracking-tight text-on-surface whitespace-nowrap">Techno<span class="text-primary-container">Store</span></span>'
 }
 
 function simplifyStitch(doc) {
@@ -129,24 +137,13 @@ function addSearch(doc) {
 function seasonalAndHero(doc, products = []) {
   // HERO: copy breve (antes: "Renová tu setup con tecnología oficial y financiación garantizada.")
   const h1 = doc.querySelector('h1')
-  if (h1) h1.innerHTML = 'Tu sitio de confianza para <span class="text-primary-container">compras tech</span>.'
+  if (h1) h1.innerHTML = 'El sitio de <span class="text-primary-container">confianza</span> para tus compras tech'
   const sub = doc.querySelector('h1')?.parentElement?.querySelector('p.font-body-lg')
   if (sub) sub.innerHTML = 'Armado de computadoras, computadoras gamer y componentes con stock real. ¿No sabés qué elegir? Te asesoramos sin cargo.'
 
-  // Decoración navideña sutil (franja + copitos), sin invadir el diseño.
-  if (!doc.querySelector('[data-xmas-ribbon]')) {
-    const ribbon = doc.createElement('div')
-    ribbon.setAttribute('data-xmas-ribbon', '')
-    ribbon.className = 'xmas-ribbon px-margin py-1.5 mb-3 text-center font-label-md font-bold'
-    ribbon.innerHTML = '🎄 Navidad TechnoStore · Elegí tu próximo upgrade y recibilo antes del 24'
-    const main = doc.querySelector('main')
-    if (main) main.prepend(ribbon)
-    else doc.body.prepend(ribbon)
-  }
-
 }
 
-// Imágenes grandes y reales de Elit (catálogo completo) para el banner principal.
+// Imágenes wide generadas para el banner principal (productos representativos).
 const HERO_SLIDES = [
   { tag: 'Notebook Gaming', name: 'GIGABYTE AERO X16', img: '/banner/banner-notebook.webp' },
   { tag: 'Monitor Gaming', name: 'ASUS TUF Gaming 34"', img: '/banner/banner-monitor.webp' },
@@ -161,6 +158,15 @@ function buildHeroSlider() {
   <div class="relative w-full h-[340px] sm:h-[380px] rounded-2xl overflow-hidden bg-surface-container-low shadow-xl">
     ${HERO_SLIDES.map((s, i) => `<a class="hero-slide absolute inset-0 flex items-center justify-center${i === 0 ? ' is-active' : ''}" data-hero-slide="${i}" data-path="catalogo-de-productos" href="#">
       <img class="hero-slide__img relative z-[1] w-full h-full object-cover" src="${esc(s.img)}" alt="${esc(s.name)}">
+      <span class="xmas-deco" aria-hidden="true">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 45C17 25 30 12 51 12C45 25 36 36 22 45Z" fill="#E02424"/>
+          <rect x="9" y="41" width="36" height="11" rx="5.5" fill="#FFFFFF"/>
+          <circle cx="51" cy="12" r="7" fill="#FFFFFF"/>
+          <circle cx="49" cy="10" r="2.4" fill="#E9EDFF"/>
+        </svg>
+      </span>
+      <span class="xmas-flakes" aria-hidden="true">❄ ❄ ❄</span>
       <span class="absolute bottom-0 left-0 right-0 z-10 p-4 pt-10 bg-gradient-to-t from-black/60 to-transparent text-white text-left"><small class="block uppercase tracking-wider opacity-80 text-xs">${esc(s.tag)}</small><b class="text-lg">${esc(s.name)}</b></span>
     </a>`).join('')}
     <button type="button" data-hero-prev aria-label="Anterior" class="hero-slider__arrow hero-slider__arrow--prev">‹</button>
@@ -280,18 +286,11 @@ function reworkHome(doc, products = []) {
   // Tira de marcas: divisora fina, logos con tipografía y tamaños uniformes.
   const brands = [...doc.querySelectorAll('section')].find(s => /Marcas Oficiales y Partners/i.test(s.textContent || ''))
   if (brands) {
-    const MARCAS = [
-      ['Apple', 'Auth Reseller'], ['SONY', 'Official'], ['SAMSUNG', ''],
-      ['NVIDIA', 'GeForce Partner'], ['ASUS ROG', ''], ['logitech G', ''],
-      ['Kingston FURY', ''], ['intel', 'Gold'], ['Lenovo', ''],
-    ]
+    const MARCAS = ['Apple', 'SONY', 'SAMSUNG', 'NVIDIA', 'ASUS ROG', 'logitech G', 'Kingston FURY', 'intel', 'Lenovo']
     brands.className = 'w-full px-margin py-2 bg-surface-subtle border-y border-border-subtle'
-    brands.innerHTML = `<div class="w-full flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+    brands.innerHTML = `<div class="w-full flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
       <span class="font-label-sm text-label-sm font-bold uppercase tracking-wider text-on-surface-variant whitespace-nowrap">Marcas</span>
-      ${MARCAS.map(([n, t]) => `<div class="flex items-center gap-1.5 shrink-0">
-        <span class="font-label-md text-label-md font-bold tracking-tight text-on-surface-variant whitespace-nowrap">${esc(n)}</span>
-        ${t ? `<span class="font-label-sm text-label-sm text-primary bg-surface-pure px-1.5 py-0.5 rounded whitespace-nowrap">${esc(t)}</span>` : ''}
-      </div>`).join('')}
+      ${MARCAS.map(n => `<span class="font-label-md text-label-md font-bold tracking-tight text-on-surface-variant whitespace-nowrap">${esc(n)}</span>`).join('')}
     </div>`
   }
 
@@ -349,6 +348,7 @@ function buildCatalog(products = [], categorias = []) {
 
 export function hydrateStitch(doc, { products = [], categorias = [] } = {}) {
   normalizeCopy(doc)
+  replaceLogo(doc)
   simplifyStitch(doc)
   addSearch(doc)
   seasonalAndHero(doc, products)
