@@ -100,7 +100,9 @@ export async function handleWebhook(reqBody) {
   if (!accessToken) {
     throw new Error('MERCADOPAGO_ACCESS_TOKEN no configurado')
   }
-  const mpResp = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}?access_token=${accessToken}`)
+  const mpResp = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+    headers: { Authorization: `Bearer ${accessToken}`, Accept: 'application/json' },
+  })
   if (!mpResp.ok) {
     throw new Error(`Error al obtener pago ${paymentId}: ${mpResp.status}`)
   }
