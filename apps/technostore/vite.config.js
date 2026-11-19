@@ -3,9 +3,10 @@ import react from '@vitejs/plugin-react'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const API_TARGET = process.env.VITE_API_TARGET || 'http://localhost:3001'
 export default defineConfig({
   plugins: [react()],
   root: __dirname,
   build: { outDir: path.join(__dirname, 'dist') },
-  server: { proxy: { '/api': 'http://localhost:3001' } },
+  server: { proxy: { '/api': API_TARGET } },
 })
