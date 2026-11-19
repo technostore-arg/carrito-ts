@@ -80,16 +80,67 @@ function seasonalAndHero(doc, products = []) {
   }
 }
 
+function reworkHome(doc, products = []) {
+  // 1) Sacar reclamos no respaldados (cuotas fijas / envío en el día).
+  for (const el of [...doc.querySelectorAll('span, div, p, li, a')]) {
+    const t = (el.textContent || '').trim()
+    const claim = /12 (cuotas|Cuotas)|Hasta 12|15% OFF|Envío Prioritario|Despacho Prioritario|Despachos prioritarios|Entrega Inmediata|envíos en el día/i.test(t)
+    if (!claim) continue
+    if (el.children.length === 0 || (t.length < 140 && el.children.length < 3)) el.remove()
+  }
+  for (const h of doc.querySelectorAll('h2, h3')) {
+    if (/Más Vendidos/i.test(h.textContent || '')) h.textContent = 'Productos destacados'
+  }
+
+  // 2) Hero chico con carrusel de imágenes de productos reales.
+  const hero = doc.querySelector('section')
+  if (hero && products.length) {
+    hero.classList.add('hero-compact')
+    const media = hero.querySelector('img[data-alt], video')
+    if (media) {
+      const wrap = doc.createElement('div')
+      wrap.setAttribute('data-stitch-carousel', '')
+      wrap.className = 'w-full'
+      const featured = products.filter(p => Number(p.precio_transferencia ?? p.precio) > 0).slice(0, 8)
+      wrap.innerHTML = `<div class="flex items-center justify-between mb-2"><span class="font-label-sm font-bold uppercase tracking-wider text-primary">Lo que vendemos</span><div class="flex gap-1"><button type="button" data-carousel="prev" aria-label="Anterior" class="w-8 h-8 rounded-lg bg-surface-container text-on-surface">‹</button><button type="button" data-carousel="next" aria-label="Siguiente" class="w-8 h-8 rounded-lg bg-primary-container text-on-primary">›</button></div></div><div data-carousel-track class="flex gap-3 overflow-x-auto pb-2">${featured.map(p => `<button type="button" class="shrink-0 w-36 rounded-xl bg-surface-pure border border-border-subtle p-2" data-path="detalle-de-producto" data-sku="${esc(p.sku)}"><img class="w-full h-24 object-contain bg-surface-container-low rounded-lg" src="${esc(p.imagenes?.[0] || '')}" alt=""></button>`).join('')}</div>`
+      media.replaceWith(wrap)
+    }
+  }
+
+  // 3) Marcas como tira divisoria fina (no un bloque).
+  const footerStrip = doc.querySelector('footer .bg-surface-subtle')
+  if (footerStrip) {
+    footerStrip.className = footerStrip.className.replace(/\bpy-6\b/, 'py-2')
+    for (const el of footerStrip.querySelectorAll('h4, p, .text-2xl')) el.remove()
+  }
+
+  // 4) CyberTrust al final, antes del footer.
+  const trust = [...doc.querySelectorAll('section')].find(s => /Seguridad de nivel corporativo/i.test(s.textContent || ''))
+  const footer = doc.querySelector('footer')
+  if (trust && footer) { trust.remove(); footer.before(trust) }
+}
+
 export function hydrateStitch(doc, { products = [], categorias = [] } = {}) {
   simplifyStitch(doc)
   addSearch(doc)
   seasonalAndHero(doc, products)
+  reworkHome(doc, products)
   // Categorías reales en la grilla de "Categorías Populares"
   const catSection = [...doc.querySelectorAll('section')].find(s => /Explor.*Categor/i.test(s.textContent || ''))
   if (catSection && categorias.length) {
     const grid = catSection.querySelector('div.grid')
     if (grid) {
-      const cats = categorias.filter(c => c.id !== 'todos').slice(0, 6)
+      const counts = new Map()
+      for (const p of products) counts.set(p.categoria, (counts.get(p.categoria) || 0) + 1)
+      const prefer = ['hardware', 'computadoras', 'memorias', 'almacenamiento', 'perifericos', 'audio', 'imagen', 'gpus']
+      const cats = categorias
+        .filter(c => c.id !== 'todos')
+        .sort((a, b) => {
+          const pa = prefer.indexOf(a.id), pb = prefer.indexOf(b.id)
+          if (pa !== -1 || pb !== -1) return (pa === -1 ? 99 : pa) - (pb === -1 ? 99 : pb)
+          return (counts.get(b.id) || 0) - (counts.get(a.id) || 0)
+        })
+        .slice(0, 6)
       grid.innerHTML = cats.map(c => {
         const items = products.filter(p => p.categoria === c.id)
         return categoryCard(c, items[0]?.imagenes?.[0], items.length)
