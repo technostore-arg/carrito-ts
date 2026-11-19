@@ -34,6 +34,8 @@ export default function App() {
   const [authSession, setAuthSession] = useState(null)
   const [stitchCatalog, setStitchCatalog] = useState(true)
   const [stitchExtra, setStitchExtra] = useState(null)
+  const [stitchMode, setStitchMode] = useState(true)
+  const [stitchScreen, setStitchScreen] = useState('home')
 
   // El wrapper de Neon canjea el neon_auth_session_verifier al llamar getSession.
   // Guardamos la sesión en la app para que el modal la vea apenas vuelve de Google.
@@ -310,7 +312,7 @@ export default function App() {
 
   return (
     <div>
-      {!stitchCatalog && <Header
+      {!stitchMode && <Header
         search={q}
         onSearchChange={setQ}
         activeCategory={categoria}
@@ -325,25 +327,43 @@ export default function App() {
         onSeeAllResults={scrollToCatalog}
       />}
 
+      {stitchMode ? (
+        <>
+          <StitchView
+            inline
+            name={stitchScreen}
+            products={allProducts}
+            categorias={categorias}
+            onAction={(action) => {
+              if (action === 'cart') setDrawerOpen(true)
+              if (action === 'account') setAuthOpen(true)
+              if (action === 'catalog') setStitchScreen('catalogo-filtros')
+            }}
+            onProduct={(sku) => {
+              const p = allProducts.find(x => x.sku === sku)
+              if (p) openProduct(p)
+            }}
+            onAdd={(sku) => {
+              const p = allProducts.find(x => x.sku === sku)
+              if (p) addToCart(p)
+            }}
+          />
+          <button className="stitch-switch" onClick={() => setStitchMode(false)}>Ver UI funcional</button>
+        </>
+      ) : (
+        <>
       <main>
-        <StitchHome
+        <Home
+          products={allProducts}
+          categorias={categorias}
           onExplore={scrollToCatalog}
-          onOpenCart={() => setDrawerOpen(true)}
-          onAccount={() => setAuthOpen(true)}
+          onSelectCategory={handleSelectCategory}
+          onOpenProduct={openProduct}
+          onAddToCart={addToCart}
         />
         {source !== null && categoria === "todos" && marcas.length === 0 && !qDebounced.trim() && (
           <AppleSpotlight products={allProducts} onOpen={openProduct} onVerTodos={handleApple} />
         )}
-        {stitchCatalog ? (
-          <>
-            <StitchView inline name="catalogo-filtros" onAction={(action) => {
-              if (action === 'cart') setDrawerOpen(true)
-              if (action === 'account') setAuthOpen(true)
-              if (action === 'catalog') setStitchCatalog(false)
-            }} />
-            <button className="stitch-switch" onClick={() => setStitchCatalog(false)}>Ver catálogo funcional</button>
-          </>
-        ) : (
         <section id="catalogo" className="container">
           {source !== null && allProducts.length === 0 ? (
             <div className="catalog-empty">
@@ -381,14 +401,13 @@ export default function App() {
             </>
           )}
         </section>
-        )}
-        <button className="stitch-switch" onClick={() => setStitchCatalog(true)}>Ver diseño Stitch</button>
       </main>
-
-      {!stitchCatalog && <Footer onSelectCategory={handleSelectCategory} />}
-      {!stitchCatalog && <WhatsAppFloat />}
-
-      {!stitchCatalog && <MobileCartBar onOpenCart={() => setDrawerOpen(true)} onCheckout={openCheckout} />}
+      <Footer onSelectCategory={handleSelectCategory} />
+      <WhatsAppFloat />
+      <MobileCartBar onOpenCart={() => setDrawerOpen(true)} onCheckout={openCheckout} />
+      <button className="stitch-switch" onClick={() => setStitchMode(true)}>Ver diseño Stitch</button>
+        </>
+      )}
       <DrawerCart open={drawerOpen} onClose={() => setDrawerOpen(false)} onCheckout={openCheckout} />
       {checkoutOpen && <Checkout onClose={() => setCheckoutOpen(false)} />}
       <CustomerAuth open={authOpen} onClose={() => setAuthOpen(false)} initialError={authError} session={authSession} onSession={setAuthSession} />

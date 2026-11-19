@@ -2,8 +2,9 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { resolveStitchAction } from '../utils/stitchActions.js'
+import { hydrateStitch } from '../utils/hydrateStitch.js'
 
-export default function StitchView({ name, inline = false, onClose, onAction }) {
+export default function StitchView({ name, inline = false, products = [], categorias = [], onClose, onAction, onProduct, onAdd }) {
   const ref = useRef(null)
   const [html, setHtml] = useState('')
 
@@ -18,6 +19,7 @@ export default function StitchView({ name, inline = false, onClose, onAction }) 
         .then(text => {
           if (!alive) return
           const doc = new DOMParser().parseFromString(text, 'text/html')
+          hydrateStitch(doc, { products, categorias })
           setHtml(doc.body.innerHTML)
         })
         .catch(() => alive && setHtml(''))
@@ -25,7 +27,7 @@ export default function StitchView({ name, inline = false, onClose, onAction }) 
     load()
     mq.addEventListener('change', load)
     return () => { alive = false; mq.removeEventListener('change', load) }
-  }, [name])
+  }, [name, products, categorias])
 
   useEffect(() => {
     if (!html || !ref.current) return
@@ -36,6 +38,10 @@ export default function StitchView({ name, inline = false, onClose, onAction }) 
       const path = el.getAttribute('data-path') || ''
       const text = (el.innerText || '').toLowerCase()
       if (/cerrar|close|volver|atrás|atras/.test(text)) { e.preventDefault(); onClose?.(); return }
+      const add = el.closest('[data-add]')
+      if (add) { e.preventDefault(); onAdd?.(add.getAttribute('data-add')); return }
+      const sku = el.closest('[data-sku]')
+      if (sku) { e.preventDefault(); onProduct?.(sku.getAttribute('data-sku')); return }
       onAction?.(resolveStitchAction(path), path, el)
       if (el.tagName === 'A' && el.getAttribute('href') === '#') e.preventDefault()
     }
