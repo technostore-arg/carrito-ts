@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect, useRef } from "react"
 import Header from "./components/Header"
 import Hero from "./components/Hero"
 import Home from "./components/Home"
+import StitchHome from "./components/StitchHome"
 import FilterPanel, { rangoMatch, ORDENES, CATEGORIAS } from "./components/FilterPanel"
 import { matchCpu, matchRam, matchSsd, specOptions, CPU_LABELS, fmtCap, canonCat, buildRanges, specsForCat, normText, matchQuery, matchNameSku } from "./utils/specs"
 import { getBrand } from "./utils/brand"
@@ -322,13 +323,10 @@ export default function App() {
       />
 
       <main>
-        <Home
-          products={allProducts}
-          categorias={categorias}
+        <StitchHome
           onExplore={scrollToCatalog}
-          onSelectCategory={handleSelectCategory}
-          onOpenProduct={openProduct}
-          onAddToCart={addToCart}
+          onOpenCart={() => setDrawerOpen(true)}
+          onAccount={() => setAuthOpen(true)}
         />
         {source !== null && categoria === "todos" && marcas.length === 0 && !qDebounced.trim() && (
           <AppleSpotlight products={allProducts} onOpen={openProduct} onVerTodos={handleApple} />
