@@ -65,7 +65,44 @@
 .ts-footer__btn { font-size: var(--ts-text-sm); color: var(--ts-text-dim); background: none; border: none; text-align: left; cursor: pointer; font-family: inherit; }
 .ts-footer__btn:hover { color: var(--ts-accent); }
 .ts-footer__muted { color: var(--ts-text-faint); font-size: var(--ts-text-xs); }
-.ts-footer__copy { margin-top: var(--ts-space-8); padding-top: var(--ts-space-4); border-top: 1px solid var(--ts-border); font-size: var(--ts-text-xs); color: var(--ts-text-faint); text-align: center; }
+/* ----- Ficha de producto (Etapa 8) ----- */
+.ts-modal-backdrop { position: fixed; inset: 0; z-index: 110; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(2px); }
+.ts-modal { position: absolute; inset: 0; max-width: 1000px; max-height: 92vh; overflow: hidden; display: grid; grid-template-columns: 1fr 520px; background: var(--ts-bg-elevated); border: 1px solid var(--ts-border); border-radius: var(--ts-radius-xl); box-shadow: var(--ts-shadow-lg); }
+.ts-modal--product { min-height: 0; }
+.ts-modal-close { position: absolute; top: var(--ts-space-4); right: var(--ts-space-4); z-index: 2; }
+.ts-detail-gallery { position: relative; display: grid; gap: var(--ts-space-3); padding: var(--ts-space-5); }
+.ts-detail-gallery__main { width: 100%; height: 560px; }
+.ts-detail-gallery__thumb { width: 88px; height: 88px; }
+.ts-detail-side { padding: var(--ts-space-5); display: grid; gap: var(--ts-space-4); overflow-y: auto; }
+.ts-detail-meta { display: flex; flex-wrap: wrap; gap: var(--ts-space-2); align-items: center; }
+.ts-detail-title { font-size: var(--ts-text-2xl); font-weight: 700; line-height: var(--ts-lh-tight); }
+.ts-detail-desc { font-size: var(--ts-text-base); color: var(--ts-text-dim); max-width: 640px; }
+.ts-detail-price { display: grid; gap: var(--ts-space-2); }
+.ts-price { font-size: var(--ts-text-3xl); font-weight: 700; }
+.ts-price__alt { font-size: var(--ts-text-xl); color: var(--ts-text-dim); text-decoration: line-through; }
+.ts-price__hint { font-size: var(--ts-text-sm); color: var(--ts-text-faint); }
+.ts-detail-table { width: 100%; border-collapse: collapse; font-size: var(--ts-text-sm); }
+.ts-detail-table th, .ts-detail-table td { text-align: left; padding: var(--ts-space-2) 0; border-bottom: 1px solid var(--ts-border); }
+.ts-detail-table th { color: var(--ts-text-faint); font-weight: 600; }
+.ts-detail-table td { color: var(--ts-text); font-family: var(--ts-font-sans); }
+.ts-detail-compat { display: grid; gap: var(--ts-space-3); padding: var(--ts-space-4); background: var(--ts-bg-surface); border: 1px solid var(--ts-border); border-radius: var(--ts-radius-lg); }
+.ts-detail-compat h4 { font-size: var(--ts-text-sm); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ts-text-faint); margin: 0; }
+.ts-detail-compat__row { display: flex; justify-content: space-between; gap: var(--ts-space-3); font-size: var(--ts-text-sm); }
+.ts-detail-compat__label { color: var(--ts-text-dim); }
+.ts-detail-compat__val { color: var(--ts-text); font-family: var(--ts-font-sans); }
+.ts-detail-shipping { display: grid; gap: var(--ts-space-3); padding: var(--ts-space-4); background: var(--ts-bg-surface); border: 1px solid var(--ts-border); border-radius: var(--ts-radius-lg); }
+.ts-detail-shipping h4 { font-size: var(--ts-text-sm); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ts-text-faint); margin: 0; }
+.ts-detail-shipping__estimate { font-size: var(--ts-text-sm); color: var(--ts-text-dim); }
+.ts-detail-warranty { font-size: var(--ts-text-sm); color: var(--ts-text-dim); }
+.ts-product-cta { margin-top: var(--ts-space-4); }
+.ts-product-cta-wa { display: inline-block; margin-top: var(--ts-space-2); font-size: var(--ts-text-sm); color: var(--ts-accent); }
+.ts-product-encargo { margin-top: var(--ts-space-2); font-size: var(--ts-text-sm); color: var(--ts-text-dim); }
+
+@media (max-width: 900px) {
+  .ts-modal { grid-template-columns: 1fr; position: relative; width: 100%; max-height: 96vh; }
+  .ts-detail-gallery__main { height: 280px; }
+  .ts-product-cta { position: sticky; bottom: 0; z-index: 5; margin-top: 0; }
+}
 
 /* ----- Filtros y catálogo (Etapa 7) ----- */
 .ts-catalog-shell { display: grid; grid-template-columns: 248px 1fr; gap: var(--ts-space-7); align-items: start; padding: var(--ts-space-5) var(--ts-space-6); }
