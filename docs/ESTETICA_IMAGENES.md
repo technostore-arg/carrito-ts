@@ -33,9 +33,9 @@ como el mismo azul del header y los botones. La menta se usa solo en acentos y d
 
 ## Marca
 
-- Usar el **mini logo TS** (monograma azul/menta) como sello, preferentemente dentro
-  de un badge redondo o hexagonal de menta con la "T" en trazo fino, como en la
-  referencia.
+- Usar el **mini logo**: una **T en trazo fino dentro de un rombo con esquinas
+  redondeadas**, relleno menta y trazo azul (`logo-mark.svg`). Variante blanco/negro
+  (`logo-mark-mono.svg`) para favicon y fondos claros. Es el sello de la marca.
 - No agregar sellos de certificación ("Auth Reseller", "Official", "GeForce Partner").
 
 ## Texto de connector

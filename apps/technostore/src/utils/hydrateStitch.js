@@ -74,7 +74,7 @@ function normalizeCopy(doc) {
 function replaceLogo(doc) {
   const wrap = [...doc.querySelectorAll('div.flex.items-center.gap-2')]
     .find(d => /memory/.test(d.textContent || '') && /Techno/.test(d.textContent || ''))
-  if (wrap) wrap.innerHTML = '<img src="/logo-mark.png" alt="" class="h-9 w-9 object-contain shrink-0"><span class="font-normal text-xl tracking-wide text-on-surface whitespace-nowrap">Techno<span class="text-primary-container">Store</span></span>'
+  if (wrap) wrap.innerHTML = '<img src="/logo-mark.svg" alt="" class="h-9 w-9 object-contain shrink-0"><span class="font-normal text-xl tracking-wide text-on-surface whitespace-nowrap">Techno<span class="text-primary-container">Store</span></span>'
 }
 
 function simplifyStitch(doc) {
@@ -162,7 +162,7 @@ function buildHeroSlider() {
     </a>`).join('')}
     <span class="hero-slider__frost" aria-hidden="true"></span>
     <div class="xmas-editorial" aria-label="Felices Fiestas">
-      <img src="/logo-mark.png" alt="" class="h-4 w-4 object-contain">
+      <img src="/logo-mark.svg" alt="" class="h-4 w-4 object-contain">
       <span>Felices Fiestas</span>
       <span class="xmas-editorial__sep"></span>
       <span class="xmas-editorial__brand">TechnoStore</span>
