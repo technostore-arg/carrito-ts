@@ -44,3 +44,30 @@
 .ts-nosotros__cta { display: flex; align-items: center; gap: var(--ts-space-4); margin-top: var(--ts-space-8); padding-top: var(--ts-space-5); border-top: 1px solid var(--ts-border); }
 .ts-nosotros__cta-text { font-size: var(--ts-text-md); font-weight: 500; }
 
+/* ----- Footer legal ----- */
+.ts-footer { background: var(--ts-bg-surface); border-top: 1px solid var(--ts-border); padding: var(--ts-space-9) var(--ts-space-6); }
+.ts-footer__grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--ts-space-7); }
+.ts-footer__col { display: grid; gap: var(--ts-space-3); }
+.ts-footer__brand { display: flex; gap: var(--ts-space-3); align-items: center; }
+.ts-footer__logo { height: 28px; }
+.ts-footer__title { font-size: var(--ts-text-md); font-weight: 600; color: var(--ts-text); display: block; }
+.ts-footer__text { font-size: var(--ts-text-sm); color: var(--ts-text-dim); margin: 0; line-height: var(--ts-lh-base); }
+.ts-footer__fiscal { color: var(--ts-text-dim); }
+.ts-footer__k { color: var(--ts-text-dim); }
+.ts-footer__h { font-size: var(--ts-text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ts-text-faint); margin: 0 0 var(--ts-space-2); }
+.ts-footer__ul { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--ts-space-2); }
+.ts-footer__a { font-size: var(--ts-text-sm); color: var(--ts-text-dim); }
+.ts-footer__a:hover { color: var(--ts-accent); }
+.ts-footer__wa { font-size: var(--ts-text-sm); font-weight: 600; color: var(--ts-accent); display: inline-flex; align-items: center; gap: var(--ts-space-2); }
+.ts-footer__wa-num { color: var(--ts-text-dim); font-weight: 500; }
+.ts-footer__payments span { font-size: var(--ts-text-sm); color: var(--ts-text-dim); }
+.ts-footer__payments .ts-footer__a { display: inline-block; font-weight: 600; }
+.ts-footer__btn { font-size: var(--ts-text-sm); color: var(--ts-text-dim); background: none; border: none; text-align: left; cursor: pointer; font-family: inherit; }
+.ts-footer__btn:hover { color: var(--ts-accent); }
+.ts-footer__muted { color: var(--ts-text-faint); font-size: var(--ts-text-xs); }
+.ts-footer__copy { margin-top: var(--ts-space-8); padding-top: var(--ts-space-4); border-top: 1px solid var(--ts-border); font-size: var(--ts-text-xs); color: var(--ts-text-faint); text-align: center; }
+
+@media (max-width: 900px) {
+  .ts-footer__grid { grid-template-columns: 1fr 1fr; }
+}
+
