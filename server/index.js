@@ -518,6 +518,9 @@ app.post('/api/borradores/:id/recalcular', auth, async (req, res) => {
 app.post('/api/consultas', async (req, res) => {
   try {
     const { sku, nombre, marca, telefono, mensaje } = req.body || {}
+    if (!String(telefono || '').trim()) return res.status(400).json({ error: 'Telefono requerido' })
+    if (!String(nombre || '').trim()) return res.status(400).json({ error: 'Nombre requerido' })
+    if (!String(mensaje || '').trim()) return res.status(400).json({ error: 'Mensaje requerido' })
     const id = await createConsulta({ sku, nombre, marca, telefono, mensaje, origen: 'whatsapp' })
     res.status(201).json({ ok: true, id })
   } catch (e) {
