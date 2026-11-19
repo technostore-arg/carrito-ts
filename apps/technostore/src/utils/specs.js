@@ -149,7 +149,7 @@ export function matchSsd(p, gb) {
 
 // Opciones dinámicas según catálogo
 export function specOptions(products) {
-  const cpus = new Map(), rams = new Set(), ssds = new Set()
+  const cpus = new Map(), rams = new Set(), ssds = new Set(), vrams = new Set()
   for (const p of products) {
     const f = cpuFamily(cpuOf(p))
     if (f) cpus.set(f, (CPU_LABELS[f] || f))
@@ -157,13 +157,22 @@ export function specOptions(products) {
     if (r != null) rams.add(r)
     const s = ssdOf(p)
     if (s != null) ssds.add(s)
+    const v = Number(p?.vram)
+    if (Number.isFinite(v) && v > 0) vrams.add(v)
   }
   const order = ['intel-i3', 'intel-i5', 'intel-i7', 'intel-i9', 'intel-ultra', 'intel-base', 'amd-r3', 'amd-r5', 'amd-r7', 'amd-r9', 'snapdragon', 'apple', 'otro']
   return {
     cpus: [...cpus.keys()].sort((a, b) => order.indexOf(a) - order.indexOf(b)).map(id => ({ id, label: cpus.get(id) })),
     rams: [...rams].sort((a, b) => a - b),
     ssds: [...ssds].sort((a, b) => a - b),
+    vrams: [...vrams].sort((a, b) => a - b),
   }
+}
+
+export function matchVram(p, gb) {
+  if (!gb) return true
+  const v = Number(p?.vram)
+  return Number.isFinite(v) && v === Number(gb)
 }
 
 export function fmtCap(gb) {
@@ -242,6 +251,8 @@ export const SPECS_FOR_CAT = {
   celulares: ['ram', 'ssd'],
   memorias: ['ram'],
   almacenamiento: ['ssd'],
+  gpus: ['vram', 'ssd'],
+  hardware: ['vram', 'cpu', 'ram', 'ssd'],
 }
 export function specsForCat(catId) {
   return SPECS_FOR_CAT[canonCat(catId)] || []
