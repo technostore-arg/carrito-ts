@@ -811,7 +811,11 @@ app.patch('/api/orders/:id', auth, async (req, res) => {
     }
     if (req.body.notes !== undefined) patch.notes = req.body.notes
     if (req.body.tracking !== undefined) patch.tracking = req.body.tracking
-    if (req.body.estadoPago !== undefined) patch.estadoPago = req.body.estadoPago
+    if (req.body.estadoPago !== undefined) {
+      const v = String(req.body.estadoPago)
+      if (!validStatuses.includes(v)) return res.status(400).json({ error: 'Estado de pago inválido' })
+      patch.estadoPago = v
+    }
     if (Object.keys(patch).length === 0) {
       return res.status(400).json({ error: 'Nada que actualizar' })
     }
