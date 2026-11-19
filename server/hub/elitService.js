@@ -25,36 +25,62 @@ export class ElitApiError extends Error {
   }
 }
 
+function slug(s) {
+  return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+}
+
+/** Mapea la categoría de Elit al slug interno del hub. */
+function mapElitCategory(raw = {}) {
+  const name = `${raw.categoria ?? ''} ${raw.sub_categoria ?? ''}`.toLowerCase()
+  if (/notebook|laptop|macbook/.test(name)) return 'notebooks'
+  if (/placa de video|tarjeta gráfica|tarjeta de video|\bgpu\b/.test(name)) return 'gpus'
+  if (/memoria ram/.test(name)) return 'ram'
+  if (/ssd|nvme|disco|almacen/.test(name)) return 'almacenamiento'
+  if (/procesador|\bcpu\b/.test(name)) return 'procesadores'
+  if (/mother|placa madre/.test(name)) return 'motherboard'
+  if (/monitor/.test(name)) return 'monitores'
+  if (/celular|smartphone/.test(name)) return 'celulares'
+  if (/computadora|all in one|aio/.test(name)) return 'computadoras'
+  return slug(raw.categoria) || 'accesorios'
+}
+
 /** Campos reales del manual -> shape interno del hub. */
 export function normalizeElitItem(raw = {}) {
-  const images = Array.isArray(raw.imagenes) ? raw.imagenes : (raw.imagen ? [raw.imagen] : [])
+  const images = Array.isArray(raw.imagenes) ? raw.imagenes : (raw.uri ? [raw.uri] : [])
   const attrs = raw.atributos && typeof raw.atributos === 'object' ? raw.atributos : {}
+  const iva = Number(raw.iva)
   return {
-    supplierSku: String(raw.id ?? raw.codigo ?? raw.sku ?? raw.code ?? '').trim(),
+    supplierSku: String(raw.codigo_alfa ?? raw.codigo_producto ?? raw.id ?? '').trim(),
     ean: raw.ean ? String(raw.ean).trim() : null,
-    mpn: raw.mpn ? String(raw.mpn).trim() : null,
-    title: String(raw.nombre ?? raw.descripcion ?? raw.name ?? '').trim(),
-    brand: String(raw.marca ?? raw.brand ?? 'Genérica').trim(),
-    category: String(raw.categoria ?? raw.category ?? 'accesorios').toLowerCase().trim(),
-    subcategory: String(raw.sub_categoria ?? raw.subcategory ?? '').trim(),
-    // "precio" es la base sin markup; pvp_* es el sugerido de venta.
-    costAmount: Number(raw.precio ?? raw.pvp_usd ?? raw.pvp_ars) || 0,
-    costCurrency: String(raw.moneda ?? raw.currency ?? 'USD').toUpperCase(),
-    costArs: Number(raw.pvp_ars ?? raw.precio_ars) || 0,
+    mpn: raw.codigo_producto ? String(raw.codigo_producto).trim() : null,
+    title: String(raw.nombre ?? '').trim(),
+    brand: String(raw.marca ?? 'Genérica').trim(),
+    category: mapElitCategory(raw),
+    subcategory: String(raw.sub_categoria ?? '').trim(),
+    // "precio" es la base sin markup (USD); pvp_* es el sugerido con markup.
+    costAmount: Number(raw.precio) || 0,
+    costCurrency: 'USD',
+    costArs: Number(raw.pvp_ars) || 0,
     listPriceArs: Number(raw.pvp_ars) || 0,
     listPriceUsd: Number(raw.pvp_usd) || 0,
-    rawStock: Math.max(0, Math.floor(Number(raw.stock_total ?? raw.stock ?? raw.stock_actual) || 0)),
+    vatRate: Number.isFinite(iva) && iva > 0 ? iva / 100 : null,
+    markup: Number(raw.markup) || 0,
+    exchangeRate: Number(raw.cotizacion) || null,
+    rawStock: Math.max(0, Math.floor(Number(raw.stock_total ?? 0) || 0)),
     stockByWarehouse: {
       cd: Number(raw.stock_deposito_cd) || 0,
       cliente: Number(raw.stock_deposito_cliente) || 0,
     },
     stockLevel: String(raw.nivel_stock ?? '').toLowerCase() || null,
     warranty: raw.garantia ?? null,
-    imageUrl: images[0] || raw.imagen_url || raw.imagen || null,
+    imageUrl: images[0] || raw.uri || null,
     images,
     attributes: attrs,
+    description: String(raw.descripcion ?? '').trim(),
     link: raw.link ?? null,
-    updatedAt: raw.actualizado ?? null,
+    weightKg: Number(raw.peso) || null,
+    updatedAt: raw.actualizado_iso ?? raw.actualizado ?? null,
     raw,
   }
 }
@@ -129,6 +155,7 @@ export function createElitClient(opts = {}) {
       items: items.length,
       sample: items[0] ? Object.keys(items[0]) : null,
       firstItemPreview: items[0] ? JSON.stringify(items[0]).slice(0, 500) : null,
+      paginador: data?.paginador ?? null,
     }
     return data
   }

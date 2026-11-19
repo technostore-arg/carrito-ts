@@ -15,10 +15,10 @@ function masterFromItem(item, config) {
     title: item.title || item.supplierSku,
     brand: item.brand || 'Genérica',
     category: item.category || 'accesorios',
-    vatRate: vatRateFor(item.category, config),
+    vatRate: item.vatRate ?? vatRateFor(item.category, config),
     staticData: {
-      descripcion: item.title || '',
-      imagenes: item.imageUrl ? [item.imageUrl] : [],
+      descripcion: item.description || '',
+      imagenes: item.images || [],
       fuente_origen: 'elit',
     },
   }

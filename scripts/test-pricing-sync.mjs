@@ -162,7 +162,8 @@ assert.equal(client.mode, 'fixture')
 const catalog = await client.getCatalog()
 assert.equal(catalog.length, 8)
 assert.equal(normalizeElitItem({ codigo: 'X', precio_usd: 10, stock: 2 }).costCurrency, 'USD')
-assert.equal(normalizeElitItem({ codigo: 'X', precio: 10, moneda: 'ARS' }).costCurrency, 'ARS')
+assert.equal(normalizeElitItem({ codigo: 'X', precio: 10, moneda: 'ARS' }).costCurrency, 'USD')
+assert.equal(normalizeElitItem({ codigo: 'X', precio: 10 }).costAmount, 10)
 
 /* 10. Workers con repo en memoria */
 const repo = createMemoryRepo()
@@ -170,20 +171,20 @@ const catalogResult = await syncElitCatalog({ client, repo })
 assert.equal(catalogResult.processed, 8)
 assert.equal(repo.masters.size, 8)
 assert.equal(catalogResult.quarantined, 1) // EL-1004 costo 0
-const mNotebook = await repo.findMaster({ supplierSku: 'EL-1001' })
+const mNotebook = await repo.findMaster({ supplierSku: 'NB-LENVSLIM3' })
 assert.equal(mNotebook.vatRate, VAT_CORE)
-const mAccesorio = await repo.findMaster({ supplierSku: 'EL-1003' })
+const mAccesorio = await repo.findMaster({ supplierSku: 'MS-GENBT' })
 assert.equal(mAccesorio.vatRate, VAT_GENERAL)
 
 // Simulamos un costo anterior alto para probar el guard de caída.
-await repo.upsertListing(mNotebook.id, { supplierCode: 'ELIT', supplierSku: 'EL-1001', costAmount: 1500, costCurrency: 'USD', rawStock: 7 })
+await repo.upsertListing(mNotebook.id, { supplierCode: 'ELIT', supplierSku: 'NB-LENVSLIM3', costAmount: 1500, costCurrency: 'USD', rawStock: 7 })
 const stockResult = await syncElitStockAndPrices({ client, repo })
 assert.equal(stockResult.processed, 8)
-assert.ok(stockResult.quarantined >= 2) // costo 0 + caída >40%
+assert.ok(stockResult.quarantined >= 2) // costo 0 (RM-CRUCIAL16GB) + caída >40%
 assert.equal(repo.logs.length, 2)
 const qElit = computeQuote({
-  master_product: master('ram', 'ELIT-EL-1005'),
-  supplier_listings: [await repo.findListing('ELIT', 'EL-1005')],
+  master_product: master('ram', 'ELIT-GP-ASUSRTX4060'),
+  supplier_listings: [await repo.findListing('ELIT', 'GP-ASUSRTX4060')],
   pricing_config: config,
 })
 assert.equal(qElit.stock, 4)

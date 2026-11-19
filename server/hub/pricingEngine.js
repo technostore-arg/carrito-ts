@@ -23,6 +23,7 @@ export const CORE_HARDWARE_CATEGORIES = new Set([
   'notebooks', 'notebook', 'laptops', 'procesadores', 'cpu', 'cpus',
   'motherboard', 'motherboards', 'mothers', 'ram', 'ram-sodimm', 'memorias',
   'ssd', 'ssd-nvme', 'ssd-sata', 'almacenamiento', 'discos', 'storage',
+  'computadoras',
 ])
 
 export const DEFAULT_CONFIG = Object.freeze({

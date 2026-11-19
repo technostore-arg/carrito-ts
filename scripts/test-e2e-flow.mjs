@@ -195,23 +195,23 @@ assert.equal(sync.quarantined, 1) // EL-1004 costo 0
 /* 2. Catálogo público + /live */
 const catalog = buildPublicCatalog(await repo.getHubBatch({ limit: 50 }))
 // 8 fichas: 1 en cuarentena (costo 0), 2 sin stock publicable (stock 2 y 0).
-assert.equal(catalog.length, 5)
-const nb = catalog.find(p => p.sku === 'ELIT-EL-1001')
+assert.equal(catalog.length, 4)
+const nb = catalog.find(p => p.sku === 'ELIT-NB-LENVSLIM3')
 assert.ok(nb && nb.precio_transferencia > 0)
 assert.equal(nb.stock_source, 'supplier')
 assert.equal(nb.dispatch, undefined) // shape API; el front deriva el badge
-const liveInput = await repo.findMasterBySkuOrEan('ELIT-EL-1001')
+const liveInput = await repo.findMasterBySkuOrEan('ELIT-NB-LENVSLIM3')
 const live = computeQuote(liveInput)
 assert.equal(live.price_transfer, nb.precio_transferencia)
 assert.equal(live.stock_source, 'supplier')
 
 /* 3. Venta Web: servidor recalcula precio, envío y reserva stock Elit */
-const elitStock = () => { const l = [...repo.s.listings.values()].find(x => (x.supplier_sku || x.supplierSku) === 'EL-1001'); return Number(l.raw_stock ?? l.rawStock) }
+const elitStock = () => { const l = [...repo.s.listings.values()].find(x => (x.supplier_sku || x.supplierSku) === 'NB-LENVSLIM3'); return Number(l.raw_stock ?? l.rawStock) }
 const before = Number(elitStock())
 const web = await placeWebOrder({
   repo,
   customer: { name: 'Juan Perez', email: 'juan@test.com', cp: '1424', tipoEntrega: 'envio' },
-  items: [{ id: 'ELIT-EL-1001', nombre: 'PRECIO FALSO', qty: 1, precio: 1 }],
+  items: [{ id: 'ELIT-NB-LENVSLIM3', nombre: 'PRECIO FALSO', qty: 1, precio: 1 }],
   couponCode: 'BIENVENIDA10',
 })
 assert.equal(web.items[0].precio, live.price_transfer)
