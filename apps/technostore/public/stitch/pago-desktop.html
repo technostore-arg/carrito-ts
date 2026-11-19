@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "surface-variant": "#dce2f7",
+          "on-error-container": "#93000a",
+          "background": "#f9f9ff",
+          "error": "#ba1a1a",
+          "secondary": "#006d2f",
+          "outline-variant": "#c2c6d8",
+          "surface-subtle": "#F8F9FA",
+          "surface-tint": "#0054d6",
+          "on-secondary": "#ffffff",
+          "secondary-fixed-dim": "#3de273",
+          "primary-container": "#0066ff",
+          "primary": "#0050cb",
+          "tertiary": "#a33200",
+          "on-primary-container": "#f8f7ff",
+          "surface-container-low": "#f1f3ff",
+          "trust-shield": "#0B192C",
+          "surface-bright": "#f9f9ff",
+          "on-primary": "#ffffff",
+          "surface-pure": "#FFFFFF",
+          "tertiary-fixed": "#ffdbd0",
+          "inverse-surface": "#293040",
+          "surface-container-lowest": "#ffffff",
+          "on-secondary-fixed-variant": "#005322",
+          "inverse-primary": "#b3c5ff",
+          "inverse-on-surface": "#edf0ff",
+          "on-tertiary": "#ffffff",
+          "on-secondary-container": "#007232",
+          "outline": "#727687",
+          "on-tertiary-container": "#fff6f4",
+          "surface-dim": "#d3daef",
+          "border-subtle": "#E5E7EB",
+          "on-error": "#ffffff",
+          "surface": "#f9f9ff",
+          "surface-container-highest": "#dce2f7",
+          "primary-fixed-dim": "#b3c5ff",
+          "tertiary-container": "#cc4204",
+          "status-danger": "#EF4444",
+          "surface-container-high": "#e1e8fd",
+          "on-primary-fixed-variant": "#003fa4",
+          "surface-container": "#e9edff",
+          "secondary-container": "#5dfd8a",
+          "on-tertiary-fixed": "#390c00",
+          "on-tertiary-fixed-variant": "#832600",
+          "on-surface-variant": "#424656",
+          "tertiary-fixed-dim": "#ffb59d",
+          "on-primary-fixed": "#001849",
+          "on-secondary-fixed": "#002109",
+          "primary-fixed": "#dae1ff",
+          "on-background": "#141b2b",
+          "status-warning": "#F59E0B",
+          "secondary-fixed": "#66ff8e",
+          "on-surface": "#141b2b",
+          "error-container": "#ffdad6"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "margin": "2rem",
+          "space-lg": "1.5rem",
+          "space-xs": "0.25rem",
+          "space-sm": "0.5rem",
+          "margin-mobile": "1rem",
+          "space-xl": "2.5rem",
+          "space-md": "1rem",
+          "gutter": "1.5rem",
+          "gutter-mobile": "1rem"
+        },
+        "fontFamily": {
+          "label-lg": ["Inter"],
+          "headline-lg": ["Inter"],
+          "label-sm": ["Inter"],
+          "display-hero": ["Inter"],
+          "headline-lg-mobile": ["Inter"],
+          "body-md": ["Inter"],
+          "display-hero-mobile": ["Inter"],
+          "body-sm": ["Inter"],
+          "headline-md": ["Inter"],
+          "headline-sm": ["Inter"],
+          "label-md": ["Inter"],
+          "price-total": ["Inter"],
+          "body-lg": ["Inter"]
+        },
+        "fontSize": {
+          "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+          "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+          "label-sm": ["11px", {"lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "700"}],
+          "display-hero": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.03em", "fontWeight": "800"}],
+          "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "700"}],
+          "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+          "display-hero-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+          "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+          "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600"}],
+          "headline-sm": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+          "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+          "price-total": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+          "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+        }
+      }
+    }
+  }</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><header class="fixed top-0 w-full z-50 bg-surface-pure/95 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-20 w-full px-gutter flex items-center justify-between"><div class="flex items-center gap-space-lg"><a class="flex items-center gap-space-sm group" data-path="cart-review" href="#"><div class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container shadow-sm"><span class="material-symbols-outlined text-[24px]">bolt</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight leading-none">Techno<span class="text-primary-container">Store</span></span><span class="font-label-sm text-label-sm text-outline tracking-wider uppercase mt-1">Authorized Tech Partner</span></div></a><div class="hidden md:flex items-center gap-space-sm pl-space-lg bg-surface-subtle/80 px-space-md py-1.5 rounded-full"><span class="material-symbols-outlined text-secondary text-[18px]">lock</span><span class="font-label-md text-label-md text-on-surface font-semibold">Checkout Seguro SSL 256-bit</span><div class="flex items-center gap-1.5 pl-space-xs"><span class="w-2 h-2 rounded-full bg-secondary-container animate-pulse"></span><span class="font-label-sm text-label-sm text-secondary font-bold uppercase tracking-wider">Cifrado Activo</span></div></div></div><nav class="hidden lg:flex items-center gap-space-md" data-active-classes="bg-surface-container text-primary font-bold rounded-lg"><a class="px-space-md py-space-sm font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors rounded-lg" data-path="cart-review" href="#">Carrito</a><span class="material-symbols-outlined text-outline text-[16px]">chevron_right</span><a class="px-space-md py-space-sm font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors rounded-lg" data-path="shipping-address" href="#">Entrega</a><span class="material-symbols-outlined text-outline text-[16px]">chevron_right</span><a aria-current="page" class="px-space-md py-space-sm transition-colors bg-surface-container text-primary font-bold rounded-lg" data-path="payment-method" href="#">Pago Seguro</a></nav><div class="flex items-center gap-space-md"><div class="hidden sm:flex flex-col items-end"><span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Soporte Inmediato</span><a class="flex items-center gap-1.5 font-label-md text-label-md text-secondary hover:underline" data-path="help-center" href="#"><span class="material-symbols-outlined text-[16px]">support_agent</span><span>0810-333-TECH (WhatsApp)</span></a></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-20 bg-surface min-h-[calc(100vh-280px)]"><div class="flex flex-col w-full">
+<!-- Stepper & Top Security Strip -->
+<div class="w-full bg-surface-container-low px-gutter py-space-md">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-space-md">
+<!-- Checkout Stepper -->
+<div class="flex items-center gap-space-sm sm:gap-space-md">
+<!-- Step 1: Completed -->
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-semibold">1. Envío Registrado</span>
+</div>
+<span class="w-6 sm:w-10 h-0.5 bg-secondary-container"></span>
+<!-- Step 2: Active -->
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm">
+<span class="font-label-sm text-label-sm font-bold">2</span>
+</div>
+<span class="font-label-md text-label-md text-primary font-bold">2. Pago Seguro</span>
+</div>
+<span class="w-6 sm:w-10 h-0.5 bg-outline-variant"></span>
+<!-- Step 3: Pending -->
+<div class="flex items-center gap-2 opacity-50">
+<div class="w-7 h-7 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center">
+<span class="font-label-sm text-label-sm font-bold">3</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">3. Confirmación</span>
+</div>
+</div>
+<!-- Real-time session seal -->
+<div class="flex items-center gap-2 text-on-surface-variant bg-surface-pure px-3 py-1.5 rounded-full shadow-sm">
+<span class="material-symbols-outlined text-secondary text-[16px]">verified</span>
+<span class="font-label-sm text-label-sm">Sesión Encriptada Tokenizada #TX-98441-AR</span>
+</div>
+</div>
+</div>
+<!-- Security Banner Header -->
+<div class="w-full bg-trust-shield text-surface-pure px-gutter py-space-sm">
+<div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-space-xs text-center sm:text-left">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-container text-[20px]">shield_locked</span>
+<span class="font-label-md text-label-md text-surface-pure">Cifrado Bancario de Grado Militar TLS 1.3 • Certificación PCI-DSS Nivel 1</span>
+</div>
+<div class="flex items-center gap-1.5 text-secondary-container">
+<span class="w-2 h-2 rounded-full bg-secondary-container animate-pulse"></span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider font-bold">Datos de tarjeta 100% no almacenados</span>
+</div>
+</div>
+</div>
+<!-- Main Checkout Workspace (12-Column Responsive Layout) -->
+<div class="w-full max-w-7xl mx-auto px-gutter py-space-xl">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- LEFT COLUMN: Payment Methods & Input Engine (Cols 1-7) -->
+<div class="lg:col-span-7 flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-widest font-bold">Fase de Liquidación Segura</span>
+<h1 class="font-headline-md text-headline-md text-on-surface tracking-tight mt-0.5">Seleccioná tu Método de Pago</h1>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">lock</span> Protegido
+          </span>
+</div>
+<!-- ACCORDION / METHOD 1: Credit & Debit Card (Expanded State) -->
+<div class="rounded-xl bg-surface-pure shadow-sm overflow-hidden transition-all duration-300">
+<!-- Accordion Header -->
+<div class="p-space-md bg-surface-container-low flex items-center justify-between cursor-pointer">
+<div class="flex items-center gap-space-sm">
+<div class="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+<span class="w-2 h-2 rounded-full bg-surface-pure"></span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface font-bold">Tarjeta de Crédito o Débito</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Aprobación instantánea con beneficios bancarios</span>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<span class="px-2 py-0.5 rounded bg-surface-pure text-primary font-label-sm text-label-sm font-bold">Hasta 12 Cuotas</span>
+</div>
+</div>
+<!-- Card Form Content Area -->
+<div class="p-space-lg flex flex-col gap-space-lg">
+<!-- Interactive Credit Card Preview -->
+<div class="w-full relative h-48 sm:h-52 rounded-2xl bg-gradient-to-tr from-primary to-primary-container text-on-primary p-space-md sm:p-space-lg shadow-lg flex flex-col justify-between overflow-hidden">
+<!-- Geometric overlay patterns -->
+<div class="absolute -right-8 -bottom-8 w-48 h-48 rounded-full bg-surface-pure/10 pointer-events-none"></div>
+<div class="absolute -right-16 -top-16 w-40 h-40 rounded-full bg-surface-pure/5 pointer-events-none"></div>
+<div class="flex items-start justify-between z-10">
+<div class="flex items-center gap-2">
+<!-- EMV Chip Simulation -->
+<div class="w-10 h-7 rounded bg-gradient-to-br from-status-warning to-amber-200 flex items-center justify-center shadow-inner">
+<div class="w-7 h-5 border-0 bg-transparent opacity-40 flex flex-col justify-between p-0.5">
+<div class="h-0.5 bg-on-background/50 rounded"></div>
+<div class="h-0.5 bg-on-background/50 rounded"></div>
+</div>
+</div>
+<span class="material-symbols-outlined text-[24px] text-surface-pure/80">contactless</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-surface-pure/80">CyberTrust Verified</span>
+<span class="font-label-lg text-label-lg font-bold tracking-tight">PLATINUM SECURE</span>
+</div>
+</div>
+<!-- Card Number Dynamic Output -->
+<div class="z-10 py-1">
+<span class="font-headline-sm text-headline-sm tracking-widest text-surface-pure drop-shadow-sm font-mono" id="previewCardNumber">•••• •••• •••• 8492</span>
+</div>
+<div class="flex items-end justify-between z-10">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-surface-pure/70 uppercase">Titular</span>
+<span class="font-label-lg text-label-lg text-surface-pure uppercase tracking-wide truncate max-w-[200px]" id="previewCardHolder">MATIAS ALEJANDRO VAZQUEZ</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-label-sm text-label-sm text-surface-pure/70 uppercase">Vence</span>
+<span class="font-label-lg text-label-lg text-surface-pure tracking-wider font-mono" id="previewCardExpiry">08/29</span>
+</div>
+</div>
+</div>
+<!-- Inputs Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+<!-- Card Number Input -->
+<div class="sm:col-span-2 flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm text-on-surface font-semibold flex items-center justify-between" for="cardNumber">
+<span>Número de Tarjeta (16 dígitos)</span>
+<span class="text-secondary flex items-center gap-1 font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">encrypted</span> Cifrado E2E
+                  </span>
+</label>
+<div class="relative flex items-center">
+<input class="w-full h-11 pl-10 pr-12 rounded-lg bg-surface-container-lowest text-on-surface font-mono font-medium shadow-sm transition-all focus:outline-none focus:bg-surface-pure" id="cardNumber" maxlength="19" type="text" value="4519 8200 4810 8492"/>
+<span class="material-symbols-outlined text-outline absolute left-3 text-[18px]">credit_card</span>
+<span class="material-symbols-outlined text-secondary absolute right-3 text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Cardholder Name -->
+<div class="sm:col-span-2 flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm text-on-surface font-semibold" for="cardHolder">
+                  Nombre y Apellido (Exacto como figura en el plástico)
+                </label>
+<div class="relative flex items-center">
+<input class="w-full h-11 pl-10 pr-4 rounded-lg bg-surface-container-lowest text-on-surface uppercase font-medium shadow-sm transition-all focus:outline-none focus:bg-surface-pure" id="cardHolder" type="text" value="MATIAS ALEJANDRO VAZQUEZ"/>
+<span class="material-symbols-outlined text-outline absolute left-3 text-[18px]">person</span>
+</div>
+</div>
+<!-- Expiry Date -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm text-on-surface font-semibold" for="cardExpiry">
+                  Vencimiento (MM/AA)
+                </label>
+<div class="relative flex items-center">
+<input class="w-full h-11 pl-10 pr-4 rounded-lg bg-surface-container-lowest text-on-surface font-mono font-medium shadow-sm transition-all focus:outline-none focus:bg-surface-pure" id="cardExpiry" maxlength="5" placeholder="MM/AA" type="text" value="08/29"/>
+<span class="material-symbols-outlined text-outline absolute left-3 text-[18px]">calendar_month</span>
+</div>
+</div>
+<!-- Security Code CVV -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<label class="font-label-sm text-label-sm text-on-surface font-semibold" for="cardCvv">
+                    Código de Seguridad (CVV)
+                  </label>
+<div class="group relative flex items-center cursor-pointer">
+<span class="material-symbols-outlined text-outline text-[16px] hover:text-primary">help</span>
+<div class="absolute bottom-full right-0 mb-2 hidden group-hover:flex w-48 p-2 rounded-lg bg-trust-shield text-surface-pure font-label-sm text-label-sm shadow-xl z-20">
+                      Tres números al dorso de tu tarjeta de crédito o débito.
+                    </div>
+</div>
+</div>
+<div class="relative flex items-center">
+<input class="w-full h-11 pl-10 pr-4 rounded-lg bg-surface-container-lowest text-on-surface font-mono font-bold tracking-widest shadow-sm transition-all focus:outline-none focus:bg-surface-pure" id="cardCvv" maxlength="4" placeholder="123" type="password" value="584"/>
+<span class="material-symbols-outlined text-outline absolute left-3 text-[18px]">password</span>
+</div>
+</div>
+<!-- Installments Selector -->
+<div class="sm:col-span-2 flex flex-col gap-1.5">
+<label class="font-label-sm text-label-sm text-on-surface font-semibold flex items-center justify-between" for="installments">
+<span>Planes de Financiación Disponibles</span>
+<span class="text-secondary font-label-sm text-label-sm font-bold">Cuotas Sin Interés Disponibles</span>
+</label>
+<div class="relative flex items-center">
+<select class="w-full h-12 pl-10 pr-10 rounded-lg bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm appearance-none focus:outline-none focus:bg-surface-pure" id="installments">
+<option selected="">3 cuotas sin interés de $533.332,66 (Tasa Nominal Anual 0%)</option>
+<option>1 pago de $1.599.998,00 (Sin recargo)</option>
+<option>6 cuotas fijas de $312.440,20 (CFT: 38.2%)</option>
+<option>12 cuotas fijas de $189.550,10 (CFT: 44.5%)</option>
+</select>
+<span class="material-symbols-outlined text-primary absolute left-3 text-[20px]">view_timeline</span>
+<span class="material-symbols-outlined text-outline absolute right-3 text-[20px] pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Card Protection Notice -->
+<div class="flex items-center gap-space-sm p-3 rounded-lg bg-surface-container-low text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary text-[20px]">verified_user</span>
+<span class="font-body-sm text-body-sm">Tu compra incluye Validación 3D Secure / Visa Secure sin costo adicional.</span>
+</div>
+</div>
+</div>
+<!-- METHOD 2: Bank Wire / DEBIN (Incentive Offer) -->
+<div class="rounded-xl bg-surface-pure shadow-sm p-space-md flex items-center justify-between hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-space-sm">
+<div class="w-5 h-5 rounded-full bg-surface-container flex items-center justify-center">
+<span class="w-2 h-2 rounded-full bg-transparent"></span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-label-lg text-label-lg text-on-surface font-bold">Transferencia Bancaria Inmediata / DEBIN</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm font-bold animate-pulse">10% EXTRA OFF</span>
+</div>
+<span class="font-body-sm text-body-sm text-secondary font-semibold">Pagá solo $1.439.998 ARS • Acreditación automática y comprobante fiscal al instante</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[20px]">chevron_right</span>
+</div>
+<!-- METHOD 3: Openpay BBVA -->
+<div class="rounded-xl bg-surface-pure shadow-sm p-space-md flex items-center justify-between hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-space-sm">
+<div class="w-5 h-5 rounded-full bg-surface-container flex items-center justify-center">
+<span class="w-2 h-2 rounded-full bg-transparent"></span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-label-lg text-label-lg text-on-surface font-bold">Openpay BBVA</span>
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-bold">BBVA Exclusivo</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Hasta 12 cuotas sin interés y 15% de reintegro en primera compra tecnológica</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[20px]">chevron_right</span>
+</div>
+<!-- METHOD 4: SiPago Credicoop -->
+<div class="rounded-xl bg-surface-pure shadow-sm p-space-md flex items-center justify-between hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-space-sm">
+<div class="w-5 h-5 rounded-full bg-surface-container flex items-center justify-center">
+<span class="w-2 h-2 rounded-full bg-transparent"></span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-label-lg text-label-lg text-on-surface font-bold">SiPago Banco Credicoop</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-bold">Credicoop / Cabal</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Planes de cuotas bonificadas exclusivas con tarjetas Cabal y cuentas Credicoop</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[20px]">chevron_right</span>
+</div>
+<!-- METHOD 5: Mercado Pago -->
+<div class="rounded-xl bg-surface-pure shadow-sm p-space-md flex items-center justify-between hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="flex items-center gap-space-sm">
+<div class="w-5 h-5 rounded-full bg-surface-container flex items-center justify-center">
+<span class="w-2 h-2 rounded-full bg-transparent"></span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-label-lg text-label-lg text-on-surface font-bold">Mercado Pago y Mercado Crédito</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Dinero en cuenta, tarjetas guardadas o hasta 12 cuotas sin tarjeta con Mercado Crédito</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[20px]">chevron_right</span>
+</div>
+<!-- Tax Invoice A (AFIP CUIT) Accordion/Switch Toggle -->
+<div class="rounded-xl bg-surface-container-low p-space-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-lg bg-surface-pure flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-bold">¿Necesitás Factura Electrónica A?</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Para Responsables Inscriptos con CUIT validado en AFIP</span>
+</div>
+</div>
+<!-- Switch toggle -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" id="invoiceToggle" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-pure after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Hidden Drawer for Tax Input -->
+<div class="hidden pt-space-sm flex flex-col gap-2" id="taxDetailsDrawer">
+<label class="font-label-sm text-label-sm text-on-surface font-semibold" for="cuitInput">CUIT de la Empresa / Persona Jurídica</label>
+<div class="flex gap-2">
+<input class="flex-1 h-10 px-3 rounded-lg bg-surface-pure text-on-surface font-mono shadow-sm focus:outline-none" id="cuitInput" placeholder="30-71649281-9" type="text"/>
+<button class="h-10 px-4 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm font-semibold hover:bg-primary-container transition-colors">Validar AFIP</button>
+</div>
+<span class="font-label-sm text-label-sm text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Razón Social consultada en padrón fiscal en tiempo real.
+            </span>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: Order Summary & Sticky Confirmation Dock (Cols 8-12) -->
+<div class="lg:col-span-5 flex flex-col gap-space-md lg:sticky lg:top-24">
+<!-- Order Summary Card -->
+<div class="rounded-2xl bg-surface-pure shadow-md p-space-lg flex flex-col gap-space-md">
+<div class="flex items-center justify-between pb-space-sm">
+<span class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Resumen de Orden</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-bold">2 Artículos</span>
+</div>
+<!-- Compact Item Preview list -->
+<div class="flex flex-col gap-space-sm pb-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex-shrink-0 flex items-center justify-center p-1">
+<img class="w-full h-full object-contain rounded" data-alt="High-end sleek dark gray gaming laptop with illuminated mechanical keyboard against a pure white studio setup with subtle blue light reflection" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3R6aQRzZblagxzu_GxdmjH_58IETZR515kJLUU4qt0vnC0i2_mxzVhgpbkDTNALRTpXp2E85dfNBHVM18mvSuqe0VAJ8obLQiE4zWHpAczGzHHDzk_atGyMZN7mzdnH-dnAiCKEYnb490WWxIuIrwkJqHQcnUEVHIoV7biWMM6c_I3LfjLQZ7wTbjgo8HOmQLeGFRvZoQB8etQLWVr5mmWH8h70hfaLEJoQg1ywM"/>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<span class="font-label-md text-label-md text-on-surface font-bold truncate">Notebook Pro Titan 16" M3 Max</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">1x $1.499.998 • Garantía 12m</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-bold font-mono">$1.499.998</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex-shrink-0 flex items-center justify-center p-1">
+<img class="w-full h-full object-contain rounded" data-alt="Ergonomic high precision mechanical gaming mouse with graphite textured finish and subtle LED blue ambient strip on white background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgpFEBz2bPZ0vCCIt50iDNUYJUC37sPBrR712ELlMLq4Bkyqmxq8WYx40hIHz6Zn19pqAe6nPMHFh-6wATHl-zP1ChaSHprT5fofssFcGkEMJM9InxxI23GUBNBQmkzYzCabVuC7mtOchHq0sCk39LK5uSi1s96JNg2-XqfZu9LsZgAAoxcRYLZ5W0ZP4TyM5PQC1BjwKFnsUzfctrdlNL993P03Z_Qbkoq9TY40o"/>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<span class="font-label-md text-label-md text-on-surface font-bold truncate">Mouse Gamer Laser Optic 8K</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">1x $150.000 • Negro Mate</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-bold font-mono">$150.000</span>
+</div>
+</div>
+<!-- Itemized Breakdown -->
+<div class="flex flex-col gap-2 pt-space-xs">
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="font-body-sm text-body-sm">Subtotal de productos</span>
+<span class="font-body-sm text-body-sm font-mono text-on-surface">$1.649.998</span>
+</div>
+<div class="flex justify-between items-center text-secondary">
+<span class="font-body-sm text-body-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">sell</span>
+                Cupón TECH5 aplicado
+              </span>
+<span class="font-body-sm text-body-sm font-mono font-bold">-$50.000</span>
+</div>
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="font-body-sm text-body-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">local_shipping</span>
+                Envío Express Puerta a Puerta
+              </span>
+<span class="font-label-sm text-label-sm uppercase font-bold text-secondary">GRATIS</span>
+</div>
+</div>
+<!-- Total Calculation Panel -->
+<div class="p-space-md rounded-xl bg-surface-container flex flex-col gap-1">
+<div class="flex items-baseline justify-between">
+<span class="font-label-lg text-label-lg text-on-surface font-bold">TOTAL A PAGAR:</span>
+<div class="flex flex-col items-end">
+<span class="font-price-total text-price-total text-primary tracking-tight font-mono leading-none">$1.599.998</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-1">Pesos Argentinos (IVA Incluido)</span>
+</div>
+</div>
+<div class="mt-2 pt-2 flex items-center justify-between text-secondary">
+<span class="font-label-sm text-label-sm font-semibold">Plan Seleccionado:</span>
+<span class="font-label-sm text-label-sm font-bold">3 cuotas s/interés de $533.332,66</span>
+</div>
+</div>
+<!-- Master Action CTA Button -->
+<button class="w-full h-14 rounded-xl bg-primary-container text-on-primary font-headline-sm text-headline-sm font-bold flex items-center justify-center gap-space-sm shadow-lg hover:shadow-xl hover:bg-primary transition-all active:scale-[0.99] cursor-pointer" id="btnPay">
+<span class="material-symbols-outlined text-[24px]">lock</span>
+<span>Confirmar y Pagar de Forma Segura</span>
+</button>
+<!-- Under-CTA Trust Badges Mosaic -->
+<div class="flex flex-col gap-2 pt-space-xs">
+<div class="flex items-center justify-center gap-space-md text-on-surface-variant opacity-80">
+<span class="font-label-sm text-label-sm font-bold tracking-wider">VERIFIED BY VISA</span>
+<span>•</span>
+<span class="font-label-sm text-label-sm font-bold tracking-wider">MASTERCARD ID CHECK</span>
+<span>•</span>
+<span class="font-label-sm text-label-sm font-bold tracking-wider">NORTON SECURED</span>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container-low text-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant">
+                Fondos custodiados y transacciones auditadas según normativas del Banco Central de la República Argentina (BCRA).
+              </span>
+</div>
+</div>
+</div>
+<!-- Immediate Bank Assistance Callout (WhatsApp Floating Inline Card) -->
+<div class="rounded-xl bg-[#25D366]/10 p-space-md flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-[#25D366] text-surface-pure flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[22px]">chat</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-bold">¿Dudas con los límites de tu tarjeta?</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Asistente bancario TechnoStore disponible 24/7</span>
+</div>
+</div>
+<a class="px-3 py-1.5 rounded-lg bg-[#25D366] text-surface-pure font-label-sm text-label-sm font-bold hover:opacity-95 transition-opacity whitespace-nowrap" href="#">
+            Chatear
+          </a>
+</div>
+</div>
+</div>
+</div>
+<!-- Interactive Client-side Script for Card Mirroring and Accordion -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Dynamic Card Mirroring
+      const numInput = document.getElementById('cardNumber');
+      const holderInput = document.getElementById('cardHolder');
+      const expiryInput = document.getElementById('cardExpiry');
+
+      const prevNum = document.getElementById('previewCardNumber');
+      const prevHolder = document.getElementById('previewCardHolder');
+      const prevExpiry = document.getElementById('previewCardExpiry');
+
+      if (numInput && prevNum) {
+        numInput.addEventListener('input', (e) => {
+          let val = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+          let matches = val.match(/\d{4,16}/g);
+          let match = matches && matches[0] || '';
+          let parts = [];
+          for (let i=0, len=match.length; i<len; i+=4) {
+            parts.push(match.substring(i, i+4));
+          }
+          if (parts.length) {
+            e.target.value = parts.join(' ');
+          }
+          prevNum.textContent = e.target.value || '•••• •••• •••• 8492';
+        });
+      }
+
+      if (holderInput && prevHolder) {
+        holderInput.addEventListener('input', (e) => {
+          prevHolder.textContent = e.target.value.toUpperCase() || 'MATIAS ALEJANDRO VAZQUEZ';
+        });
+      }
+
+      if (expiryInput && prevExpiry) {
+        expiryInput.addEventListener('input', (e) => {
+          prevExpiry.textContent = e.target.value || '08/29';
+        });
+      }
+
+      // Invoice A Drawer Toggle
+      const toggle = document.getElementById('invoiceToggle');
+      const drawer = document.getElementById('taxDetailsDrawer');
+      if (toggle && drawer) {
+        toggle.addEventListener('change', () => {
+          if (toggle.checked) {
+            drawer.classList.remove('hidden');
+          } else {
+            drawer.classList.add('hidden');
+          }
+        });
+      }
+
+      // CTA Processing State Micro-interaction
+      const btnPay = document.getElementById('btnPay');
+      if (btnPay) {
+        btnPay.addEventListener('click', () => {
+          btnPay.innerHTML = `
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Verificando Credenciales Bancarias...</span>
+          `;
+          btnPay.classList.add('pointer-events-none', 'opacity-90');
+          setTimeout(() => {
+            btnPay.innerHTML = `
+              <span class="material-symbols-outlined text-[24px]">check_circle</span>
+              <span>¡Pago Aprobado con Éxito!</span>
+            `;
+            btnPay.classList.remove('bg-primary-container');
+            btnPay.classList.add('bg-secondary');
+          }, 1800);
+        });
+      }
+    });
+  </script>
+</div></main><footer class="w-full bg-surface-subtle shadow-[0_-1px_6px_rgba(0,0,0,0.03)]"><div class="w-full px-gutter py-space-xl"><div class="grid grid-cols-1 md:grid-cols-3 gap-space-lg pb-space-lg mb-space-lg"><div class="flex items-start gap-space-md p-space-md rounded-xl bg-surface-pure shadow-[0_1px_3px_rgba(17,24,39,0.04)]"><div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[24px]">verified_user</span></div><div class="flex flex-col"><span class="font-label-lg text-label-lg text-on-surface">Garantía Oficial Directa</span><span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Productos 100% originales con respaldo del fabricante por 12 meses.</span></div></div><div class="flex items-start gap-space-md p-space-md rounded-xl bg-surface-pure shadow-[0_1px_3px_rgba(17,24,39,0.04)]"><div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[24px]">local_shipping</span></div><div class="flex flex-col"><span class="font-label-lg text-label-lg text-on-surface">Envío Asegurado a Todo el País</span><span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Custodia total de tu pedido con seguimiento en tiempo real.</span></div></div><div class="flex items-start gap-space-md p-space-md rounded-xl bg-surface-pure shadow-[0_1px_3px_rgba(17,24,39,0.04)]"><div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary"><span class="material-symbols-outlined text-[24px]">assignment_return</span></div><div class="flex flex-col"><span class="font-label-lg text-label-lg text-on-surface">Devolución Garantizada</span><span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">30 días corridos para cambios o reintegro total del importe.</span></div></div></div><div class="flex flex-col lg:flex-row items-center justify-between gap-space-md pb-space-lg mb-space-lg"><div class="flex flex-col items-center lg:items-start gap-space-xs"><span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Pasarelas de Pago Homologadas</span><div class="flex flex-wrap items-center justify-center lg:justify-start gap-space-sm mt-1"><div class="px-space-md py-1.5 bg-surface-pure rounded-lg shadow-[0_1px_2px_rgba(17,24,39,0.03)] flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[18px]">account_balance</span><span class="font-label-sm text-label-sm text-on-surface font-bold">BBVA Openpay</span></div><div class="px-space-md py-1.5 bg-surface-pure rounded-lg shadow-[0_1px_2px_rgba(17,24,39,0.03)] flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[18px]">credit_card</span><span class="font-label-sm text-label-sm text-on-surface font-bold">SiPago Credicoop</span></div><div class="px-space-md py-1.5 bg-surface-pure rounded-lg shadow-[0_1px_2px_rgba(17,24,39,0.03)] flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[18px]">payments</span><span class="font-label-sm text-label-sm text-on-surface font-bold">Mercado Pago</span></div><div class="px-space-md py-1.5 bg-surface-pure rounded-lg shadow-[0_1px_2px_rgba(17,24,39,0.03)] flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[18px]">swap_horiz</span><span class="font-label-sm text-label-sm text-on-surface font-bold">Transferencia DEBIN</span></div></div></div><div class="flex flex-col items-center lg:items-end gap-space-xs"><span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Certificaciones de Seguridad</span><div class="flex items-center gap-space-sm mt-1"><div class="px-space-md py-1.5 bg-surface-pure rounded-lg shadow-[0_1px_2px_rgba(17,24,39,0.03)] flex items-center gap-1.5"><span class="material-symbols-outlined text-secondary text-[18px]">security</span><span class="font-label-sm text-label-sm text-on-surface font-semibold">PCI-DSS Nivel 1</span></div><div class="px-space-md py-1.5 bg-surface-pure rounded-lg shadow-[0_1px_2px_rgba(17,24,39,0.03)] flex items-center gap-1.5"><span class="material-symbols-outlined text-secondary text-[18px]">enhanced_encryption</span><span class="font-label-sm text-label-sm text-on-surface font-semibold">TLS 1.3 / SSL 256-bit</span></div><div class="px-space-md py-1.5 bg-surface-pure rounded-lg shadow-[0_1px_2px_rgba(17,24,39,0.03)] flex items-center gap-1.5"><span class="material-symbols-outlined text-secondary text-[18px]">shield</span><span class="font-label-sm text-label-sm text-on-surface font-semibold">Data Defense ISO 27001</span></div></div></div></div><div class="flex flex-col md:flex-row items-center justify-between gap-space-sm pt-space-md text-on-surface-variant"><div class="flex flex-col md:flex-row items-center gap-space-sm"><span class="font-body-sm text-body-sm">© 2024 TechnoStore S.A. CUIT: 30-71649281-9.</span><span class="hidden md:inline text-outline">•</span><span class="font-body-sm text-body-sm">Av. del Libertador 6250, CABA, Argentina.</span></div><div class="flex items-center gap-space-md"><a class="font-label-md text-label-md hover:text-on-surface transition-colors" data-path="privacy-policy" href="#">Términos y Condiciones</a><span class="text-outline">•</span><a class="font-label-md text-label-md hover:text-on-surface transition-colors" data-path="data-security" href="#">Políticas de Privacidad</a><span class="text-outline">•</span><a class="font-label-md text-label-md hover:text-on-surface transition-colors" data-path="help-center" href="#">Defensa al Consumidor</a></div></div></div></footer></body></html>

@@ -3,6 +3,7 @@ import Header from "./components/Header"
 import Hero from "./components/Hero"
 import Home from "./components/Home"
 import StitchHome from "./components/StitchHome"
+import StitchView from "./components/StitchView"
 import FilterPanel, { rangoMatch, ORDENES, CATEGORIAS } from "./components/FilterPanel"
 import { matchCpu, matchRam, matchSsd, specOptions, CPU_LABELS, fmtCap, canonCat, buildRanges, specsForCat, normText, matchQuery, matchNameSku } from "./utils/specs"
 import { getBrand } from "./utils/brand"
@@ -31,6 +32,8 @@ export default function App() {
   const [authOpen, setAuthOpen] = useState(false)
   const [authError, setAuthError] = useState('')
   const [authSession, setAuthSession] = useState(null)
+  const [stitchCatalog, setStitchCatalog] = useState(true)
+  const [stitchExtra, setStitchExtra] = useState(null)
 
   // El wrapper de Neon canjea el neon_auth_session_verifier al llamar getSession.
   // Guardamos la sesión en la app para que el modal la vea apenas vuelve de Google.
@@ -307,7 +310,7 @@ export default function App() {
 
   return (
     <div>
-      <Header
+      {!stitchCatalog && <Header
         search={q}
         onSearchChange={setQ}
         activeCategory={categoria}
@@ -320,7 +323,7 @@ export default function App() {
         suggestions={searchSuggests}
         onOpenProduct={openProduct}
         onSeeAllResults={scrollToCatalog}
-      />
+      />}
 
       <main>
         <StitchHome
@@ -331,6 +334,16 @@ export default function App() {
         {source !== null && categoria === "todos" && marcas.length === 0 && !qDebounced.trim() && (
           <AppleSpotlight products={allProducts} onOpen={openProduct} onVerTodos={handleApple} />
         )}
+        {stitchCatalog ? (
+          <>
+            <StitchView inline name="catalogo-filtros" onAction={(action) => {
+              if (action === 'cart') setDrawerOpen(true)
+              if (action === 'account') setAuthOpen(true)
+              if (action === 'catalog') setStitchCatalog(false)
+            }} />
+            <button className="stitch-switch" onClick={() => setStitchCatalog(false)}>Ver catálogo funcional</button>
+          </>
+        ) : (
         <section id="catalogo" className="container">
           {source !== null && allProducts.length === 0 ? (
             <div className="catalog-empty">
@@ -368,16 +381,32 @@ export default function App() {
             </>
           )}
         </section>
+        )}
+        <button className="stitch-switch" onClick={() => setStitchCatalog(true)}>Ver diseño Stitch</button>
       </main>
 
-      <Footer onSelectCategory={handleSelectCategory} />
-      <WhatsAppFloat />
+      {!stitchCatalog && <Footer onSelectCategory={handleSelectCategory} />}
+      {!stitchCatalog && <WhatsAppFloat />}
 
-      <MobileCartBar onOpenCart={() => setDrawerOpen(true)} onCheckout={openCheckout} />
+      {!stitchCatalog && <MobileCartBar onOpenCart={() => setDrawerOpen(true)} onCheckout={openCheckout} />}
       <DrawerCart open={drawerOpen} onClose={() => setDrawerOpen(false)} onCheckout={openCheckout} />
       {checkoutOpen && <Checkout onClose={() => setCheckoutOpen(false)} />}
       <CustomerAuth open={authOpen} onClose={() => setAuthOpen(false)} initialError={authError} session={authSession} onSession={setAuthSession} />
       {selectedProduct && <ProductDetail producto={selectedProduct} onClose={() => setSelectedProduct(null)} onAddToCart={addToCart} />}
+      {(authOpen || checkoutOpen || drawerOpen || selectedProduct || stitchExtra) && (
+        <StitchView
+          name={stitchExtra || (authOpen ? 'login' : checkoutOpen ? 'pago' : drawerOpen ? 'carrito' : 'ficha')}
+          onClose={() => { setAuthOpen(false); setCheckoutOpen(false); setDrawerOpen(false); setSelectedProduct(null); setStitchExtra(null) }}
+          onAction={(action) => {
+            const closeAll = () => { setAuthOpen(false); setCheckoutOpen(false); setDrawerOpen(false); setSelectedProduct(null); setStitchExtra(null) }
+            if (action === 'catalog') { closeAll(); scrollToCatalog() }
+            if (action === 'cart') { closeAll(); setDrawerOpen(true) }
+            if (action === 'account') { closeAll(); setAuthOpen(true) }
+            if (action === 'shipping') { closeAll(); setStitchExtra('envio') }
+            if (action === 'tracking') { closeAll(); setStitchExtra('confirmacion') }
+          }}
+        />
+      )}
       {toast && <div className="toast" role="status">{toast}</div>}
     </div>
   )

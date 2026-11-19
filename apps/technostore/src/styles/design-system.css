@@ -159,3 +159,9 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 @media (prefers-reduced-motion: reduce) {
   .ds-btn, .ds-cat-card { transition: none; }
 }
+
+/* ---------- Vistas Stitch (paridad visual) ---------- */
+.stitch-overlay { position: fixed; inset: 0; z-index: 200; background: var(--ds-background); overflow-y: auto; }
+.stitch-overlay__close { position: fixed; top: 12px; right: 12px; z-index: 210; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--ds-border-subtle); background: var(--ds-surface-pure); color: var(--ds-on-surface); cursor: pointer; font-size: 16px; }
+.stitch-view { min-height: 100vh; }
+.stitch-switch { position: fixed; left: 12px; bottom: 12px; z-index: 80; background: var(--ds-trust-shield); color: #fff; border: 0; border-radius: 999px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: var(--ds-shadow-lg); }

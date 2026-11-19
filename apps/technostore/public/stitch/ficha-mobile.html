@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-error-container":"#93000a","secondary-fixed":"#66ff8e","surface-dim":"#d3daef","tertiary":"#a33200","secondary":"#006d2f","surface":"#f9f9ff","on-primary-fixed":"#001849","on-background":"#141b2b","on-secondary-fixed":"#002109","surface-bright":"#f9f9ff","error-container":"#ffdad6","primary":"#0050cb","inverse-surface":"#293040","outline-variant":"#c2c6d8","outline":"#727687","surface-subtle":"#F8F9FA","on-surface":"#141b2b","secondary-container":"#5dfd8a","primary-container":"#0066ff","background":"#f9f9ff","surface-container-high":"#e1e8fd","on-surface-variant":"#424656","primary-fixed-dim":"#b3c5ff","error":"#ba1a1a","on-tertiary-fixed-variant":"#832600","on-primary-fixed-variant":"#003fa4","on-secondary-container":"#007232","on-secondary":"#ffffff","surface-variant":"#dce2f7","tertiary-container":"#cc4204","surface-container":"#e9edff","secondary-fixed-dim":"#3de273","on-primary":"#ffffff","status-danger":"#EF4444","tertiary-fixed-dim":"#ffb59d","inverse-primary":"#b3c5ff","status-warning":"#F59E0B","border-subtle":"#E5E7EB","on-secondary-fixed-variant":"#005322","on-tertiary":"#ffffff","trust-shield":"#0B192C","on-tertiary-fixed":"#390c00","inverse-on-surface":"#edf0ff","surface-container-lowest":"#ffffff","on-primary-container":"#f8f7ff","surface-pure":"#FFFFFF","primary-fixed":"#dae1ff","surface-tint":"#0054d6","on-tertiary-container":"#fff6f4","tertiary-fixed":"#ffdbd0","on-error":"#ffffff","surface-container-highest":"#dce2f7","surface-container-low":"#f1f3ff"},borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},spacing:{"margin-mobile":"1rem","space-md":"1rem","margin":"2rem","space-xl":"2.5rem","space-sm":"0.5rem","space-xs":"0.25rem","space-lg":"1.5rem","gutter":"1.5rem","gutter-mobile":"1rem"},fontFamily:{"display-hero-mobile":["Inter"],"body-md":["Inter"],"price-total":["Inter"],"label-lg":["Inter"],"headline-lg-mobile":["Inter"],"label-md":["Inter"],"headline-lg":["Inter"],"body-sm":["Inter"],"body-lg":["Inter"],"headline-sm":["Inter"],"headline-md":["Inter"],"display-hero":["Inter"],"label-sm":["Inter"]},fontSize:{"display-hero-mobile":["32px",{lineHeight:"40px",letterSpacing:"-0.02em",fontWeight:"800"}],"body-md":["16px",{lineHeight:"24px",fontWeight:"400"}],"price-total":["28px",{lineHeight:"34px",letterSpacing:"-0.02em",fontWeight:"800"}],"label-lg":["14px",{lineHeight:"20px",letterSpacing:"0.01em",fontWeight:"600"}],"headline-lg-mobile":["24px",{lineHeight:"32px",letterSpacing:"-0.015em",fontWeight:"700"}],"label-md":["12px",{lineHeight:"16px",letterSpacing:"0.02em",fontWeight:"600"}],"headline-lg":["32px",{lineHeight:"40px",letterSpacing:"-0.02em",fontWeight:"700"}],"body-sm":["14px",{lineHeight:"20px",fontWeight:"400"}],"body-lg":["18px",{lineHeight:"28px",fontWeight:"400"}],"headline-sm":["20px",{lineHeight:"28px",letterSpacing:"-0.01em",fontWeight:"600"}],"headline-md":["24px",{lineHeight:"32px",letterSpacing:"-0.015em",fontWeight:"600"}],"display-hero":["48px",{lineHeight:"56px",letterSpacing:"-0.03em",fontWeight:"800"}],"label-sm":["11px",{lineHeight:"14px",letterSpacing:"0.04em",fontWeight:"700"}]}}}};</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col antialiased"><header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-margin-mobile flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-xs min-w-0"><button aria-label="Volver" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container-high transition-colors shrink-0" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back_ios_new</span></button><h1 class="font-headline-sm text-headline-sm text-on-surface tracking-tight truncate font-bold">Detalle De Producto</h1></div><div class="flex items-center gap-space-sm shrink-0"><div class="flex items-center gap-space-xs px-2.5 py-1 rounded-full bg-surface-container-low text-secondary font-label-md text-label-md"><span class="material-symbols-outlined text-[16px]">lock</span><span class="hidden xs:inline">256-bit SSL</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 bg-surface"><div class="flex flex-col w-full pb-32">
+<!-- Top Trust & Breadcrumb Ribbon -->
+<section class="px-margin-mobile pt-3 pb-2 flex flex-col gap-2">
+<nav aria-label="Migas de pan" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar font-label-md text-label-md text-on-surface-variant">
+<span class="hover:text-primary transition-colors cursor-pointer shrink-0">Inicio</span>
+<span class="material-symbols-outlined text-[14px] text-outline shrink-0">chevron_right</span>
+<span class="hover:text-primary transition-colors cursor-pointer shrink-0">Laptops</span>
+<span class="material-symbols-outlined text-[14px] text-outline shrink-0">chevron_right</span>
+<span class="hover:text-primary transition-colors cursor-pointer shrink-0">Apple</span>
+<span class="material-symbols-outlined text-[14px] text-outline shrink-0">chevron_right</span>
+<span class="text-on-surface font-semibold truncate">MacBook Air M2</span>
+</nav>
+<!-- Verified Authority Badges -->
+<div class="flex flex-wrap items-center gap-2 pt-1">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span>Distribuidor Oficial Apple</span>
+</div>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container/40 text-on-secondary-container font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+<span>Garantía 12 Meses</span>
+</div>
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm ml-auto">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+<span>Stock en Palermo</span>
+</div>
+</div>
+</section>
+<!-- Title & Model Header -->
+<section class="px-margin-mobile pt-2 pb-3">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight">
+      MacBook Air 13'' Chip M2
+    </h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+      256GB SSD • 8GB RAM Unificada • Colorway Signature
+    </p>
+</section>
+<!-- Interactive Image Gallery Carousel with Color Sync -->
+<section class="px-margin-mobile flex flex-col gap-3">
+<div class="relative w-full rounded-2xl bg-surface-container-lowest shadow-sm overflow-hidden aspect-[4/3] flex items-center justify-center p-3">
+<!-- Main High-Res Image Display -->
+<img alt="MacBook Air 13 M2 Vista Principal" class="w-full h-full object-contain transition-all duration-300 transform" data-alt="Front view of Apple MacBook Air 13 inch M2 in space gray aluminum chassis, open showing stunning Liquid Retina display with modern wallpaper, resting on a sleek minimalist desk, studio lighting, crisp reflections and premium aesthetic" id="main-product-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_PYqLX_lVpEtAQlyQbYO5subdUjCJLa7trx1Nt74WlMo4B-6EhgOHtmQDZSUitb2EDDWonDGqHeR7gwrykoSzZskjs36U9GxXBsfWaJppbArqdQKV-rlItuzv6WT8YUdgABkpcAVtXZcYcMiKGMcGtnsTaV0m_4DYsbOB1Jd1ayhGGCU_3lQ0mHQLm3a8N21Pk6iJn7ttU_fBik2piXrJcMVLXwXFl3VFi7Jh41I"/>
+<!-- Live Zoom/Aspect Tag -->
+<span class="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-surface/85 backdrop-blur-md text-on-surface-variant font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">photo_camera</span>
+<span id="gallery-counter">1/4</span>
+</span>
+<button aria-label="Guardar en favoritos" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-surface/85 backdrop-blur-md flex items-center justify-center text-on-surface hover:text-error transition-colors shadow-sm" id="favorite-btn" onclick="toggleFav(this)">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+<!-- Badge 100% Original Apple Seal overlay -->
+<div class="absolute bottom-3 left-3 bg-inverse-surface/90 text-inverse-on-surface px-2.5 py-1 rounded-lg flex items-center gap-1.5 backdrop-blur-md font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[15px] text-secondary-fixed">shield_with_heart</span>
+<span>Original Sellada de Fábrica</span>
+</div>
+</div>
+<!-- Thumbnail Strip -->
+<div class="grid grid-cols-4 gap-2">
+<button class="gallery-thumb active-thumb w-full aspect-square rounded-xl bg-surface-container-lowest p-1 shadow-sm overflow-hidden transition-all duration-200" onclick="changeGallery(0, this)">
+<img alt="Vista Frontal" class="w-full h-full object-contain" data-alt="Front view of Apple MacBook Air 13 M2 space gray open screen crystal clear presentation" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgrXLFF8jIlEEz-skTpWNTvPS-_W-RPCH5_ioauKhxngjwrMXS8PHf97OAoOD9a0SeVk-bIL6_vu0d62hqNK6MWiCM3C82Z0GqyizaJioq9YsXVXXyhcMSGxOy3oRvdHBFdW1Xbq0p_8xvkBb0y4bEG4pRb3Vr6lv2kU3RQRGZ7X2u_wVuUPQLaw2M88a4HqTs7hjtoOB_aOcYK54m-jGp97uGktVD6UzQiioFLEQ"/>
+</button>
+<button class="gallery-thumb w-full aspect-square rounded-xl bg-surface-container-lowest p-1 shadow-sm overflow-hidden transition-all duration-200 opacity-60" onclick="changeGallery(1, this)">
+<img alt="Teclado Retroiluminado" class="w-full h-full object-contain" data-alt="Close up of Apple MacBook Air M2 backlit magic keyboard and large Force Touch trackpad in dark space gray tone" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvFpg6JoV45IkWyPngncDqLmgKAynp3erG0kg8tvVawO6bjY8eZt3EMwvyLNA3wkU1BQk-FAP9thOyeW47R3UDK5XdBl7NPU04UtMOPKUrNx8Qhmw8_PfdpDNWXVPj5n1ufI0mPPwLPbiFEAS45WNTcdO-8fboVEDFsLkhRYb3Q4VFlLKXwBLvYgz_q5Eh6liRfB4tqQQG27gmKIqre5inhvXKxm971jIEbW9aZes"/>
+</button>
+<button class="gallery-thumb w-full aspect-square rounded-xl bg-surface-container-lowest p-1 shadow-sm overflow-hidden transition-all duration-200 opacity-60" onclick="changeGallery(2, this)">
+<img alt="Puertos Thunderbolt" class="w-full h-full object-contain" data-alt="Side profile view showing dual Thunderbolt 4 USB-C ports and MagSafe 3 charging port on MacBook Air M2 aluminum body" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOS7HvMxBi-c8SItu_LBt98tvkwg7037XIMLvxC8DPDGFy4MwJ_uKUfyKmQ5dHJaZklqDbo-05Ubi_OvIr-hycyePQ0adT0MjeDnf5AToM9Tjkfpcjn2WbRN_rguLckFjZK2nyx3_z8JeY-9E6xstNhtNhsrQiFOfQkNlTH5_IiWdU_8ObdvhPOwwBIvFoBGYZXBHNoHgsIJqvAh9yK37Haq6548BT_4PL7lbQcIQ"/>
+</button>
+<button class="gallery-thumb w-full aspect-square rounded-xl bg-surface-container-lowest p-1 shadow-sm overflow-hidden transition-all duration-200 opacity-60" onclick="changeGallery(3, this)">
+<img alt="Perfil Delgado" class="w-full h-full object-contain" data-alt="Ultra slim profile view of closed MacBook Air M2 laptop showcasing astonishing 11.3 mm thinness and balanced wedge design" src="https://lh3.googleusercontent.com/aida-public/AB6AXuByHL5S4lMap-D5HGy4YwxTpq4DX61JHMtqR3GWidUV85ZhGEeLPe9XurljHbQHCvb6DVJhCL98XbyYQ3Nf_EKS8cbL-3Oahj-JQ8s5Hr5YS0UST5c-ywinRA1YaGHxx-tYhLZsD62rr9ewxQfsxXPPO-dEcwL58r2KAEth3ZKPPPyfpCPOEnfkG5YbpCCDc2Ac0627K_Xc7fHNQIvI3IlBJNK2vQMo452WZfd2KHc"/>
+</button>
+</div>
+<!-- Color Switcher Panel -->
+<div class="bg-surface-container-low rounded-xl p-3.5 flex flex-col gap-2 shadow-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-bold">Acabado exterior:</span>
+<span class="font-label-md text-label-md text-primary font-semibold" id="active-color-name">Gris Espacial</span>
+</div>
+<div class="flex items-center gap-3">
+<!-- Gris Espacial -->
+<button aria-label="Color Gris Espacial" class="color-btn relative w-9 h-9 rounded-full bg-[#4E5053] shadow-inner transition-transform scale-110 flex items-center justify-center" onclick="selectColor('Gris Espacial', this)">
+<span class="color-indicator material-symbols-outlined text-[18px] text-white">check</span>
+</button>
+<!-- Blanco Estrella -->
+<button aria-label="Color Blanco Estrella" class="color-btn relative w-9 h-9 rounded-full bg-[#E5DFD4] shadow-inner transition-transform flex items-center justify-center" onclick="selectColor('Blanco Estrella', this)">
+<span class="color-indicator hidden material-symbols-outlined text-[18px] text-on-surface">check</span>
+</button>
+<!-- Medianoche -->
+<button aria-label="Color Medianoche" class="color-btn relative w-9 h-9 rounded-full bg-[#1F2530] shadow-inner transition-transform flex items-center justify-center" onclick="selectColor('Medianoche', this)">
+<span class="color-indicator hidden material-symbols-outlined text-[18px] text-white">check</span>
+</button>
+<!-- Plata -->
+<button aria-label="Color Plata Clásico" class="color-btn relative w-9 h-9 rounded-full bg-[#E0E2E5] shadow-inner transition-transform flex items-center justify-center" onclick="selectColor('Plata Clásico', this)">
+<span class="color-indicator hidden material-symbols-outlined text-[18px] text-on-surface">check</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Pricing, Bank Promos & Financial Calculators -->
+<section class="px-margin-mobile pt-5 flex flex-col gap-3">
+<!-- Main Price Card -->
+<div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+<!-- Tag Descuento Especial -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="line-through font-body-sm text-body-sm text-outline">$1.499.999 ARS</span>
+<span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold">
+            13% OFF
+          </span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-secondary">trending_down</span>
+          Precio sugerido oficial
+        </span>
+</div>
+<!-- Hero Price Block -->
+<div class="flex items-baseline gap-2">
+<span class="font-price-total text-price-total text-on-surface font-extrabold tracking-tight">$1.299.999</span>
+<span class="font-label-md text-label-md text-on-surface-variant">ARS</span>
+</div>
+<!-- Payment Incentive Option 1: Transferencia / DEBIN -->
+<div class="p-3 rounded-xl bg-surface-container-high/60 flex items-start gap-3">
+<div class="w-8 h-8 rounded-lg bg-secondary text-on-secondary flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">account_balance</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center justify-between gap-1">
+<span class="font-headline-sm text-headline-sm font-bold text-secondary">$1.169.999 ARS</span>
+<span class="px-1.5 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-bold shrink-0">-10% OFF</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Pagando con Transferencia Inmediata o DEBIN</span>
+</div>
+</div>
+<!-- Payment Incentive Option 2: Cuotas sin Interés -->
+<div class="p-3 rounded-xl bg-surface-container flex items-start gap-3">
+<div class="w-8 h-8 rounded-lg bg-primary text-on-primary flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">credit_card</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<span class="font-label-lg text-label-lg font-bold text-on-surface">Hasta 12 cuotas fijas de $108.333</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">Tasa Cero Sin Interés con Bancos Seleccionados</span>
+</div>
+</div>
+<!-- Interactive Accordion for Bank Promos -->
+<div class="pt-1">
+<button class="w-full py-2.5 px-3 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors flex items-center justify-between text-left" onclick="toggleBankModal()">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-primary">account_balance_wallet</span>
+<span class="font-label-md text-label-md font-bold text-on-surface">Calcular cuotas por Banco y Tarjeta</span>
+</div>
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant transition-transform" id="bank-chevron">expand_more</span>
+</button>
+<!-- Collapsible Bank Calculation Content -->
+<div class="hidden flex-col gap-2.5 mt-2.5 pt-2" id="bank-calculator-drawer">
+<!-- BBVA Openpay -->
+<div class="p-3 rounded-xl bg-surface-container-low flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md font-bold text-primary">BBVA • Openpay</span>
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">Especial</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-bold">12 cuotas fijas</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">12 x $108.333 sin interés + 15% de reintegro en primera compra con Visa Signature.</p>
+</div>
+<!-- SiPago Credicoop / Cabal -->
+<div class="p-3 rounded-xl bg-surface-container-low flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md font-bold text-on-surface">SiPago Credicoop • Cabal</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold">6 cuotas fijas</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">6 pagos directos de $216.666 sin recargo con débito/crédito Cabal.</p>
+</div>
+<!-- Mercado Pago / Crédito -->
+<div class="p-3 rounded-xl bg-surface-container-low flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md font-bold text-on-surface">Mercado Pago • Mercado Crédito</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold">Sin tarjeta física</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Financiá hasta en 12 meses con tu línea de crédito asignada instantáneamente.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Postal Code Shipping Estimator Widget -->
+<section class="px-margin-mobile pt-4 flex flex-col gap-2">
+<div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[22px] text-primary">local_shipping</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Cotizador de Envío y Retiro</h3>
+</div>
+<!-- Input CP & Button Group -->
+<div class="flex items-center gap-2">
+<div class="relative flex-1">
+<input class="w-full h-11 pl-9 pr-3 rounded-xl bg-surface-container-low text-on-surface font-body-sm text-body-sm placeholder:text-outline focus:outline-none focus:bg-surface-container transition-all" id="postal-input" placeholder="Ingresá tu Código Postal (ej: 1414)" type="number"/>
+<span class="material-symbols-outlined absolute left-2.5 top-2.5 text-[20px] text-outline">pin_drop</span>
+</div>
+<button class="h-11 px-4 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-bold shadow-sm active:scale-95 transition-transform flex items-center justify-center shrink-0" onclick="calculateShipping()">
+          Calcular
+        </button>
+</div>
+<!-- Shipping Output Results Card -->
+<div class="flex flex-col gap-2.5 pt-1" id="shipping-results">
+<!-- Express Home Delivery -->
+<div class="p-3 rounded-xl bg-surface-container-high/40 flex items-start gap-3">
+<span class="material-symbols-outlined text-[22px] text-secondary shrink-0 mt-0.5">bolt</span>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md font-bold text-on-surface">Envío Prioritario Express</span>
+<span class="font-label-sm text-label-sm font-bold text-secondary uppercase">Gratis</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Llega mañana a CABA y GBA comprando antes de las 17:00 hs.</p>
+</div>
+</div>
+<!-- Store Pickup Option -->
+<div class="p-3 rounded-xl bg-surface-container-low flex items-start gap-3">
+<span class="material-symbols-outlined text-[22px] text-primary shrink-0 mt-0.5">storefront</span>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md font-bold text-on-surface">Retiro en TechnoStore Palermo Soho</span>
+<span class="font-label-sm text-label-sm font-bold text-secondary">Inmediato</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Honduras 4800, CABA. Listo para retirar en 60 minutos.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Quick Specs Grid (Tech Powerhouses) -->
+<section class="px-margin-mobile pt-4 flex flex-col gap-2.5">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Especificaciones Clave</h3>
+<span class="font-label-sm text-label-sm text-primary font-semibold">Garantía Apple Care Ready</span>
+</div>
+<div class="grid grid-cols-2 gap-2.5">
+<!-- Spec 1: M2 Chip -->
+<div class="p-3.5 rounded-xl bg-surface-container-lowest shadow-sm flex flex-col gap-1.5">
+<div class="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">memory</span>
+</div>
+<span class="font-label-md text-label-md font-bold text-on-surface">Chip Apple M2</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">CPU 8 núcleos y GPU 8 núcleos de alto rendimiento.</span>
+</div>
+<!-- Spec 2: Display Retina -->
+<div class="p-3.5 rounded-xl bg-surface-container-lowest shadow-sm flex flex-col gap-1.5">
+<div class="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">desktop_windows</span>
+</div>
+<span class="font-label-md text-label-md font-bold text-on-surface">Liquid Retina 13.6''</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">500 nits de brillo, amplia gama de colores P3.</span>
+</div>
+<!-- Spec 3: Battery Life -->
+<div class="p-3.5 rounded-xl bg-surface-container-lowest shadow-sm flex flex-col gap-1.5">
+<div class="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">battery_charging_full</span>
+</div>
+<span class="font-label-md text-label-md font-bold text-on-surface">18 Horas de Autonomía</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Batería para todo el día sin conectarse a la pared.</span>
+</div>
+<!-- Spec 4: Touch ID Magic Keyboard -->
+<div class="p-3.5 rounded-xl bg-surface-container-lowest shadow-sm flex flex-col gap-1.5">
+<div class="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">fingerprint</span>
+</div>
+<span class="font-label-md text-label-md font-bold text-on-surface">Touch ID &amp; Magic Keys</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Desbloqueo seguro y escritura ultra silenciosa.</span>
+</div>
+</div>
+</section>
+<!-- Security, Trust & CyberTrust Badges -->
+<section class="px-margin-mobile pt-4 flex flex-col gap-2">
+<div class="bg-surface-container rounded-2xl p-4 flex flex-col gap-3 shadow-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[22px] text-on-surface">verified_user</span>
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-bold">Compromiso TechnoStore Seguro</h4>
+</div>
+<div class="flex flex-col gap-3 pt-1">
+<div class="flex items-start gap-3">
+<div class="w-7 h-7 rounded-full bg-surface-container-highest flex items-center justify-center shrink-0 text-on-surface">
+<span class="material-symbols-outlined text-[16px]">inventory_2</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-on-surface">Embalaje Blindado Inviolable</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Caja con precinto holográfico térmico y amortiguación hidrófuga certificada.</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="w-7 h-7 rounded-full bg-surface-container-highest flex items-center justify-center shrink-0 text-on-surface">
+<span class="material-symbols-outlined text-[16px]">receipt_long</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-on-surface">Factura Oficial A y B</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Emitimos comprobante fiscal electrónico automático con DNI o CUIT.</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="w-7 h-7 rounded-full bg-surface-container-highest flex items-center justify-center shrink-0 text-on-surface">
+<span class="material-symbols-outlined text-[16px]">support_agent</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-on-surface">Atención Técnica Personalizada</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Especialistas Apple certificados disponibles para resolver tus dudas de migración.</p>
+</div>
+</div>
+</div>
+<!-- Quick WhatsApp Consultation Button -->
+<a class="mt-1 w-full py-2.5 px-4 rounded-xl bg-[#25D366] text-white flex items-center justify-center gap-2 font-label-md text-label-md font-bold shadow-sm active:scale-98 transition-transform" href="https://wa.me/5491112345678?text=Hola%20TechnoStore!%20Tengo%20dudas%20sobre%20la%20MacBook%20Air%20M2" rel="noopener noreferrer" target="_blank">
+<span class="material-symbols-outlined text-[18px]">chat</span>
+<span>Consultar asesor Apple por WhatsApp</span>
+</a>
+</div>
+</section>
+<!-- Sticky Purchase Dock pinned to screen bottom -->
+<div class="fixed bottom-0 inset-x-0 z-40 bg-surface/95 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.08)] pb-safe pt-2.5 px-margin-mobile">
+<!-- Stock Reservation Pill -->
+<div class="flex items-center justify-between pb-2">
+<div class="flex items-center gap-1.5">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
+</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold">¡3 unidades reservadas en este momento!</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline font-semibold">Envío 24hs</span>
+</div>
+<!-- Controls & CTAs -->
+<div class="flex items-center gap-2 pb-2">
+<!-- Quantity Selector Segment -->
+<div class="flex items-center h-12 bg-surface-container rounded-xl px-1 shrink-0">
+<button class="w-8 h-10 flex items-center justify-center text-on-surface hover:text-error transition-colors disabled:opacity-30" disabled="" id="qty-minus-btn" onclick="updateQty(-1)">
+<span class="material-symbols-outlined text-[18px]">remove</span>
+</button>
+<span class="w-7 text-center font-label-lg text-label-lg font-bold text-on-surface" id="qty-display">1</span>
+<button class="w-8 h-10 flex items-center justify-center text-on-surface hover:text-primary transition-colors" onclick="updateQty(1)">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+<!-- Add to Cart (Quick Bag) -->
+<button aria-label="Añadir al carrito" class="h-12 w-12 rounded-xl bg-surface-container-high text-primary flex items-center justify-center shrink-0 active:scale-95 transition-transform" onclick="addToBag(this)">
+<span class="material-symbols-outlined text-[22px]">shopping_bag</span>
+</button>
+<!-- Primary Checkout CTA Button -->
+<button class="flex-1 h-12 rounded-xl bg-primary text-on-primary flex items-center justify-center gap-2 font-label-lg text-label-lg font-bold shadow-md hover:shadow-lg active:scale-98 transition-all" onclick="buyNowFlow(this)">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+<span>Comprar Ahora</span>
+</button>
+</div>
+</div>
+<!-- Interactive Feedback Toast (Delight micro-interaction) -->
+<div class="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 transform translate-y-12 opacity-0 pointer-events-none transition-all duration-300 bg-inverse-surface text-inverse-on-surface px-4 py-2.5 rounded-full flex items-center gap-2 shadow-xl" id="toast-delight">
+<span class="material-symbols-outlined text-[18px] text-secondary-fixed">check_circle</span>
+<span class="font-label-md text-label-md" id="toast-message">¡MacBook Air M2 agregada al carrito!</span>
+</div>
+</div>
+<script>
+  let currentQty = 1;
+  const galleryImages = [
+    {
+      src: "placeholder",
+      alt: "Front view of Apple MacBook Air 13 inch M2 in space gray aluminum chassis, open showing stunning Liquid Retina display with modern wallpaper, resting on a sleek minimalist desk, studio lighting, crisp reflections and premium aesthetic"
+    },
+    {
+      src: "placeholder",
+      alt: "Close up of Apple MacBook Air M2 backlit magic keyboard and large Force Touch trackpad in dark space gray tone with precision key illumination"
+    },
+    {
+      src: "placeholder",
+      alt: "Side profile view showing dual Thunderbolt 4 USB-C ports and MagSafe 3 charging port on MacBook Air M2 aluminum body"
+    },
+    {
+      src: "placeholder",
+      alt: "Ultra slim profile view of closed MacBook Air M2 laptop showcasing astonishing 11.3 mm thinness and balanced wedge design"
+    }
+  ];
+
+  function changeGallery(index, thumbEl) {
+    const mainImg = document.getElementById('main-product-img');
+    const counter = document.getElementById('gallery-counter');
+    
+    // Animate transition
+    mainImg.classList.add('opacity-40');
+    setTimeout(() => {
+      mainImg.src = galleryImages[index].src;
+      mainImg.setAttribute('data-alt', galleryImages[index].alt);
+      counter.innerText = `${index + 1}/4`;
+      mainImg.classList.remove('opacity-40');
+    }, 150);
+
+    // Update active thumb opacity
+    document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.add('opacity-60'));
+    thumbEl.classList.remove('opacity-60');
+  }
+
+  function selectColor(colorName, btnEl) {
+    document.getElementById('active-color-name').innerText = colorName;
+    document.querySelectorAll('.color-btn').forEach(b => {
+      b.classList.remove('scale-110');
+      const check = b.querySelector('.color-indicator');
+      if (check) check.classList.add('hidden');
+    });
+    btnEl.classList.add('scale-110');
+    const check = btnEl.querySelector('.color-indicator');
+    if (check) check.classList.remove('hidden');
+
+    showToast(`Color seleccionado: ${colorName}`);
+  }
+
+  function toggleBankModal() {
+    const drawer = document.getElementById('bank-calculator-drawer');
+    const chevron = document.getElementById('bank-chevron');
+    if (drawer.classList.contains('hidden')) {
+      drawer.classList.remove('hidden');
+      drawer.classList.add('flex');
+      chevron.innerText = 'expand_less';
+    } else {
+      drawer.classList.add('hidden');
+      drawer.classList.remove('flex');
+      chevron.innerText = 'expand_more';
+    }
+  }
+
+  function calculateShipping() {
+    const input = document.getElementById('postal-input');
+    const cp = input.value.trim();
+    if (!cp) {
+      showToast('Por favor, ingresá un código postal válido.');
+      return;
+    }
+    showToast(`Cotizando envío express para CP ${cp}...`);
+    // Visual flash feedback
+    const res = document.getElementById('shipping-results');
+    res.classList.add('opacity-50');
+    setTimeout(() => {
+      res.classList.remove('opacity-50');
+      showToast(`¡Excelente! Envío Bonificado GRATIS disponible para CP ${cp}`);
+    }, 400);
+  }
+
+  function updateQty(delta) {
+    currentQty += delta;
+    if (currentQty < 1) currentQty = 1;
+    if (currentQty > 5) currentQty = 5;
+    
+    document.getElementById('qty-display').innerText = currentQty;
+    document.getElementById('qty-minus-btn').disabled = (currentQty === 1);
+  }
+
+  function toggleFav(btn) {
+    const icon = btn.querySelector('.material-symbols-outlined');
+    const isFav = icon.style.fontVariationSettings?.includes("'FILL' 1");
+    if (!isFav) {
+      icon.style.fontVariationSettings = "'FILL' 1";
+      icon.classList.add('text-error');
+      showToast('Guardado en tus favoritos ❤️');
+    } else {
+      icon.style.fontVariationSettings = "'FILL' 0";
+      icon.classList.remove('text-error');
+      showToast('Eliminado de favoritos');
+    }
+  }
+
+  function addToBag(btn) {
+    btn.classList.add('scale-90');
+    setTimeout(() => btn.classList.remove('scale-90'), 150);
+    showToast(`¡Agregaste ${currentQty} unidad(es) a tu bolsa!`);
+  }
+
+  function buyNowFlow(btn) {
+    btn.innerHTML = `<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span><span>Iniciando Checkout Seguro...</span>`;
+    setTimeout(() => {
+      showToast('Redirigiendo a pasarela 256-bit SSL...');
+      btn.innerHTML = `<span class="material-symbols-outlined text-[18px]">lock</span><span>Comprar Ahora</span>`;
+    }, 800);
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast-delight');
+    const msgEl = document.getElementById('toast-message');
+    msgEl.innerText = msg;
+    toast.classList.remove('translate-y-12', 'opacity-0');
+    toast.classList.add('translate-y-0', 'opacity-100');
+    setTimeout(() => {
+      toast.classList.add('translate-y-12', 'opacity-0');
+      toast.classList.remove('translate-y-0', 'opacity-100');
+    }, 2400);
+  }
+</script></main></body></html>

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100%;margin:0;padding:0;min-height:100%;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "surface-variant": "#dce2f7", "on-error-container": "#93000a", "background": "#f9f9ff", "error": "#ba1a1a", "secondary": "#006d2f", "outline-variant": "#c2c6d8", "surface-subtle": "#F8F9FA", "surface-tint": "#0054d6", "on-secondary": "#ffffff", "secondary-fixed-dim": "#3de273", "primary-container": "#0066ff", "primary": "#0050cb", "tertiary": "#a33200", "on-primary-container": "#f8f7ff", "surface-container-low": "#f1f3ff", "trust-shield": "#0B192C", "surface-bright": "#f9f9ff", "on-primary": "#ffffff", "surface-pure": "#FFFFFF", "tertiary-fixed": "#ffdbd0", "inverse-surface": "#293040", "surface-container-lowest": "#ffffff", "on-secondary-fixed-variant": "#005322", "inverse-primary": "#b3c5ff", "inverse-on-surface": "#edf0ff", "on-tertiary": "#ffffff", "on-secondary-container": "#007232", "outline": "#727687", "on-tertiary-container": "#fff6f4", "surface-dim": "#d3daef", "border-subtle": "#E5E7EB", "on-error": "#ffffff", "surface": "#f9f9ff", "surface-container-highest": "#dce2f7", "primary-fixed-dim": "#b3c5ff", "tertiary-container": "#cc4204", "status-danger": "#EF4444", "surface-container-high": "#e1e8fd", "on-primary-fixed-variant": "#003fa4", "surface-container": "#e9edff", "secondary-container": "#5dfd8a", "on-tertiary-fixed": "#390c00", "on-tertiary-fixed-variant": "#832600", "on-surface-variant": "#424656", "tertiary-fixed-dim": "#ffb59d", "on-primary-fixed": "#001849", "on-secondary-fixed": "#002109", "primary-fixed": "#dae1ff", "on-background": "#141b2b", "status-warning": "#F59E0B", "secondary-fixed": "#66ff8e", "on-surface": "#141b2b", "error-container": "#ffdad6" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "margin": "2rem", "space-lg": "1.5rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "margin-mobile": "1rem", "space-xl": "2.5rem", "space-md": "1rem", "gutter": "1.5rem", "gutter-mobile": "1rem" }, fontFamily: { "label-lg": ["Inter"], "headline-lg": ["Inter"], "label-sm": ["Inter"], "display-hero": ["Inter"], "headline-lg-mobile": ["Inter"], "body-md": ["Inter"], "display-hero-mobile": ["Inter"], "body-sm": ["Inter"], "headline-md": ["Inter"], "headline-sm": ["Inter"], "label-md": ["Inter"], "price-total": ["Inter"], "body-lg": ["Inter"] }, fontSize: { "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }], "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "700" }], "display-hero": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.03em", "fontWeight": "800" }], "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "700" }], "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "display-hero-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800" }], "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "headline-sm": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "price-total": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "800" }], "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface font-body-md text-body-md flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface-pure/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-28 px-margin-mobile flex flex-col justify-center gap-space-xs"><div class="flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-xs"><div class="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-on-primary shadow-sm"><span class="material-symbols-outlined text-[20px]">devices</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-primary leading-none">TechnoStore</span><span class="font-label-sm text-label-sm text-on-surface-variant leading-none mt-0.5">Tech Gear &amp; Hardware</span></div></div><div class="flex items-center gap-space-xs"><a aria-label="Carrito de Compras" class="relative w-11 h-11 flex items-center justify-center rounded-xl bg-surface-container-low text-on-surface hover:text-primary transition-colors" data-path="carrito" href="#"><span class="material-symbols-outlined text-[22px]">shopping_bag</span><span class="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 bg-primary text-on-primary font-label-sm text-label-sm flex items-center justify-center rounded-full">2</span></a><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-1"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div><div class="flex items-center gap-space-xs"><div class="flex-1 h-10 px-space-sm bg-surface-container-low rounded-xl flex items-center gap-space-xs focus-within:ring-2 focus-within:ring-primary"><span class="material-symbols-outlined text-outline text-[20px]">search</span><input class="w-full bg-transparent border-0 outline-none font-body-sm text-body-sm text-on-surface placeholder:text-outline" placeholder="Buscar laptops, GPU, audio..." type="search"/></div><button aria-label="Filtros rápidos" class="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center text-on-surface hover:text-primary transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">tune</span></button></div></div></header><main class="flex flex-col relative w-full pt-28 pb-20 bg-surface min-h-screen"><div class="flex flex-col w-full pb-24">
+<!-- Dynamic Shipping Milestone & Delight Toast -->
+<section class="px-margin-mobile pt-space-xs pb-space-sm">
+<div class="bg-surface-container-high rounded-xl p-space-sm shadow-sm flex items-center justify-between gap-space-xs">
+<div class="flex items-center gap-space-xs min-w-0">
+<div class="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-on-secondary shrink-0">
+<span class="material-symbols-outlined text-[18px]">local_shipping</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-secondary leading-tight truncate">¡Envío Express Bonificado!</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant leading-tight truncate">Despacho garantizado hoy antes de las 18:00hs</span>
+</div>
+</div>
+<span class="bg-surface-container-lowest text-primary font-label-sm text-label-sm px-2 py-1 rounded-full shrink-0 shadow-sm font-bold">24 HS</span>
+</div>
+</section>
+<!-- Quick Search Pills -->
+<section class="px-margin-mobile pb-space-sm">
+<div class="flex items-center gap-space-xs overflow-x-auto no-scrollbar py-0.5">
+<span class="font-label-sm text-label-sm text-outline shrink-0 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">bolt</span>Tendencias:
+      </span>
+<button class="px-3 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap active:scale-95 transition-transform hover:text-primary" type="button">
+        MacBook
+      </button>
+<button class="px-3 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap active:scale-95 transition-transform hover:text-primary" type="button">
+        Sony
+      </button>
+<button class="px-3 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap active:scale-95 transition-transform hover:text-primary" type="button">
+        iPhone
+      </button>
+<button class="px-3 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap active:scale-95 transition-transform hover:text-primary" type="button">
+        RTX 4080
+      </button>
+<button class="px-3 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap active:scale-95 transition-transform hover:text-primary" type="button">
+        Dell Hub
+      </button>
+</div>
+</section>
+<!-- Filter & Value Proposition Chips Scrollable -->
+<section class="px-margin-mobile pb-space-sm">
+<div class="flex items-center gap-space-xs overflow-x-auto no-scrollbar">
+<!-- Active Chip -->
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-on-primary font-label-md text-label-md shrink-0 shadow-sm" type="button">
+<span class="material-symbols-outlined text-[16px]">electric_bolt</span>
+        Entrega 24hs
+        <span class="material-symbols-outlined text-[14px]">check</span>
+</button>
+<!-- Passive Filter Chips -->
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-lowest text-on-surface font-label-md text-label-md shrink-0 shadow-sm" type="button">
+<span class="material-symbols-outlined text-secondary text-[16px]">credit_card</span>
+        Cuotas Sin Interés
+      </button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-lowest text-on-surface font-label-md text-label-md shrink-0 shadow-sm" type="button">
+<span class="material-symbols-outlined text-tertiary text-[16px]">savings</span>
+        Hasta 10% OFF Transf.
+      </button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-lowest text-on-surface font-label-md text-label-md shrink-0 shadow-sm" type="button">
+<span class="material-symbols-outlined text-primary text-[16px]">verified</span>
+        Marca Oficial Apple
+      </button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-lowest text-on-surface font-label-md text-label-md shrink-0 shadow-sm" type="button">
+<span class="material-symbols-outlined text-on-surface-variant text-[16px]">headphones</span>
+        Sony Hi-Fi
+      </button>
+</div>
+</section>
+<!-- Results Count & Active Signals -->
+<section class="px-margin-mobile pb-space-sm flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary-fixed-dim animate-pulse"></span>
+<p class="font-label-md text-label-md text-on-surface-variant">
+<strong class="text-on-surface font-semibold">34 productos</strong> oficiales con despacho inmediato
+      </p>
+</div>
+<div class="flex items-center gap-1 bg-surface-container px-2 py-0.5 rounded-lg text-primary">
+<span class="material-symbols-outlined text-[16px]">security</span>
+<span class="font-label-sm text-label-sm">Certificados</span>
+</div>
+</section>
+<!-- Product Feed: Mobile Optimized Vertical Flow -->
+<div class="px-margin-mobile flex flex-col gap-space-md">
+<!-- Card 1: Apple MacBook Air M2 -->
+<article class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm relative flex flex-col gap-space-sm">
+<div class="flex gap-space-sm">
+<!-- Thumbnail Container -->
+<div class="relative w-28 h-28 rounded-lg overflow-hidden bg-surface-container-low shrink-0 flex items-center justify-center p-1.5">
+<img class="w-full h-full object-contain rounded-md" data-alt="Apple MacBook Air 13.6 inch M2 chip in midnight metallic finish open at an angle showing crisp retina display on sleek minimal studio surface with soft diffused blue studio lighting and tech aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFdiqZOn1UwEQJ_RtGqFMkrm3jt68pUe1QJxWRnRU5p5Tm3sniLLiFYyCAZ9qrZzXyMA19sFDl9I9GmLgyV8uRJeZ9kkdgsielrQm9kuoj3xIImMJbRDMjMDrMpVzItLggnA344oY95a-BV3N0jJQGYsIUq2v4ECoKD6mRsLGljQ7A9HN2V_TQt6GQqUV2Ubn7BxAlE0m7FCoexxAsholCOxfYX5h5E8rnxAcOqo0"/>
+<span class="absolute top-1 left-1 bg-secondary text-on-secondary font-label-sm text-label-sm px-1.5 py-0.5 rounded-md shadow-sm">
+            -10%
+          </span>
+</div>
+<!-- Info Column -->
+<div class="flex flex-col justify-between flex-1 min-w-0">
+<div>
+<div class="flex items-center justify-between gap-1 mb-1">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-primary bg-surface-container-high px-2 py-0.5 rounded-full truncate">
+<span class="material-symbols-outlined text-[12px]">verified</span>
+                Distribuidor Apple
+              </span>
+<button aria-label="Favoritos" class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center text-outline hover:text-error transition-colors shrink-0" type="button">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface leading-tight line-clamp-2">
+              Apple MacBook Air 13.6" M2 Chip (256GB SSD)
+            </h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 truncate">
+              8GB Memoria Unificada • Midnight
+            </p>
+</div>
+<div class="mt-1">
+<span class="font-label-sm text-label-sm text-secondary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">format_image_left</span>
+              Garantía Oficial 12 Meses
+            </span>
+</div>
+</div>
+</div>
+<!-- Pricing & Incentives Block -->
+<div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-1">
+<div class="flex items-baseline justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline line-through leading-none">$1.444.000</span>
+<span class="font-headline-md text-headline-md text-primary font-bold tracking-tight leading-none mt-0.5">$1.299.999 <span class="font-label-sm text-label-sm font-normal text-on-surface-variant">ARS</span></span>
+</div>
+<span class="font-label-sm text-label-sm bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded font-semibold">
+            Envío Gratis 24hs
+          </span>
+</div>
+<div class="flex flex-col gap-0.5 mt-1 pt-1 border-0">
+<div class="flex items-center gap-1.5 text-secondary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[15px]">payments</span>
+<span class="font-bold">$1.169.999</span> con 10% OFF Transferencia / DEBIN
+          </div>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[15px]">credit_card</span>
+            Hasta 12 cuotas con Openpay BBVA / SiPago Credicoop
+          </div>
+</div>
+</div>
+<!-- CTA Action Button -->
+<button class="w-full h-12 bg-primary text-on-primary rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-2 active:bg-on-primary-fixed-variant transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+        Agregar al Carrito
+      </button>
+</article>
+<!-- Card 2: Sony WH-1000XM5 -->
+<article class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm relative flex flex-col gap-space-sm">
+<div class="flex gap-space-sm">
+<div class="relative w-28 h-28 rounded-lg overflow-hidden bg-surface-container-low shrink-0 flex items-center justify-center p-1.5">
+<img class="w-full h-full object-contain rounded-md" data-alt="Sony WH-1000XM5 wireless over-ear noise cancelling headphones in matte silver and black finish resting on clean architectural pedestal, crisp technical highlights, minimalist studio product lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAA_rijpqH_Ii0AhVkDPNu9rWeRwO_87v-QjtOzyqEejXlnX8btH2LCeF_30c0WkW0DHB_ZgBgFgeApqveLW_EkIuV_PdVsw5dFEPobZqEYX5FGr8wZh8OsQEUdnpjaYT6z28KWd3F2sBKX5IUniYJGJj74mrqgdroaDkpdg4qtAqdAMjXaVo9ZxJx2_iUxDwhy2PfGhLhJKEUQOmiwU52siLQ4MFZRBaCgyapeHFQ"/>
+<span class="absolute top-1 left-1 bg-secondary text-on-secondary font-label-sm text-label-sm px-1.5 py-0.5 rounded-md shadow-sm">
+            HOY
+          </span>
+</div>
+<div class="flex flex-col justify-between flex-1 min-w-0">
+<div>
+<div class="flex items-center justify-between gap-1 mb-1">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-full truncate">
+<span class="material-symbols-outlined text-[12px] text-primary">verified</span>
+                Sony Oficial Arg.
+              </span>
+<button aria-label="Favoritos" class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center text-outline hover:text-error transition-colors shrink-0" type="button">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface leading-tight line-clamp-2">
+              Sony WH-1000XM5 Hi-Res Noise Cancelling
+            </h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 truncate">
+              Auto NC Optimizer • 30hs Batería
+            </p>
+</div>
+<div class="mt-1">
+<span class="font-label-sm text-label-sm text-secondary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">local_shipping</span>
+              Envío Gratis Llega Hoy
+            </span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-1">
+<div class="flex items-baseline justify-between">
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-primary font-bold tracking-tight leading-none">$349.999 <span class="font-label-sm text-label-sm font-normal text-on-surface-variant">ARS</span></span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary bg-surface-container-lowest px-2 py-0.5 rounded shadow-sm font-bold">
+            6 Cuotas Sin Interés
+          </span>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm mt-0.5">
+<span class="material-symbols-outlined text-[15px] text-secondary">check_circle</span>
+          6 pagos fijos de <strong>$58.333</strong> con todas las tarjetas
+        </div>
+</div>
+<button class="w-full h-12 bg-primary text-on-primary rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-2 active:bg-on-primary-fixed-variant transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+        Agregar al Carrito
+      </button>
+</article>
+<!-- Card 3: iPhone 15 Pro Max -->
+<article class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm relative flex flex-col gap-space-sm">
+<div class="flex gap-space-sm">
+<div class="relative w-28 h-28 rounded-lg overflow-hidden bg-surface-container-low shrink-0 flex items-center justify-center p-1.5">
+<img class="w-full h-full object-contain rounded-md" data-alt="Apple iPhone 15 Pro Max in Natural Titanium metal finish showing triple camera matrix and subtle glass backplate reflection on modern grey background with high key technical lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADX0w2jfhCTwhgiwlOscIVmbWt0zoKPe8GtLkHUYU9nVv9uwUkW9ccVEvBebudNH2vmSZrq1qs4zP2SeqWACTkAQc_A6d4wz8IL6dr3DZW7tGbl74uv1LDuAQz2e1K7X0H_5DoZWFC6JGSimvXGjm72wstrJKTod3j-Wn2hbv6J9SCwW5dEKeHJfqoVXAlexwQNR1c8yxdRVXgOGrPuOKwkPkEgrQguCxhLGzmk70"/>
+<span class="absolute top-1 left-1 bg-trust-shield text-on-primary font-label-sm text-label-sm px-1.5 py-0.5 rounded-md shadow-sm">
+            Top Tech
+          </span>
+</div>
+<div class="flex flex-col justify-between flex-1 min-w-0">
+<div>
+<div class="flex items-center justify-between gap-1 mb-1">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-primary bg-surface-container-high px-2 py-0.5 rounded-full truncate">
+<span class="material-symbols-outlined text-[12px]">store</span>
+                Stock Palermo
+              </span>
+<button aria-label="Favoritos" class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center text-outline hover:text-error transition-colors shrink-0" type="button">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface leading-tight line-clamp-2">
+              iPhone 15 Pro Max 256GB Titanio Natural
+            </h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 truncate">
+              Chip A17 Pro • Garantía 1 Año Apple
+            </p>
+</div>
+<div class="mt-1">
+<span class="font-label-sm text-label-sm text-outline flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">storefront</span>
+              Retiro inmediato en Sucursal Palermo
+            </span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-1">
+<div class="flex items-baseline justify-between">
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-primary font-bold tracking-tight leading-none">$1.849.000 <span class="font-label-sm text-label-sm font-normal text-on-surface-variant">ARS</span></span>
+</div>
+<span class="font-label-sm text-label-sm text-primary bg-surface-container-high px-2 py-0.5 rounded font-bold">
+            12 Cuotas Fijas
+          </span>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm mt-0.5">
+<span class="material-symbols-outlined text-[15px] text-primary">credit_card</span>
+          12 cuotas fijas vía Openpay BBVA
+        </div>
+</div>
+<button class="w-full h-12 bg-primary text-on-primary rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-2 active:bg-on-primary-fixed-variant transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+        Agregar al Carrito
+      </button>
+</article>
+<!-- Card 4: Samsung Galaxy S24 Ultra -->
+<article class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm relative flex flex-col gap-space-sm">
+<div class="flex gap-space-sm">
+<div class="relative w-28 h-28 rounded-lg overflow-hidden bg-surface-container-low shrink-0 flex items-center justify-center p-1.5">
+<img class="w-full h-full object-contain rounded-md" data-alt="Samsung Galaxy S24 Ultra Titanium Black with S-Pen stylus, display showing colorful wallpaper, modern tech gadget angled shot with sharp geometric shadows and professional tech photography style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD627zkmv0-02rHtSJffpeUSsOYtXJFzeUwAq1SYVpgE7_eQxpWlyliHXUFbJvg3cxTRVbIkUJ5IHXmSuI-p41uUgWii811w0NQxUzteIZ2DV_y4o1aZw-bCb2WHk1MMg45DdbBy3BF-f3BlM_xBArLhS84-b5ZwMYpGcGuZZiO8E7Jex-WmcmII0h0crb3a7l2pFYATgGTjkv5BMRVFQDh-4RCR1KOENNGJySkMO0"/>
+<span class="absolute top-1 left-1 bg-surface-container-highest text-primary font-label-sm text-label-sm px-1.5 py-0.5 rounded-md shadow-sm font-bold">
+            Galaxy AI
+          </span>
+</div>
+<div class="flex flex-col justify-between flex-1 min-w-0">
+<div>
+<div class="flex items-center justify-between gap-1 mb-1">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary bg-surface-container px-2 py-0.5 rounded-full truncate">
+<span class="material-symbols-outlined text-[12px]">auto_awesome</span>
+                Galaxy AI Incluido
+              </span>
+<button aria-label="Favoritos" class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center text-outline hover:text-error transition-colors shrink-0" type="button">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface leading-tight line-clamp-2">
+              Samsung Galaxy S24 Ultra 512GB Titanium
+            </h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 truncate">
+              Quad Tele System • 12GB RAM
+            </p>
+</div>
+<div class="mt-1">
+<span class="font-label-sm text-label-sm text-secondary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">local_offer</span>
+              Promo SiPago Credicoop
+            </span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-1">
+<div class="flex items-baseline justify-between">
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-primary font-bold tracking-tight leading-none">$1.699.999 <span class="font-label-sm text-label-sm font-normal text-on-surface-variant">ARS</span></span>
+</div>
+<span class="font-label-sm text-label-sm bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded font-bold">
+            10% OFF
+          </span>
+</div>
+<div class="flex items-center gap-1.5 text-secondary font-label-sm text-label-sm mt-0.5">
+<span class="material-symbols-outlined text-[15px]">savings</span>
+<strong>$1.529.999</strong> abonando con Transferencia / DEBIN
+        </div>
+</div>
+<button class="w-full h-12 bg-primary text-on-primary rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-2 active:bg-on-primary-fixed-variant transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+        Agregar al Carrito
+      </button>
+</article>
+<!-- Card 5: Monitor Dell UltraSharp 27" -->
+<article class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm relative flex flex-col gap-space-sm">
+<div class="flex gap-space-sm">
+<div class="relative w-28 h-28 rounded-lg overflow-hidden bg-surface-container-low shrink-0 flex items-center justify-center p-1.5">
+<img class="w-full h-full object-contain rounded-md" data-alt="Dell UltraSharp 27 inch 4K USB-C Hub Monitor sleek profile, thin bezels showing color accurate designer workspace backdrop, modern brushed aluminum stand, studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhLSVWhh3zfvNG6f9H7Fsv_5DqGo8j0ibrKNXIGCitmFndMDVdQtaEhqjai5VS2ZPPRHQUbMc6dJ2L9I1IODTfVzCq9pGH53rcZzWo4b32tF5M7R7UNw3l1HcNFSzu8EnztMil31duIak31iv7GzKK38ccGrNOWCVHztwehAvj8xlc-z6YROWQKthoc4-OF0v9GXBHTLtzf53BiKYcYkwH2IQQNWkl8tFZQWdDYG0"/>
+<span class="absolute top-1 left-1 bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-1.5 py-0.5 rounded-md shadow-sm">
+            4K IPS
+          </span>
+</div>
+<div class="flex flex-col justify-between flex-1 min-w-0">
+<div>
+<div class="flex items-center justify-between gap-1 mb-1">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-full truncate">
+<span class="material-symbols-outlined text-[12px] text-secondary">tune</span>
+                Calibración de Fábrica
+              </span>
+<button aria-label="Favoritos" class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center text-outline hover:text-error transition-colors shrink-0" type="button">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface leading-tight line-clamp-2">
+              Monitor Dell UltraSharp 27" 4K USB-C Hub
+            </h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5 truncate">
+              IPS Black • 90W Power Delivery • RJ45
+            </p>
+</div>
+<div class="mt-1">
+<span class="font-label-sm text-label-sm text-primary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">receipt_long</span>
+              Factura A deducible de impuestos
+            </span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-1">
+<div class="flex items-baseline justify-between">
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-primary font-bold tracking-tight leading-none">$789.000 <span class="font-label-sm text-label-sm font-normal text-on-surface-variant">ARS</span></span>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-container-lowest text-on-surface-variant px-2 py-0.5 rounded shadow-sm">
+            Envío Asegurado
+          </span>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm mt-0.5">
+<span class="material-symbols-outlined text-[15px] text-secondary">local_shipping</span>
+          Embalaje premium anti-impacto incluido
+        </div>
+</div>
+<button class="w-full h-12 bg-primary text-on-primary rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-2 active:bg-on-primary-fixed-variant transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+        Agregar al Carrito
+      </button>
+</article>
+</div>
+<!-- Trust Reinforcement Banner -->
+<section class="px-margin-mobile mt-space-lg mb-space-sm">
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-sm">
+<div class="flex items-center gap-2 text-trust-shield">
+<span class="material-symbols-outlined text-[22px] text-primary">lock</span>
+<span class="font-headline-sm text-headline-sm">Garantía y Seguridad TechnoStore</span>
+</div>
+<div class="grid grid-cols-2 gap-space-xs text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary text-[18px]">verified</span>
+<span class="font-label-sm text-label-sm">Equipos 100% Nuevos</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary text-[18px]">sync</span>
+<span class="font-label-sm text-label-sm">30 días de cambio</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary text-[18px]">shield</span>
+<span class="font-label-sm text-label-sm">Pago Encriptado SSL</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary text-[18px]">support_agent</span>
+<span class="font-label-sm text-label-sm">Soporte por WhatsApp</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Sticky Bottom Quick Control Dock (Above Main Shell Nav) -->
+<aside class="sticky bottom-16 w-full z-40 px-margin-mobile pb-space-xs pointer-events-none">
+<div class="pointer-events-auto bg-surface-pure/95 backdrop-blur-xl rounded-2xl shadow-xl p-2 flex items-center justify-between gap-space-xs">
+<!-- Filter Button with Pill Count -->
+<button class="flex-1 h-11 bg-surface-container-high text-on-surface rounded-xl flex items-center justify-center gap-2 font-label-md text-label-md active:bg-surface-container-highest transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px] text-primary">tune</span>
+<span>Filtros</span>
+<span class="w-5 h-5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm flex items-center justify-center font-bold">
+          3
+        </span>
+</button>
+<!-- Sort Trigger -->
+<button class="flex-1 h-11 bg-surface-container-high text-on-surface rounded-xl flex items-center justify-center gap-1.5 font-label-md text-label-md active:bg-surface-container-highest transition-colors truncate px-2" type="button">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">swap_vert</span>
+<span class="truncate">Orden: <strong>Más Vendidos</strong></span>
+</button>
+</div>
+</aside>
+</div>
+<script>
+  // Micro-interaction: Wishlist toggling
+  document.querySelectorAll('button[aria-label="Favoritos"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const icon = btn.querySelector('.material-symbols-outlined');
+      const isFavorited = icon.style.fontVariationSettings?.includes("'FILL' 1");
+      if (isFavorited) {
+        icon.style.fontVariationSettings = "'FILL' 0";
+        icon.classList.remove('text-error');
+        icon.classList.add('text-outline');
+      } else {
+        icon.style.fontVariationSettings = "'FILL' 1";
+        icon.classList.remove('text-outline');
+        icon.classList.add('text-error');
+      }
+    });
+  });
+
+  // Micro-interaction: Dynamic Cart Add Toast Feedback
+  document.querySelectorAll('article button:has(.material-symbols-outlined)').forEach(btn => {
+    if (btn.textContent.includes('Agregar')) {
+      btn.addEventListener('click', function() {
+        const originalText = this.innerHTML;
+        this.innerHTML = '<span class="material-symbols-outlined text-[20px]">check</span> ¡Agregado!';
+        this.classList.remove('bg-primary');
+        this.classList.add('bg-secondary');
+        setTimeout(() => {
+          this.innerHTML = originalText;
+          this.classList.remove('bg-secondary');
+          this.classList.add('bg-primary');
+        }, 1500);
+      });
+    }
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-pure/90 backdrop-blur-xl shadow-[0_-2px_12px_rgba(0,0,0,0.05)]" data-active-classes="text-primary font-semibold"><div class="flex items-center justify-around h-16 px-space-xs"><a class="flex flex-col items-center justify-center min-w-[56px] h-12 text-on-surface-variant hover:text-on-surface transition-colors" data-path="inicio" href="#"><span class="material-symbols-outlined text-[22px]">home</span><span class="font-label-sm text-label-sm">Inicio</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 text-on-surface-variant hover:text-on-surface transition-colors" data-path="catalogo" href="#"><span class="material-symbols-outlined text-[22px]">category</span><span class="font-label-sm text-label-sm">Catálogo</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 text-on-surface-variant hover:text-on-surface transition-colors" data-path="ofertas" href="#"><span class="material-symbols-outlined text-[22px]">local_fire_department</span><span class="font-label-sm text-label-sm">Ofertas</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 text-on-surface-variant hover:text-on-surface transition-colors" data-path="carrito" href="#"><span class="material-symbols-outlined text-[22px]">shopping_cart</span><span class="font-label-sm text-label-sm">Carrito</span></a><a class="flex flex-col items-center justify-center min-w-[56px] h-12 text-on-surface-variant hover:text-on-surface transition-colors" data-path="soporte-garantias" href="#"><span class="material-symbols-outlined text-[22px]">verified_user</span><span class="font-label-sm text-label-sm">Soporte</span></a></div></nav></body></html>
