@@ -137,25 +137,18 @@ export function createMlRepository(pool) {
       return rows
     },
 
-    /** Descuenta stock del origen correcto y devuelve fulfillment_source. */
+    /** Descuenta stock del origen correcto y devuelve fulfillment_source. Actualización atómica. */
     async decrementStock({ masterProductId, quantity }) {
       const qty = Math.max(1, Number(quantity) || 1)
       const { rows } = await pool.query(
-        `SELECT supplier_code, raw_stock FROM supplier_listings WHERE master_product_id = $1 AND supplier_code = 'LOCAL'`,
-        [masterProductId]
+        `UPDATE supplier_listings SET raw_stock = GREATEST(0, raw_stock - $2), updated_at = now()
+          WHERE master_product_id = $1 AND supplier_code = 'LOCAL' AND raw_stock >= $2 RETURNING 1`,
+        [masterProductId, qty]
       )
-      const local = rows[0]
-      if (local && Number(local.raw_stock) >= qty) {
-        await pool.query(
-          `UPDATE supplier_listings SET raw_stock = raw_stock - $2, updated_at = now()
-            WHERE master_product_id = $1 AND supplier_code = 'LOCAL'`,
-          [masterProductId, qty]
-        )
-        return { fulfillmentSource: 'local' }
-      }
+      if (rows.length) return { fulfillmentSource: 'local' }
       await pool.query(
         `UPDATE supplier_listings SET raw_stock = GREATEST(0, raw_stock - $2), updated_at = now()
-          WHERE master_product_id = $1 AND supplier_code = 'ELIT'`,
+          WHERE master_product_id = $1 AND supplier_code = 'ELIT' AND raw_stock >= $2 RETURNING 1`,
         [masterProductId, qty]
       )
       return { fulfillmentSource: 'supplier' }
