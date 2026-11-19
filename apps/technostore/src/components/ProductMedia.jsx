@@ -26,7 +26,7 @@ export default function ProductMedia({ src, alt, className = '', eager = false }
             height="800"
             loading={eager ? 'eager' : 'lazy'}
             decoding="async"
-            fetchPriority={eager ? 'high' : 'auto'}
+            fetchpriority={eager ? 'high' : 'auto'}
             onLoad={() => setLoaded(true)}
             onError={() => setLoaded(true)}
           />

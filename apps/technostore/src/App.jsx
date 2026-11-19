@@ -201,7 +201,7 @@ export default function App() {
     const query = normText(qDebounced.trim())
     const cat = canonCat(categoria)
     let out = allProducts.filter(p => {
-      if (categoria === "hardware" ? !isHardware(p.categoria) : (cat !== "todos" && canonCat(p.categoria) !== cat)) return false
+      if (cat !== "todos" && canonCat(p.categoria) !== cat) return false
       if (marcas.length && !marcas.includes(getBrand(p))) return false
       if (disponibilidad === "hoy" && !(p.stock_source !== "supplier" && Number(p.stock) > 0)) return false
       if (p.tipo_venta === "directa" && !rangoMatch(p.precio_transferencia ?? p.precio, rango)) return false
