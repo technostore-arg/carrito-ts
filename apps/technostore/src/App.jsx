@@ -15,6 +15,8 @@ import { mergeQuotes } from "./data/catalog.js"
 import { SEARCH_DEBOUNCE_MS } from "./config/store"
 import AppleSpotlight from "./components/AppleSpotlight"
 import Footer from "./components/Footer"
+import TrustBar from "./components/TrustBar"
+import Nosotros from "./components/Nosotros"
 import CustomerAuth from "./components/CustomerAuth"
 import { authClient } from "./lib/auth.js"
 import WhatsAppFloat from "./components/WhatsAppFloat"
@@ -29,6 +31,7 @@ export default function App() {
   const [authOpen, setAuthOpen] = useState(false)
   const [authError, setAuthError] = useState('')
   const [authSession, setAuthSession] = useState(null)
+  const [view, setView] = useState("home")
 
   // El wrapper de Neon canjea el neon_auth_session_verifier al llamar getSession.
   // Guardamos la sesión en la app para que el modal la vea apenas vuelve de Google.
@@ -306,10 +309,17 @@ export default function App() {
         suggestions={searchSuggests}
         onOpenProduct={openProduct}
         onSeeAllResults={scrollToCatalog}
+        view={view}
+        onSelectView={setView}
       />
 
       <main>
-        <Hero onExplore={scrollToCatalog} />
+        {view === "nosotros" ? (
+          <Nosotros onBack={() => setView("home")} />
+        ) : (
+          <>
+            <TrustBar />
+            <Hero onExplore={scrollToCatalog} />
         {source !== null && categoria === "todos" && marcas.length === 0 && !qDebounced.trim() && (
           <AppleSpotlight products={allProducts} onOpen={openProduct} onVerTodos={handleApple} />
         )}
@@ -350,6 +360,8 @@ export default function App() {
             </>
           )}
         </section>
+            </>
+          )}
       </main>
 
       <Footer onSelectCategory={handleSelectCategory} />
