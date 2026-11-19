@@ -141,7 +141,8 @@ export function createElitClient(opts = {}) {
 
   const headers = { 'Content-Type': 'application/json', Accept: 'application/json' }
   const creds = { user_id: userId, token }
-  let lastCall = { mode: 'production', path: null, ok: false, codigo: null, keys: [], items: 0, sample: null }
+  let lastCall = { mode: 'production', path: null, ok: false, codigo: null, keys: [], items: 0, sample: null, firstItemPreview: null, paginador: null, pages: [] }
+  let debugPages = []
 
   async function post(path, body) {
     const data = await requestWithRetry(`${baseUrl}${path}`, {
@@ -156,22 +157,35 @@ export function createElitClient(opts = {}) {
       sample: items[0] ? Object.keys(items[0]) : null,
       firstItemPreview: items[0] ? JSON.stringify(items[0]).slice(0, 500) : null,
       paginador: data?.paginador ?? null,
+      pages: debugPages,
     }
     return data
   }
 
-  /** Pagina POST /productos hasta agotar (tope 5000 ítems). */
+  /** Pagina POST /productos (servers cappean el limit, leemos paginador.total). */
   async function listProducts(extra = {}) {
     let out = []
+    const seen = new Set()
+    const pages = []
+    debugPages = pages
     let offset = 0
-    const pageSize = 100
-    while (out.length < 5000) {
+    const pageSize = 40
+    const maxItems = 5000
+    while (out.length < maxItems) {
       const payload = await post('/productos', { limit: pageSize, offset, ...extra })
-      const items = extractItems(payload)
+      const raw = extractItems(payload)
+      const items = raw.filter(x => !seen.has(x.codigo_alfa))
+      const total = Number(payload?.paginador?.total)
+      const limit = Number(payload?.paginador?.limit) || pageSize
+      pages.push({ offset, requested: raw.length, newItems: items.length, total, limit, paginatorOffset: payload?.paginador?.offset ?? null })
       if (!items.length) break
+      for (const x of items) seen.add(x.codigo_alfa)
       out = out.concat(items)
-      if (items.length < pageSize) break
-      offset += pageSize
+      const ended = (raw.length < limit && items.length === 0)
+        || items.length === 0
+        || (Number.isFinite(total) && out.length >= total)
+      if (ended) break
+      offset += raw.length
     }
     return out.map(normalizeElitItem)
   }

@@ -22,3 +22,4 @@ insumosacuario-scrape-*.json
 productos-backup-*.json
 .neon
 manual-elit.txt
+.env*.local
