@@ -158,7 +158,9 @@ const LOGIN_MAX_FAILS = 10
 const loginFails = new Map()
 function clientIp(req) {
   const fwd = req.headers['x-forwarded-for']
-  return (Array.isArray(fwd) ? fwd[0] : String(fwd || '')).split(',')[0].trim() || req.socket?.remoteAddress || 'unknown'
+  const raw = (Array.isArray(fwd) ? fwd[0] : String(fwd || '')).split(',')[0].trim().split(':')[0].trim()
+  const ip = raw || req.socket?.remoteAddress || 'unknown'
+  return ip.length <= 45 && /^[0-9a-f.:]+$/i.test(ip) ? ip : 'unknown'
 }
 function loginBlocked(ip) {
   const rec = loginFails.get(ip)

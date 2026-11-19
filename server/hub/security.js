@@ -40,8 +40,8 @@ export function createRateLimiter({ max = 15, windowMs = 60_000, now = () => Dat
 /** Clave del rate limiter: X-Forwarded-For (sin confiar en req.ip, ej. sin trust proxy). */
 function rateLimitKeyFn(req) {
   const fwd = req.headers['x-forwarded-for']
-  const ip = (Array.isArray(fwd) ? fwd[0] : String(fwd || '')).split(',')[0].trim()
-  return ip || req.ip || req.socket?.remoteAddress || 'unknown'
+  const raw = (Array.isArray(fwd) ? fwd[0] : String(fwd || '')).split(',')[0].trim().split(':')[0].trim()
+  return raw || req.ip || req.socket?.remoteAddress || 'unknown'
 }
 
 /** Middleware Express para rate limiting por IP. */
