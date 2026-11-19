@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect, useRef } from "react"
 import Header from "./components/Header"
 import Hero from "./components/Hero"
+import Home from "./components/Home"
 import FilterPanel, { rangoMatch, ORDENES, CATEGORIAS } from "./components/FilterPanel"
 import { matchCpu, matchRam, matchSsd, specOptions, CPU_LABELS, fmtCap, canonCat, buildRanges, specsForCat, normText, matchQuery, matchNameSku } from "./utils/specs"
 import { getBrand } from "./utils/brand"
@@ -321,7 +322,14 @@ export default function App() {
       />
 
       <main>
-        <Hero onExplore={scrollToCatalog} />
+        <Home
+          products={allProducts}
+          categorias={categorias}
+          onExplore={scrollToCatalog}
+          onSelectCategory={handleSelectCategory}
+          onOpenProduct={openProduct}
+          onAddToCart={addToCart}
+        />
         {source !== null && categoria === "todos" && marcas.length === 0 && !qDebounced.trim() && (
           <AppleSpotlight products={allProducts} onOpen={openProduct} onVerTodos={handleApple} />
         )}
