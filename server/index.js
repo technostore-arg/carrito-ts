@@ -947,6 +947,9 @@ app.post('/api/comprobantes', async (req, res) => {
     if (!orderCode || typeof orderCode !== 'string') {
       return res.status(400).json({ error: 'orderCode requerido' })
     }
+    if (!/^TS-[0-9A-F]{6}$/.test(orderCode)) {
+      return res.status(400).json({ error: 'orderCode inválido' })
+    }
     if (!comprobanteData || typeof comprobanteData !== 'string') {
       return res.status(400).json({ error: 'comprobanteData requerido (base64)' })
     }
