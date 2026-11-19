@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, useRef } from "react"
 import Header from "./components/Header"
 import Hero from "./components/Hero"
-import FilterPanel, { rangoMatch, ORDENES, isHardware, CATEGORIAS } from "./components/FilterPanel"
+import FilterPanel, { rangoMatch, ORDENES, CATEGORIAS } from "./components/FilterPanel"
 import { matchCpu, matchRam, matchSsd, specOptions, CPU_LABELS, fmtCap, canonCat, buildRanges, specsForCat, normText, matchQuery, matchNameSku } from "./utils/specs"
 import { getBrand } from "./utils/brand"
 import ProductGrid from "./components/ProductGrid"
@@ -134,7 +134,6 @@ export default function App() {
   const allProducts = source ?? []
   const scopedProducts = useMemo(() => {
     if (source === null) return null
-    if (categoria === "hardware") return allProducts.filter(p => isHardware(p.categoria))
     const cat = canonCat(categoria)
     if (cat === "todos") return allProducts
     return allProducts.filter(p => canonCat(p.categoria) === cat)
@@ -175,11 +174,10 @@ export default function App() {
   }, [source, marcasDisponibles, marcas, categoria, rango, validCatIds, hasUsed, condicion, calidad, batMin])
 
   const counts = useMemo(() => {
-    const c = { todos: allProducts.length, hardware: 0 }
+    const c = { todos: allProducts.length }
     for (const p of allProducts) {
       const k = canonCat(p.categoria)
       c[k] = (c[k] || 0) + 1
-      if (isHardware(p.categoria)) c.hardware++
     }
     return c
   }, [allProducts])
@@ -316,6 +314,7 @@ export default function App() {
         onCart={() => setDrawerOpen(true)}
         onAccount={() => setAuthOpen(true)}
         onSelectCategory={handleSelectCategory}
+        categorias={categorias}
         suggestions={searchSuggests}
         onOpenProduct={openProduct}
         onSeeAllResults={scrollToCatalog}

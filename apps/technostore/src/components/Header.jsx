@@ -1,19 +1,17 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { ars } from "../utils/format"
 
-const NAV = [
-  { id: "celulares", label: "Celulares" },
-  { id: "notebooks", label: "Notebooks" },
-  { id: "hardware", label: "Hardware" },
-  { id: "gpus", label: "Placas de Video" },
-  { id: "procesadores", label: "Procesadores" },
-  { id: "ram", label: "RAM" },
-  { id: "coolers", label: "Coolers" },
-  { id: "apple", label: "Apple", brand: true },
-  { id: "todos", label: "Ver todo" },
-]
+/** Navegación construida desde las categorías reales del catálogo (una sola categoría por producto). */
+function buildNav(categorias = []) {
+  return [
+    ...categorias.filter(c => c.id !== 'todos').map(c => ({ id: c.id, label: c.label })),
+    { id: "apple", label: "Apple", brand: true },
+    { id: "todos", label: "Ver todo" },
+  ]
+}
 
-export default function Header({ search, onSearchChange, onSelectCategory, activeCategory, activeBrand, cartCount = 0, onCart, onAccount, accountLabel = 'Mi cuenta', suggestions = [], onOpenProduct, onSeeAllResults }) {
+export default function Header({ search, onSearchChange, onSelectCategory, activeCategory, activeBrand, cartCount = 0, onCart, onAccount, accountLabel = 'Mi cuenta', suggestions = [], onOpenProduct, onSeeAllResults, categorias = [] }) {
+  const NAV = useMemo(() => buildNav(categorias), [categorias])
   const [open, setOpen] = useState(false)
   const [searchFocus, setSearchFocus] = useState(false)
   const closeAnd = fn => (...a) => { setOpen(false); fn(...a) }
