@@ -25,7 +25,34 @@ function productCard(p) {
   <a class="w-full h-9 bg-surface-container hover:bg-surface-container-high text-on-surface rounded-lg font-label-sm text-label-sm font-semibold flex items-center justify-center transition-colors" data-path="detalle-de-producto" data-sku="${esc(p.sku)}" href="#">Ver Ficha Técnica Completa</a></div></div>`
 }
 
+function simplifyStitch(doc) {
+  // Quitar seciones "de relleno" que cargan visualmente la home sin aportar a la búsqueda.
+  for (const section of [...doc.querySelectorAll('section')]) {
+    const t = section.textContent || ''
+    if (/La confianza de nuestra comunidad/i.test(t)) section.remove()
+    else if (/Necesit.s asesoramiento personalizado/i.test(t)) section.remove()
+  }
+}
+
+function addSearch(doc) {
+  if (doc.querySelector('[data-stitch-search]')) return
+  const header = doc.createElement('div')
+  header.className = 'sticky top-0 z-40 w-full bg-surface-pure/95 backdrop-blur border-b border-border-subtle px-margin py-3'
+  header.innerHTML = `<div class="w-full max-w-[1440px] mx-auto flex items-center gap-4">
+  <a class="font-extrabold text-xl tracking-tight text-on-surface shrink-0" data-path="catalogo-de-productos" href="#">Techno<span class="text-primary-container">Store</span></a>
+  <div class="relative flex-1 max-w-2xl" data-stitch-search-wrap>
+    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-base">search</span>
+    <input data-stitch-search type="search" placeholder="Buscar GPU, notebook, RAM, SKU…" aria-label="Buscar productos" class="w-full h-11 pl-10 pr-4 rounded-xl bg-surface-container-low border border-border-subtle text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary-container">
+    <div data-stitch-suggest class="hidden absolute z-50 top-full mt-2 w-full bg-surface-pure rounded-xl shadow-lg border border-border-subtle overflow-hidden"></div>
+  </div>
+  <a class="shrink-0 h-10 px-4 rounded-xl bg-trust-shield text-surface-pure font-label-md font-bold flex items-center gap-2" data-path="carrito-de-compras" href="#"><span class="material-symbols-outlined text-base">shopping_cart</span>Carrito</a>
+</div>`
+  doc.body.prepend(header)
+}
+
 export function hydrateStitch(doc, { products = [], categorias = [] } = {}) {
+  simplifyStitch(doc)
+  addSearch(doc)
   // Categorías reales en la grilla de "Categorías Populares"
   const catSection = [...doc.querySelectorAll('section')].find(s => /Explor.*Categor/i.test(s.textContent || ''))
   if (catSection && categorias.length) {
