@@ -1,0 +1,137 @@
+/* =========================================================
+ * TechnoStore — styles compartidos de UI (Etapa 2)
+ * Botones, badges, tarjetas de producto, campos de formulario, spinner.
+ * Colores/tipografía/espaciado: styles/tokens.css. Tema oscuro sobrio premium.
+ * ========================================================= */
+
+/* ----- Spinner ----- */
+.ts-spinner {
+  width: 1.1em; height: 1.1em;
+  border: 2px solid var(--ts-border);
+  border-top-color: var(--ts-accent);
+  border-radius: 50%;
+  animation: ts-spin var(--ts-duration-slow) linear infinite;
+}
+@keyframes ts-spin { to { transform: rotate(360deg); } }
+
+/* ----- Badges ----- */
+.ts-badge {
+  display: inline-flex; align-items: center; gap: var(--ts-space-1);
+  font-family: var(--ts-font-mono); font-size: var(--ts-text-xs); font-weight: 600;
+  padding: 2px 6px; border-radius: var(--ts-radius-full);
+  text-transform: uppercase; letter-spacing: 0.04em;
+  border: 1px solid var(--ts-border); color: var(--ts-text-dim); background: var(--ts-bg-elevated);
+}
+.ts-badge--new { color: var(--ts-success); border-color: rgba(59, 209, 155, 0.35); }
+.ts-badge--used { color: var(--ts-warning); border-color: rgba(255, 180, 77, 0.35); }
+.ts-badge--low { color: var(--ts-danger); border-color: rgba(240, 82, 82, 0.35); }
+.ts-badge--high { color: var(--ts-text-dim); border-color: var(--ts-border-strong); background: transparent; }
+.ts-badge--encargo { color: var(--ts-warning); border-color: rgba(255, 180, 77, 0.35); }
+.ts-badge--discount { color: var(--ts-accent); border-color: var(--ts-accent-muted); background: var(--ts-accent-muted); }
+.ts-badge--neutral { color: var(--ts-text-dim); border-color: var(--ts-border-strong); background: transparent; }
+
+/* ----- Botones ----- */
+.ts-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--ts-space-2);
+  font-family: var(--ts-font-sans); font-size: var(--ts-text-sm); font-weight: 600; line-height: 1.4;
+  padding: 0.55em 1.2em; min-height: 40px; border-radius: var(--ts-radius);
+  border: 1px solid transparent; background: var(--ts-bg-surface); color: var(--ts-text);
+  cursor: pointer; text-decoration: none;
+  transition: background var(--ts-duration) var(--ts-ease), border-color var(--ts-duration) var(--ts-ease),
+              color var(--ts-duration) var(--ts-ease), box-shadow var(--ts-duration) var(--ts-ease),
+              transform var(--ts-duration) var(--ts-ease);
+  letter-spacing: 0.01em;
+}
+.ts-btn:focus-visible { outline: 2px solid var(--ts-accent); outline-offset: 2px; }
+.ts-btn:disabled { cursor: not-allowed; opacity: 0.45; }
+
+.ts-btn--primary { background: var(--ts-accent); color: #0a0a0d; }
+.ts-btn--primary:hover:not(:disabled) { background: var(--ts-accent-strong); box-shadow: var(--ts-shadow-md); transform: translateY(-1px); }
+.ts-btn--primary:active:not(:disabled) { transform: translateY(0); }
+
+.ts-btn--secondary { background: var(--ts-bg-elevated); border-color: var(--ts-border); color: var(--ts-text); }
+.ts-btn--secondary:hover:not(:disabled) { border-color: var(--ts-border-strong); background: var(--ts-bg-overlay); }
+
+.ts-btn--ghost { background: transparent; color: var(--ts-text-dim); }
+.ts-btn--ghost:hover:not(:disabled) { background: var(--ts-accent-muted); color: var(--ts-accent); }
+
+.ts-btn--danger { color: var(--ts-danger); border-color: rgba(240, 82, 82, 0.35); }
+.ts-btn--danger:hover:not(:disabled) { background: rgba(240, 82, 82, 0.12); }
+
+.ts-btn--xs { min-height: 30px; font-size: var(--ts-text-xs); padding: 0.3em 0.7em; border-radius: var(--ts-radius-xs); }
+.ts-btn--sm { min-height: 34px; font-size: var(--ts-text-sm); }
+.ts-btn--md { min-height: 40px; font-size: var(--ts-text-sm); }
+.ts-btn--lg { min-height: 46px; font-size: var(--ts-text-base); padding: 0.8em 1.4em; border-radius: var(--ts-radius-lg); }
+
+/* ----- Tarjeta de producto ----- */
+.ts-product-card {
+  display: block;
+  background: var(--ts-bg-elevated);
+  border: 1px solid var(--ts-border);
+  border-radius: var(--ts-radius-lg);
+  overflow: hidden;
+  transition: transform var(--ts-duration) var(--ts-ease), border-color var(--ts-duration) var(--ts-ease),
+              box-shadow var(--ts-duration) var(--ts-ease);
+}
+.ts-product-card:hover { border-color: var(--ts-border-strong); box-shadow: var(--ts-shadow-md); transform: translateY(-2px); }
+.ts-product-card:focus-within { box-shadow: var(--ts-shadow-md); }
+
+.ts-product-card__media {
+  position: relative;
+  aspect-ratio: 16 / 11;
+  background: var(--ts-bg-surface);
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--ts-space-3);
+}
+.ts-product-card__media img {
+  width: 100%; height: 100%; object-fit: contain; object-position: center;
+  transition: transform var(--ts-duration-slow) var(--ts-ease);
+}
+.ts-product-card:hover .ts-product-card__media img { transform: scale(1.04); }
+
+.ts-product-card__badges {
+  position: absolute; top: var(--ts-space-2); right: var(--ts-space-2);
+  display: flex; flex-direction: column; gap: var(--ts-space-1); align-items: flex-end;
+}
+
+.ts-product-card__body {
+  display: flex; flex-direction: column; gap: var(--ts-space-2);
+  padding: var(--ts-space-3) var(--ts-space-4) var(--ts-space-4);
+}
+.ts-product-card__sku { font-family: var(--ts-font-mono); font-size: var(--ts-text-xs); color: var(--ts-text-faint); letter-spacing: 0.02em; }
+.ts-product-card__title { font-size: var(--ts-text-md); font-weight: 600; line-height: var(--ts-lh-tight); }
+.ts-product-card__specs { display: flex; gap: var(--ts-space-1); flex-wrap: wrap; }
+.ts-product-card__specs span {
+  font-family: var(--ts-font-mono); font-size: var(--ts-text-xs); color: var(--ts-text-dim);
+  border: 1px solid var(--ts-border); border-radius: var(--ts-radius-xs);
+  padding: 1px 6px; letter-spacing: 0.03em;
+}
+.ts-product-card__price { display: flex; align-items: baseline; gap: var(--ts-space-3); flex-wrap: wrap; }
+.ts-product-card__price .ts-price { font-size: var(--ts-text-xl); font-weight: 700; }
+.ts-product-card__actions { display: flex; gap: var(--ts-space-2); margin-top: auto; }
+.ts-product-card__actions .ts-btn { flex: 1; }
+
+/* ----- Campos de formulario ----- */
+.ts-field { display: grid; gap: var(--ts-space-2); }
+.ts-field-label {
+  font-family: var(--ts-font-sans); font-size: var(--ts-text-xs); font-weight: 600; color: var(--ts-text-dim);
+}
+.ts-field-label-req { color: var(--ts-danger); }
+.ts-field-hint { font-size: var(--ts-text-xs); color: var(--ts-text-faint); }
+.ts-field-error { font-family: var(--ts-font-mono); font-size: var(--ts-text-xs); color: var(--ts-danger); }
+
+.ts-field-input, .ts-field-select, .ts-field-textarea {
+  width: 100%;
+  font-family: var(--ts-font-sans); font-size: var(--ts-text-base); line-height: 1.5;
+  padding: 0.55em 0.75em;
+  border: 1px solid var(--ts-border-strong); border-radius: var(--ts-radius);
+  background: var(--ts-bg-surface); color: var(--ts-text);
+  transition: border-color var(--ts-duration) var(--ts-ease), box-shadow var(--ts-duration) var(--ts-ease);
+}
+.ts-field-input::placeholder, .ts-field-select::placeholder, .ts-field-textarea::placeholder { color: var(--ts-text-faint); }
+.ts-field-input:focus, .ts-field-select:focus, .ts-field-textarea:focus {
+  outline: none; border-color: var(--ts-accent);
+  box-shadow: 0 0 0 3px var(--ts-accent-muted);
+}
+.ts-field-input:disabled, .ts-field-select:disabled, .ts-field-textarea:disabled { opacity: 0.5; cursor: not-allowed; }
+.ts-field-input[aria-invalid="true"], .ts-field-select[aria-invalid="true"], .ts-field-textarea[aria-invalid="true"] { border-color: var(--ts-danger); }
