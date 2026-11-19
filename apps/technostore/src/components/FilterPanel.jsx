@@ -1,8 +1,17 @@
 import { useState } from "react"
 
-// Categorías de componentes que agrupa la vista virtual "Hardware"
-const HARDWARE_CATS = ["gpus", "procesadores", "ram", "ram-sodimm", "memorias", "ssd", "ssd-nvme", "ssd-sata", "coolers", "gabinetes", "watercooling"]
-const isHardware = c => HARDWARE_CATS.includes(String(c || "").toLowerCase())
+// Categorías que forman el grupo virtual "Hardware" (slugs viejos + genéricos de Elit).
+export const HARDWARE_CATS = [
+  'gpus', 'procesadores', 'ram', 'ram-sodimm', 'memorias', 'ssd', 'ssd-nvme', 'ssd-sata',
+  'coolers', 'gabinetes', 'watercooling',
+  'hardware', 'computacion', 'computadoras', 'componentes', 'placas-de-video',
+  'memorias-ram', 'almacenamiento', 'discos-rigidos', 'workstations', 'servidores',
+]
+const HARDWARE_KEYWORDS = /hardware|comput|component|gpu|placas?|video|grafic|ram|memo|ssd|disco|almacen|storage|procesad|cpu|mother|cooler|gabinete|water|workstation|servidor|fuente|energia/
+export function isHardware(c) {
+  const k = String(c || '').toLowerCase()
+  return HARDWARE_CATS.includes(k) || HARDWARE_KEYWORDS.test(k)
+}
 
 const CATEGORIAS = [
   { id: "todos", label: "Todos" },
@@ -224,4 +233,4 @@ export default function FilterPanel({
   )
 }
 
-export { rangoMatch, ORDENES, HARDWARE_CATS, isHardware, CATEGORIAS, CALIDADES, BAT_MIN_OPTS }
+export { rangoMatch, ORDENES, CATEGORIAS, CALIDADES, BAT_MIN_OPTS }
