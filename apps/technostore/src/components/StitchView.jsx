@@ -71,24 +71,38 @@ export default function StitchView({ name, inline = false, products = [], catego
     return () => root.removeEventListener('click', onClick)
   }, [html, onClose, onAction, onProduct, onAdd])
 
-  // Catálogo unificado: filtros (categoría, marca, precio, oferta) y orden.
+  // Catálogo unificado: filtros, orden y paginación (12 por página).
   useEffect(() => {
     if (!html || !ref.current) return
     const root = ref.current
     const catalog = root.querySelector('[data-catalog]')
     if (!catalog) return
+    const PAGE = 12
     const grid = catalog.querySelector('[data-catalog-grid]')
     const items = [...grid.querySelectorAll('[data-catalog-item]')]
     const count = catalog.querySelector('[data-catalog-count]')
+    const info = catalog.querySelector('[data-page-info]')
+    const pager = catalog.querySelector('[data-page-buttons]')
     const val = sel => catalog.querySelector(`[data-filter="${sel}"]`)?.value || 'todos'
+    let page = 1
+    let pages = 1
     const apply = () => {
       const cat = val('cat'), marca = val('marca'), precio = val('precio'), oferta = val('oferta')
       const orden = catalog.querySelector('[data-order]')?.value || 'destacados'
-      let vis = 0
-      for (const el of items) {
+      const PRIORITY = ['hardware', 'memorias', 'computadoras', 'almacenamiento', 'perifericos', 'audio', 'imagen', 'conectividad', 'seguridad', 'cables', 'insumos']
+      const prio = d => { const i = PRIORITY.indexOf(d.cat.split(' ')[0]); return i === -1 ? 50 : i }
+      const cmp = (a, b) => {
+        const da = a.dataset, db = b.dataset
+        if (orden === 'precio-asc') return Number(da.precio) - Number(db.precio)
+        if (orden === 'precio-desc') return Number(db.precio) - Number(da.precio)
+        if (orden === 'nombre') return (da.nombre || '').localeCompare(db.nombre || '')
+        if (orden === 'oferta') return (Number(db.oferta) - Number(da.oferta)) || (Number(db.precio) - Number(da.precio))
+        return (prio(da) - prio(db)) || (Number(db.stock) - Number(da.stock)) || ((da.nombre || '').localeCompare(db.nombre || ''))
+      }
+      const visible = items.filter(el => {
         const d = el.dataset
         const p = Number(d.precio) || 0
-        const ok = (cat === 'todos' || d.cat === cat)
+        return (cat === 'todos' || d.cat.split(' ').includes(cat))
           && (marca === 'todos' || d.marca === marca)
           && (oferta !== 'si' || d.oferta === '1')
           && (precio === 'todos'
@@ -96,26 +110,44 @@ export default function StitchView({ name, inline = false, products = [], catego
             || (precio === '100000-500000' && p >= 100000 && p <= 500000)
             || (precio === '500000-1000000' && p >= 500000 && p <= 1000000)
             || (precio === '1000000+' && p > 1000000))
-        el.style.display = ok ? '' : 'none'
-        if (ok) vis++
+      }).sort(cmp)
+      pages = Math.max(1, Math.ceil(visible.length / PAGE))
+      page = Math.min(Math.max(1, page), pages)
+      const shown = visible.slice((page - 1) * PAGE, page * PAGE)
+      for (const el of items) el.style.display = 'none'
+      for (const el of shown) { el.style.display = ''; grid.appendChild(el) }
+      if (count) count.textContent = String(visible.length)
+      if (info) info.textContent = visible.length ? `Página ${page} de ${pages} · ${shown.length} productos` : 'Sin resultados'
+      if (pager) {
+        const nums = []
+        for (let i = 1; i <= pages; i++) {
+          if (i === 1 || i === pages || Math.abs(i - page) <= 1) nums.push(i)
+          else if (nums[nums.length - 1] !== '…') nums.push('…')
+        }
+        pager.innerHTML = `<button type="button" data-page="prev" ${page === 1 ? 'disabled' : ''} class="w-9 h-9 rounded-lg border border-border-subtle text-on-surface font-bold">‹</button>`
+          + nums.map(n => n === '…' ? '<span class="px-1 text-on-surface-variant">…</span>'
+            : `<button type="button" data-page="${n}" class="w-9 h-9 rounded-lg font-label-md font-bold ${n === page ? 'bg-primary-container text-on-primary' : 'border border-border-subtle text-on-surface'}">${n}</button>`).join('')
+          + `<button type="button" data-page="next" ${page === pages ? 'disabled' : ''} class="w-9 h-9 rounded-lg border border-border-subtle text-on-surface font-bold">›</button>`
       }
-      if (count) count.textContent = String(vis)
-      const cmp = (a, b) => {
-        const da = a.dataset, db = b.dataset
-        if (orden === 'precio-asc') return Number(da.precio) - Number(db.precio)
-        if (orden === 'precio-desc') return Number(db.precio) - Number(da.precio)
-        if (orden === 'nombre') return (da.nombre || '').localeCompare(db.nombre || '')
-        if (orden === 'oferta') return (Number(db.oferta) - Number(da.oferta)) || (Number(db.precio) - Number(da.precio))
-        return (Number(db.stock) - Number(da.stock)) || ((da.nombre || '').localeCompare(db.nombre || ''))
-      }
-      for (const el of [...items].sort(cmp)) grid.appendChild(el)
     }
-    const onChange = e => { if (e.target.matches('[data-filter], [data-order]')) apply() }
+    const onChange = e => {
+      if (!e.target.matches('[data-filter], [data-order]')) return
+      page = 1
+      apply()
+    }
     const onClick = e => {
+      const p = e.target.closest('[data-page]')
+      if (p) {
+        const v = p.getAttribute('data-page')
+        page = v === 'prev' ? Math.max(1, page - 1) : v === 'next' ? Math.min(pages, page + 1) : Number(v)
+        apply()
+        return
+      }
       if (!e.target.closest('[data-catalog-reset]')) return
       for (const s of catalog.querySelectorAll('[data-filter]')) s.value = 'todos'
       const order = catalog.querySelector('[data-order]')
       if (order) order.value = 'destacados'
+      page = 1
       apply()
     }
     root.addEventListener('change', onChange)

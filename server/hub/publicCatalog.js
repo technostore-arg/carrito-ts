@@ -24,6 +24,8 @@ export function buildPublicProduct(input) {
     fabricante: m.brand || 'Genérica',
     category: m.category,
     categoria: m.category,
+    // Las memorias se listan también como hardware y como accesorio.
+    categorias: [m.category, ...(String(m.category || '').toLowerCase() === 'memorias' ? ['hardware', 'accesorios'] : [])],
     categoria_elit: staticData.categoria_elit || m.category,
     subcategoria: staticData.subcategoria_elit || '',
     price: quote.price_transfer,
@@ -66,7 +68,7 @@ export function buildPublicCatalog(inputs = []) {
 /** Carga los inputs del hub para el catálogo público. */
 export async function loadPublicInputs(pool, { limit = 500, sku = null } = {}) {
   const config = await getPricingConfig(pool)
-  const params = [Math.min(Math.max(limit, 1), 1000)]
+  const params = [Math.min(Math.max(limit, 1), 5000)]
   let where = 'is_active = TRUE'
   if (sku) { where += ' AND (sku_interno = $2 OR CAST(id AS TEXT) = $2)'; params.push(String(sku)) }
   const { rows } = await pool.query(
@@ -97,7 +99,8 @@ export async function loadPublicInputs(pool, { limit = 500, sku = null } = {}) {
 }
 
 export async function getPublicCatalogFromHub(pool) {
-  return buildPublicCatalog(await loadPublicInputs(pool))
+  // Sin tope de 500: las memorias y otras categorías pueden estar más adelante en el id.
+  return buildPublicCatalog(await loadPublicInputs(pool, { limit: 5000 }))
 }
 
 export async function getPublicProductFromHub(skuOrId, pool) {

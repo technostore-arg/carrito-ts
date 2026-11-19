@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 /** Solicitud de asesoramiento/armado de PC. Se guarda en /api/consultas (Firestore). */
 export default function AsesoramientoModal({ open, onClose }) {
@@ -6,6 +6,13 @@ export default function AsesoramientoModal({ open, onClose }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
+
+  useEffect(() => {
+    if (!open) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prev }
+  }, [open])
 
   if (!open) return null
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }))

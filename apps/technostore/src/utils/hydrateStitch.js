@@ -18,7 +18,8 @@ function productCard(p) {
   const precio = Number(p.precio_transferencia ?? p.precio) || 0
   const lista = Number(p.precio_lista ?? p.precio_mercadopago) || 0
   const oferta = lista > precio ? 1 : 0
-  return `<div class="bg-surface-pure rounded-2xl p-5 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between group relative" data-sku="${esc(p.sku)}" data-catalog-item data-cat="${esc(p.categoria || '')}" data-marca="${brand}" data-precio="${precio}" data-oferta="${oferta}" data-nombre="${esc(p.nombre || p.sku || '')}" data-stock="${Number(p.stock) || 0}">
+  const cats = Array.isArray(p.categorias) && p.categorias.length ? p.categorias : [p.categoria || '']
+  return `<div class="bg-surface-pure rounded-2xl p-5 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between group relative" data-sku="${esc(p.sku)}" data-catalog-item data-cat="${esc(cats.join(' '))}" data-marca="${brand}" data-precio="${precio}" data-oferta="${oferta}" data-nombre="${esc(p.nombre || p.sku || '')}" data-stock="${Number(p.stock) || 0}">
   <div class="flex items-center justify-between mb-3"><span class="px-2.5 py-1 bg-surface-container-high text-primary font-label-sm text-label-sm rounded-md font-bold flex items-center gap-1">${brand}</span><span class="px-2 py-0.5 bg-secondary-fixed/30 text-secondary font-label-sm text-label-sm rounded-md font-semibold">${stock}</span></div>
   <div class="w-full h-48 bg-surface-container-low rounded-xl p-4 flex items-center justify-center overflow-hidden mb-4 relative"><img class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" src="${esc(p.imagenes?.[0] || '')}" alt=""></div>
   <div class="flex flex-col flex-1"><h3 class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight mt-0.5">${esc(p.nombre || p.sku || '')}</h3>
@@ -26,6 +27,46 @@ function productCard(p) {
   <p class="font-label-sm text-label-sm text-secondary font-bold mt-0.5">${money(p.precio_mercadopago ?? p.precio_lista)} en tarjeta</p></div>
   <div class="mt-5 space-y-2"><button class="w-full h-11 bg-primary-container hover:bg-primary text-on-primary rounded-xl font-label-md text-label-md font-bold flex items-center justify-center gap-2 shadow-sm transition-colors" data-add="${esc(p.sku)}">Agregar al Carrito</button>
   <a class="w-full h-9 bg-surface-container hover:bg-surface-container-high text-on-surface rounded-lg font-label-sm text-label-sm font-semibold flex items-center justify-center transition-colors" data-path="detalle-de-producto" data-sku="${esc(p.sku)}" href="#">Ver Ficha Técnica Completa</a></div></div>`
+}
+
+// Unificación de copy: no prometer tipo de factura ni garantías de 12 meses.
+const COPY_FIXES = [
+  [/Factura\s+Oficial\s+A\s*y\s*B/gi, 'Factura'],
+  [/Facturaci[oó]n\s+Autom[aá]tica\s+A\s*y\s*B/gi, 'Facturación automática'],
+  [/Factura\s+A\s*o\s*B\s+Autom[aá]tica/gi, 'Factura automática'],
+  [/Factura\s+Electr[oó]nica\s+A/gi, 'Factura electrónica'],
+  [/Factura\s+A\s+AFIP/gi, 'Factura'],
+  [/Factura\s+legal\s+AFIP/gi, 'Factura'],
+  [/Factura\s+A\s+deducible/gi, 'Factura deducible'],
+  [/Factura\s+A\s*y\s*B/gi, 'Factura'],
+  [/Factura\s+A\s*o\s*B/gi, 'Factura'],
+  [/Factura\s+A\s*\/\s*B/gi, 'Factura'],
+  [/Factura\s+A\b/gi, 'Factura'],
+  [/Factura\s+B\b/gi, 'Factura'],
+  [/Facturaci[oó]n\s+A\s*\/\s*B\s+electr[oó]nica/gi, 'Facturación electrónica'],
+  [/Facturaci[oó]n\s+fiscal\s+A\s*y\s*B/gi, 'Facturación fiscal'],
+  [/Facturaci[oó]n\s+A\s*y\s*B/gi, 'Facturación'],
+  [/Facturaci[oó]n\s+AFIP/gi, 'Facturación'],
+  [/Emisi[oó]n\s+autom[aá]tica\s+A\s+y\s+B/gi, 'Emisión automática'],
+  [/\bA\s*\/\s*B\b/gi, ''],
+  [/\bA\s+(?:o|y)\s+B\b/gi, ''],
+  [/garant[ií]a\s+oficial\s+directa\s+del\s+fabricante\s+por\s+12\s+meses/gi, 'garantía del fabricante'],
+  [/garant[ií]a\s+integral\s+de\s+12\s+meses/gi, 'garantía'],
+  [/Garant[ií]a\s+Oficial\s+12\s+Meses/gi, 'Productos originales con factura'],
+]
+
+function normalizeCopy(doc) {
+  const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT)
+  const nodes = []
+  while (walker.nextNode()) nodes.push(walker.currentNode)
+  for (const node of nodes) {
+    const tag = node.parentElement?.tagName
+    if (tag === 'SCRIPT' || tag === 'STYLE') continue
+    const before = node.nodeValue
+    let after = before
+    for (const [re, rep] of COPY_FIXES) after = after.replace(re, rep)
+    if (after !== before) node.nodeValue = after.replace(/[ \t]{2,}/g, ' ')
+  }
 }
 
 function simplifyStitch(doc) {
@@ -182,35 +223,89 @@ function reworkHome(doc, products = []) {
     }
   }
 
-  // 2b) Medios de pago: tira fina y discreta (sin descripciones ni cajas de color).
+  // 2b) Medios de pago: una sola fila pareja, sin cajas ni descripciones.
   const pay = [...doc.querySelectorAll('section')].find(s => /SiPago Credicoop|Transferencia \/ DEBIN/i.test(s.textContent || ''))
   if (pay) {
+    const cards = [...pay.querySelectorAll('.grid > div')].map(card => ({
+      icon: card.querySelector('.material-symbols-outlined')?.textContent || 'payments',
+      title: card.querySelector('h2')?.textContent.trim() || '',
+      badge: [...card.querySelectorAll('span')].map(s => s.textContent.trim()).find(t => /OFF|Cuotas|Cabal|Tech/i.test(t)) || '',
+    }))
     pay.className = 'w-full px-margin py-2 bg-surface-subtle border-b border-border-subtle'
-    for (const card of pay.querySelectorAll('.grid > div')) {
-      card.className = 'flex items-center gap-2 py-1 px-2'
-      const icon = card.querySelector('div.w-10')
-      if (icon) {
-        icon.className = 'w-6 h-6 rounded-md bg-surface-container text-on-surface-variant flex items-center justify-center shrink-0'
-        const sym = icon.querySelector('span')
-        if (sym) sym.className = 'material-symbols-outlined text-sm'
-      }
-      for (const p of card.querySelectorAll('p')) p.remove()
-      for (const h of card.querySelectorAll('h2')) h.className = 'font-label-sm text-label-sm text-on-surface-variant truncate'
-      for (const b of card.querySelectorAll('span.px-2')) b.className = 'font-label-sm text-label-sm text-on-surface-variant'
-    }
+    pay.innerHTML = `<div class="w-full flex flex-wrap items-center justify-center gap-x-8 gap-y-2 py-1">
+      ${cards.map(c => `<div class="flex items-center gap-2 shrink-0">
+        <span class="w-7 h-7 rounded-md bg-surface-pure text-primary flex items-center justify-center shrink-0 shadow-sm"><span class="material-symbols-outlined text-base">${esc(c.icon)}</span></span>
+        <span class="font-label-sm text-label-sm font-semibold text-on-surface whitespace-nowrap">${esc(c.title)}</span>
+        ${c.badge ? `<span class="font-label-sm text-label-sm text-on-surface-variant whitespace-nowrap">· ${esc(c.badge)}</span>` : ''}
+      </div>`).join('')}
+    </div>`
   }
 
-  // 3) Marcas como tira divisoria fina (no un bloque).
-  const footerStrip = doc.querySelector('footer .bg-surface-subtle')
-  if (footerStrip) {
-    footerStrip.className = footerStrip.className.replace(/\bpy-6\b/, 'py-2')
-    for (const el of footerStrip.querySelectorAll('h4, p, .text-2xl')) el.remove()
+  // 3) Garantías: nada de "12 meses con cambio directo"; disclaimer + botón RMA.
+  for (const el of doc.querySelectorAll('span, p, li')) {
+    if (el.children.length) continue
+    const t = (el.textContent || '').trim()
+    if (/Garantía Oficial 12 Meses/i.test(t)) el.textContent = 'Productos originales con factura'
+    else if (/garantía oficial directa del fabricante por 12 meses/i.test(t)) el.textContent = 'Productos originales con factura electrónica A o B. Las garantías se gestionan por RMA.'
+    else if (/30 días de prueba y cambio directo/i.test(t)) el.textContent = 'Gestión de garantías y RMA'
+    else if (/RMA y servicio técnico express/i.test(t)) el.textContent = 'Seguimiento por email'
+    else if (/validación inmediata de garantía oficial de fábrica/i.test(t)) el.textContent = 'con número de serie y factura correspondiente.'
+    else if (/Póliza de reposición total automática/i.test(t)) el.textContent = 'Embalaje reforzado para proteger el producto durante el transporte.'
+  }
+  const compra = [...doc.querySelectorAll('footer h4')].find(h => /Compra Protegida/i.test(h.textContent || ''))
+  if (compra) {
+    const block = compra.parentElement
+    const rma = doc.createElement('button')
+    rma.setAttribute('data-path', 'rma')
+    rma.className = 'mt-3 px-4 py-2 rounded-lg bg-primary-container text-on-primary font-label-md font-bold'
+    rma.textContent = 'GARANTÍA / RMA'
+    block.appendChild(rma)
+    const note = doc.createElement('p')
+    note.className = 'font-label-sm text-label-sm text-on-surface-variant mt-2 leading-relaxed'
+    note.textContent = 'Las garantías están sujetas a revisión del producto, con un plazo de hasta 7 días para la resolución. Luego se aplican los plazos de garantía de cada marca.'
+    block.appendChild(note)
   }
 
-  // 4) CyberTrust al final, antes del footer.
+  // 4) Tira inferior de pasarelas: SOLO el botón de información fiscal.
+  const pasarelas = doc.querySelector('footer > div.bg-surface-subtle')
+  if (pasarelas) {
+    pasarelas.className = 'bg-surface-subtle py-2 border-b border-border-subtle'
+    pasarelas.innerHTML = `<div class="w-full px-margin flex items-center justify-between gap-3">
+      <span class="font-label-sm text-label-sm text-on-surface-variant">Datos fiscales y facturación</span>
+      <button type="button" data-path="informacion-fiscal" class="px-3 py-1.5 rounded-lg bg-surface-pure border border-border-subtle text-primary font-label-md font-bold">Información fiscal</button>
+    </div>`
+  }
+  // Tira de marcas: divisora fina, logos con tipografía y tamaños uniformes.
+  const brands = [...doc.querySelectorAll('section')].find(s => /Marcas Oficiales y Partners/i.test(s.textContent || ''))
+  if (brands) {
+    const MARCAS = [
+      ['Apple', 'Auth Reseller'], ['SONY', 'Official'], ['SAMSUNG', ''],
+      ['NVIDIA', 'GeForce Partner'], ['ASUS ROG', ''], ['logitech G', ''],
+      ['Kingston FURY', ''], ['intel', 'Gold'], ['Lenovo', ''],
+    ]
+    brands.className = 'w-full px-margin py-2 bg-surface-subtle border-y border-border-subtle'
+    brands.innerHTML = `<div class="w-full flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+      <span class="font-label-sm text-label-sm font-bold uppercase tracking-wider text-on-surface-variant whitespace-nowrap">Marcas</span>
+      ${MARCAS.map(([n, t]) => `<div class="flex items-center gap-1.5 shrink-0">
+        <span class="font-label-md text-label-md font-bold tracking-tight text-on-surface-variant whitespace-nowrap">${esc(n)}</span>
+        ${t ? `<span class="font-label-sm text-label-sm text-primary bg-surface-pure px-1.5 py-0.5 rounded whitespace-nowrap">${esc(t)}</span>` : ''}
+      </div>`).join('')}
+    </div>`
+  }
+
+  // 5) CyberTrust: franja fina al final (antes ocupaba ~585px y robaba protagonismo).
   const trust = [...doc.querySelectorAll('section')].find(s => /Seguridad de nivel corporativo/i.test(s.textContent || ''))
   const footer = doc.querySelector('footer')
-  if (trust && footer) { trust.remove(); footer.before(trust) }
+  if (trust) {
+    trust.setAttribute('data-cybertrust', '')
+    trust.className = 'w-full px-margin py-3 bg-surface-subtle border-t border-border-subtle'
+    trust.innerHTML = `<div class="w-full flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center">
+      <span class="material-symbols-outlined text-base text-primary">verified_user</span>
+      <b class="font-label-sm text-label-sm text-on-surface">CyberTrust™</b>
+      <span class="font-label-sm text-label-sm text-on-surface-variant">Compra protegida: productos originales, datos seguros y factura.</span>
+    </div>`
+    if (footer) { trust.remove(); footer.before(trust) }
+  }
 }
 
 function buildCatalog(products = [], categorias = []) {
@@ -243,17 +338,22 @@ function buildCatalog(products = [], categorias = []) {
   <div data-catalog-grid class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
     ${items.map(productCard).join('')}
   </div>
+  <div class="flex flex-wrap items-center justify-between gap-3 mt-6 pt-4 border-t border-border-subtle" data-catalog-pagination>
+    <span class="font-label-md text-on-surface-variant" data-page-info></span>
+    <div class="flex items-center gap-1.5" data-page-buttons></div>
+  </div>
 </section>`
 }
 
 export function hydrateStitch(doc, { products = [], categorias = [] } = {}) {
+  normalizeCopy(doc)
   simplifyStitch(doc)
   addSearch(doc)
   seasonalAndHero(doc, products)
   reworkHome(doc, products)
   // Catálogo único con filtros: reemplaza "categorías + destacados + más vendidos".
   if (products.length && !doc.querySelector('[data-catalog]')) {
-    const trust = [...doc.querySelectorAll('section')].find(s => /Seguridad de nivel corporativo/i.test(s.textContent || ''))
+    const trust = doc.querySelector('[data-cybertrust]') || [...doc.querySelectorAll('section')].find(s => /Seguridad de nivel corporativo/i.test(s.textContent || ''))
     const footer = doc.querySelector('footer')
     const holder = doc.createElement('div')
     holder.innerHTML = buildCatalog(products, categorias)

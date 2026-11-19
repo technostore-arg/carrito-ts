@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef } from "react"
+import { useMemo, useState, useEffect, useRef, lazy, Suspense } from "react"
 import Header from "./components/Header"
 import Hero from "./components/Hero"
 import Home from "./components/Home"
@@ -20,6 +20,7 @@ import AppleSpotlight from "./components/AppleSpotlight"
 import Footer from "./components/Footer"
 import CustomerAuth from "./components/CustomerAuth"
 import AsesoramientoModal from "./components/AsesoramientoModal"
+const RmaModal = lazy(() => import("./components/RmaModal"))
 import { authClient } from "./lib/auth.js"
 import WhatsAppFloat from "./components/WhatsAppFloat"
 import { useCart } from "./context/CartContext"
@@ -37,6 +38,7 @@ export default function App() {
   const [stitchExtra, setStitchExtra] = useState(null)
   const [stitchMode, setStitchMode] = useState(true)
   const [asesoramientoOpen, setAsesoramientoOpen] = useState(false)
+  const [rmaOpen, setRmaOpen] = useState(false)
   const [stitchScreen, setStitchScreen] = useState('home')
 
   // El wrapper de Neon canjea el neon_auth_session_verifier al llamar getSession.
@@ -341,6 +343,7 @@ export default function App() {
               if (action === 'account') setAuthOpen(true)
               if (action === 'catalog') scrollToCatalog()
               if (action === 'advisory') setAsesoramientoOpen(true)
+              if (action === 'rma') setRmaOpen(true)
             }}
             onProduct={(sku) => {
               const p = allProducts.find(x => x.sku === sku)
@@ -415,6 +418,7 @@ export default function App() {
       {checkoutOpen && <Checkout onClose={() => setCheckoutOpen(false)} />}
       <CustomerAuth open={authOpen} onClose={() => setAuthOpen(false)} initialError={authError} session={authSession} onSession={setAuthSession} />
       <AsesoramientoModal open={asesoramientoOpen} onClose={() => setAsesoramientoOpen(false)} />
+      <Suspense fallback={null}>{rmaOpen && <RmaModal open onClose={() => setRmaOpen(false)} />}</Suspense>
       {selectedProduct && <ProductDetail producto={selectedProduct} onClose={() => setSelectedProduct(null)} onAddToCart={addToCart} />}
       {(authOpen || checkoutOpen || drawerOpen || selectedProduct || stitchExtra) && (
         <StitchView

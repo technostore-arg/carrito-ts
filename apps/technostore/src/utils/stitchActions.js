@@ -4,6 +4,7 @@ const GROUPS = {
   catalog: ['catalogo-de-productos', 'catalogo', 'explore-catalog', 'ofertas', 'inicio', 'home-technostore-desktop-tecnologia-y-confianza', 'product-search', 'catalog'],
   account: ['mis-pedidos', 'order-history', 'mi-cuenta-y-garantias', 'iniciar-sesion', 'registro-de-usuario'],
   advisory: ['asesoramiento', 'asesoramiento-pc', 'solicitar-asesoramiento', 'armado-de-pc'],
+  rma: ['rma', 'garantia-rma', 'garantia'],
   security: ['garantias-y-seguridad', 'data-security', 'soporte-garantias', 'security-center'],
   payments: ['promociones-bancarias', 'ofertas-y-bancos', 'payment-method'],
   shipping: ['shipping-address'],

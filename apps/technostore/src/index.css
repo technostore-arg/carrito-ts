@@ -885,9 +885,9 @@ body:has(.modal-backdrop) .whatsapp-float { display: none !important; }
 .account-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: var(--radius-pill); font-size: 13px; color: var(--muted); white-space: nowrap; }
 .account-btn:hover { background: var(--accent-soft); color: var(--accent); }
 .account-btn span { font-weight: 500; }
-.auth-layer { position: fixed; inset: 0; z-index: 86; display: grid; place-items: center; padding: 20px; }
+.auth-layer { position: fixed; inset: 0; z-index: 86; display: grid; place-items: center; padding: 20px; overflow-y: auto; overscroll-behavior: contain; }
 .auth-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.35); backdrop-filter: blur(3px); }
-.auth-card { position: relative; width: min(400px, 100%); background: #fff; border-radius: 18px; padding: 26px 24px; box-shadow: 0 20px 60px rgba(0,0,0,.16); }
+.auth-card { position: relative; width: min(400px, 100%); max-height: calc(100dvh - 40px); overflow-y: auto; overscroll-behavior: contain; background: #fff; border-radius: 18px; padding: 26px 24px; box-shadow: 0 20px 60px rgba(0,0,0,.16); }
 .auth-close { position: absolute; top: 12px; right: 12px; }
 .auth-card h2 { font-size: 20px; font-weight: 700; margin-bottom: 14px; }
 .auth-tabs { display: flex; gap: 6px; margin-bottom: 16px; border-bottom: 1px solid var(--border-light); }
