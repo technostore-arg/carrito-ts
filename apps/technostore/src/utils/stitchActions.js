@@ -14,6 +14,8 @@ const GROUPS = {
 
 export function resolveStitchAction(path = '') {
   const key = String(path || '').toLowerCase()
+  // Los pasos del checkout son distintos entre sí: preservar el path exacto.
+  if (/^checkout-/.test(key)) return key
   for (const [action, paths] of Object.entries(GROUPS)) {
     if (paths.includes(key)) return action
   }

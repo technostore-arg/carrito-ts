@@ -37,6 +37,8 @@ export default function App() {
   const [authSession, setAuthSession] = useState(null)
   const [stitchCatalog, setStitchCatalog] = useState(true)
   const [stitchExtra, setStitchExtra] = useState(null)
+  // Única fuente de verdad del checkout: null | 'carrito' | 'envio' | 'pago' | 'confirmacion'
+  const [checkoutStep, setCheckoutStep] = useState(null)
   const [asesoramientoOpen, setAsesoramientoOpen] = useState(false)
   const [rmaOpen, setRmaOpen] = useState(false)
   const [stitchScreen, setStitchScreen] = useState('home')
@@ -330,11 +332,10 @@ export default function App() {
           if (action === 'catalog') scrollToCatalog()
           if (action === 'advisory') setAsesoramientoOpen(true)
           if (action === 'rma') setRmaOpen(true)
-          if (action === 'checkout') setCheckoutOpen(true)
-          if (action === 'checkout-envio') { setDrawerOpen(false); setStitchExtra('envio') }
-          if (action === 'checkout-pago') setStitchExtra('pago')
-          if (action === 'checkout-confirmar') setStitchExtra('confirmacion')
-          if (action === 'checkout-carrito') { setStitchExtra(null); setDrawerOpen(true) }
+          if (action === 'checkout' || action === 'checkout-carrito') setCheckoutStep('carrito')
+          if (action === 'checkout-envio') setCheckoutStep('envio')
+          if (action === 'checkout-pago') setCheckoutStep('pago')
+          if (action === 'checkout-confirmar') setCheckoutStep('confirmacion')
         }}
         onProduct={(sku) => {
           const p = allProducts.find(x => x.sku === sku)
@@ -350,9 +351,9 @@ export default function App() {
       <CustomerAuth open={authOpen} onClose={() => setAuthOpen(false)} initialError={authError} session={authSession} onSession={setAuthSession} />
       <AsesoramientoModal open={asesoramientoOpen} onClose={() => setAsesoramientoOpen(false)} />
       <Suspense fallback={null}>{rmaOpen && <RmaModal open onClose={() => setRmaOpen(false)} />}</Suspense>
-      {(checkoutOpen || drawerOpen || selectedProduct || stitchExtra) && (
+      {(checkoutStep || selectedProduct || stitchExtra) && (
         <StitchView
-          name={stitchExtra || (checkoutOpen ? 'pago' : drawerOpen ? 'carrito' : 'ficha')}
+          name={checkoutStep || stitchExtra || 'ficha'}
           products={allProducts}
           cartItems={cartItems}
           product={selectedProduct}
@@ -360,19 +361,18 @@ export default function App() {
           onAdd={(sku) => { const p = allProducts.find(x => x.sku === sku); if (p) addToCart(p) }}
           onQty={(sku, delta) => updateQty(sku, Number(delta) || 0)}
           onRemove={(sku) => removeFromCart(sku)}
-          onClose={() => { setAuthOpen(false); setCheckoutOpen(false); setDrawerOpen(false); setSelectedProduct(null); setStitchExtra(null) }}
+          onClose={() => { setCheckoutStep(null); setSelectedProduct(null); setStitchExtra(null); setDrawerOpen(false) }}
           onAction={(action) => {
-            const closeAll = () => { setAuthOpen(false); setCheckoutOpen(false); setDrawerOpen(false); setSelectedProduct(null); setStitchExtra(null) }
+            const closeAll = () => { setCheckoutStep(null); setSelectedProduct(null); setStitchExtra(null); setDrawerOpen(false) }
             if (action === 'catalog') { closeAll(); scrollToCatalog() }
-            if (action === 'cart') { closeAll(); setDrawerOpen(true) }
+            if (action === 'cart') { closeAll(); setCheckoutStep('carrito') }
             if (action === 'account') { closeAll(); setAuthOpen(true) }
-            if (action === 'checkout') { closeAll(); setCheckoutOpen(true) }
-            if (action === 'checkout-envio') { closeAll(); setStitchExtra('envio') }
-            if (action === 'checkout-pago') { closeAll(); setStitchExtra('pago') }
-            if (action === 'checkout-confirmar') { closeAll(); setStitchExtra('confirmacion') }
-            if (action === 'checkout-carrito') { closeAll(); setDrawerOpen(true) }
-            if (action === 'shipping') { closeAll(); setStitchExtra('envio') }
-            if (action === 'tracking') { closeAll(); setStitchExtra('confirmacion') }
+            if (action === 'checkout' || action === 'checkout-carrito') { closeAll(); setCheckoutStep('carrito') }
+            if (action === 'checkout-envio') setCheckoutStep('envio')
+            if (action === 'checkout-pago') setCheckoutStep('pago')
+            if (action === 'checkout-confirmar') setCheckoutStep('confirmacion')
+            if (action === 'shipping') setCheckoutStep('envio')
+            if (action === 'tracking') setCheckoutStep('confirmacion')
           }}
         />
       )}
