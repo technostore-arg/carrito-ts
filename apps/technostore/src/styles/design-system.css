@@ -199,7 +199,11 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 .stitch-view h1, .stitch-view h2, .stitch-view h3, .stitch-view [data-catalog-item] h3 { text-wrap: balance; }
 .stitch-view p { text-wrap: pretty; line-height: 1.45 !important; }
 /* Campos del buscador con borde visible (contraste de borde >= 3:1) */
-.stitch-view header select, .stitch-view header input { border-color: #707785 !important; }
+.stitch-view header input, .stitch-view header select,
+.stitch-view header div input, .stitch-view header div select {
+  border: 1px solid #646b7a !important;
+  box-shadow: inset 0 0 0 1px #646b7a !important;
+}
 /* Texto del pie con contraste suficiente sobre el fondo claro */
 .stitch-view footer .text-on-surface-variant, .stitch-view footer p, .stitch-view footer span, .stitch-view footer a { color: #3c4250 !important; }
 .stitch-view .font-label-sm { font-size: 12px !important; }
