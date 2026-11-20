@@ -10,7 +10,7 @@ export default function StitchView({ name, inline = false, products = [], catego
 
   useEffect(() => {
     if (!name) { setHtml(''); return }
-    const mq = window.matchMedia('(max-width: 700px)')
+    const mq = window.matchMedia('(max-width: 900px)')
     let alive = true
     const load = () => {
       const forceMobile = new URLSearchParams(window.location.search).get('device') === 'mobile'
