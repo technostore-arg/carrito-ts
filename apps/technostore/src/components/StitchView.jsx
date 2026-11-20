@@ -231,11 +231,21 @@ export default function StitchView({ name, inline = false, products = [], catego
   // El header del overlay es el mismo de la home: se clona del portal para no duplicar estilos.
   useEffect(() => {
     if (inline || !ref.current) return
-    const view = ref.current
-    const host = view.querySelector('.overlay-header-slot')
-    if (!host || host.childElementCount) return
-    const source = document.querySelector('.stitch-view > header')
-    if (source) host.appendChild(source.cloneNode(true))
+    const host = ref.current.querySelector('.overlay-header-slot')
+    if (!host) return
+    let done = false
+    const tryClone = () => {
+      if (done || host.childElementCount) return true
+      const source = document.querySelector('.stitch-view > header')
+      if (!source || !source.querySelector('img')) return false
+      host.appendChild(source.cloneNode(true))
+      done = true
+      return true
+    }
+    if (tryClone()) return
+    const mo = new MutationObserver(() => { if (tryClone()) mo.disconnect() })
+    mo.observe(document.body, { childList: true, subtree: true })
+    return () => mo.disconnect()
   }, [html, inline])
 
   if (!name) return null
