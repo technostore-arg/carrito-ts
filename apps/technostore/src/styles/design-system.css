@@ -230,9 +230,12 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 }
 /* Fila de búsqueda mobile: sin desbordes a 375px */
 @media (max-width: 60rem) {
-  .stitch-view header > div > div { flex-wrap: wrap; gap: 8px !important; }
-  .stitch-view header .flex-1.max-w-2xl { flex-basis: 100% !important; max-width: 100% !important; min-width: 0; }
-  .stitch-view header .px-margin-mobile.pb-2 { padding-left: 0 !important; padding-right: 0 !important; min-width: 0; }
+  /* El buscador desktop (select + input) se corta en mobile: se oculta. */
+  .stitch-view header .flex-1.max-w-2xl { display: none !important; }
+  /* Solo queda la fila compacta de búsqueda, a todo el ancho. */
+  .stitch-view header .px-margin-mobile.pb-2 { padding-left: 1rem !important; padding-right: 1rem !important; }
+  /* Logo sin el gorro en mobile para que no invada el header. */
+  .stitch-view header .xmas-santa-hat { display: none !important; }
 }
 @media (max-width: 30rem) { .ds-reset-filter { font-size: 11px; padding-left: 6px; padding-right: 6px; } }
 
