@@ -69,7 +69,9 @@ export default function StitchView({ name, inline = false, products = [], catego
       if (add) { e.preventDefault(); onAdd?.(add.getAttribute('data-add')); return }
       const sku = el.closest('[data-sku]')
       if (sku) { e.preventDefault(); onProduct?.(sku.getAttribute('data-sku')); return }
-      onAction?.(resolveStitchAction(path), path, el)
+      const resolved = resolveStitchAction(path)
+      if (window.__DEBUG_STITCH) console.log('[stitch]', path, '->', resolved)
+      onAction?.(resolved, path, el)
       if (el.tagName === 'A' && el.getAttribute('href') === '#') e.preventDefault()
     }
     root.addEventListener('click', onClick)

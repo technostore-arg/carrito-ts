@@ -327,7 +327,7 @@ export default function App() {
         categorias={categorias}
         cartCount={cartCount}
         onAction={(action) => {
-          if (action === 'cart') setDrawerOpen(true)
+          if (action === 'cart') setCheckoutStep('carrito')
           if (action === 'account') setAuthOpen(true)
           if (action === 'catalog') scrollToCatalog()
           if (action === 'advisory') setAsesoramientoOpen(true)
