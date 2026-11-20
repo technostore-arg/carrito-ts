@@ -34,6 +34,8 @@ export default function StitchView({ name, inline = false, products = [], catego
     const onClick = e => {
       const el = e.target.closest('[data-path], a, button')
       if (!el) return
+      // El click dentro del overlay no debe propagarse al header inline de la home.
+      if (!inline && root.contains(el)) e.stopPropagation()
       const path = el.getAttribute('data-path') || ''
       const text = (el.innerText || '').toLowerCase()
       if (/cerrar|close|volver|atrás|atras/.test(text)) { e.preventDefault(); onClose?.(); return }
