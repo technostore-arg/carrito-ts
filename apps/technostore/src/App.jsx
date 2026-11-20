@@ -355,6 +355,7 @@ export default function App() {
         <StitchView
           name={checkoutStep || stitchExtra || 'ficha'}
           products={allProducts}
+          categorias={categorias}
           cartItems={cartItems}
           product={selectedProduct}
           onProduct={(sku) => { const p = allProducts.find(x => x.sku === sku); if (p) openProduct(p) }}

@@ -46,7 +46,7 @@ export default function ChatWidget() {
   return (
     <>
       <button type="button" className="ts-chat-btn" onClick={() => setOpen(v => !v)} aria-label="Abrir asistente">
-        {open ? '✕' : <span className="material-symbols-outlined">smart_toy</span>}
+        {open ? <span className="material-symbols-outlined">close</span> : <span className="material-symbols-outlined">forum</span>}
       </button>
       {open && (
         <div className="ts-chat-panel" role="dialog" aria-label="Asistente TechnoStore">
