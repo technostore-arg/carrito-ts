@@ -161,10 +161,7 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 }
 
 /* ---------- Vistas Stitch (paridad visual) ---------- */
-.has-overlay > .stitch-view > header,
-.has-overlay > .stitch-view > div:first-child header { visibility: hidden !important; }
-.overlay-header-slot { position: sticky; top: 0; z-index: 30; }
-.overlay-header-slot header { position: static !important; }
+.has-overlay > .stitch-view > header { visibility: hidden !important; }
 .stitch-overlay .stitch-view > header { position: sticky !important; top: 0; z-index: 30; }
 .stitch-overlay { position: fixed; inset: 0; z-index: 200; background: var(--ds-background); overflow-y: auto; }
 .stitch-overlay__close { position: fixed; top: 14px; right: 14px; z-index: 210; display: flex; align-items: center; gap: 6px; height: 42px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--ds-primary-container); color: #fff; font-family: 'Quicksand', sans-serif; font-size: 13px; font-weight: 500; box-shadow: 0 4px 14px rgba(0,102,255,.3); cursor: pointer; }
