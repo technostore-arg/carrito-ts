@@ -53,6 +53,7 @@ const COPY_FIXES = [
   [/garant[ií]a\s+oficial\s+directa\s+del\s+fabricante\s+por\s+12\s+meses/gi, 'garantía del fabricante'],
   [/garant[ií]a\s+integral\s+de\s+12\s+meses/gi, 'garantía'],
   [/Garant[ií]a\s+Oficial\s+12\s+Meses/gi, 'Productos originales con factura'],
+  [/¡Pago Confirmado con Éxito!/gi, 'Confirmación de compra'],
   [/soporte\s+t[eé]cnico\s+oficial/gi, 'soporte técnico'],
   [/Distribuidores\s+Oficiales\s+Certificados/gi, 'Distribuidores'],
 ]
@@ -213,7 +214,7 @@ function addXmasDecor(doc) {
   }
 }
 
-const FAKE_CLAIMS = /Facturación Automática|Monitoreo Satelital|Financiación Oficial Exclusiva|Concierge WhatsApp|10% OFF Extra de Bienvenida|Bóveda de Garantías|Atención y Despacho Prioritario|Atención & Despacho Prioritario|Devolución Gratis 30 Días|Factura A o B Automática|Embalaje Blindado Sellado|Soporte Técnico 24\/7|Garantía Directa de Fabricante|Prueba de 30 Días|Envíos Blindados y Asegurados|Seguridad Bancaria TLS|ISO\/IEC 27001|100% Bonificado|Cupón TechWeek|Reservados:|14:59 min/i
+const FAKE_CLAIMS = /Facturación Automática|Monitoreo Satelital|Financiación Oficial Exclusiva|Concierge WhatsApp|10% OFF Extra de Bienvenida|Bóveda de Garantías|Atención y Despacho Prioritario|Atención & Despacho Prioritario|Devolución Gratis 30 Días|Factura A o B Automática|Embalaje Blindado Sellado|Soporte Técnico 24\/7|Garantía Directa de Fabricante|Prueba de 30 Días|Envíos Blindados y Asegurados|Seguridad Bancaria TLS|ISO\/IEC 27001|100% Bonificado|Cupón TechWeek|Reservados:|14:59 min|Cifrado Bancario de Grado Militar|Sesión Encriptada Tokenizada|TX-\d+|SSL 256-bit|Data Fiscal AFIP|Garantías Oficiales Incluidas|Opciones de Entrega Certificada/i
 
 function dropFakeClaims(doc) {
   const nodes = [...doc.querySelectorAll('div, span, p, h3, h4, li')].reverse()
@@ -513,6 +514,9 @@ export function hydrateStitch(doc, { products = [], categorias = [], cartItems =
   replaceLogo(doc)
   simplifyStitch(doc)
   dropFakeClaims(doc)
+  for (const el of [...doc.querySelectorAll('div')]) {
+    if (/MacBook Air 13\.6|Sony WH-1000XM5/.test(el.textContent || '') && el.querySelector('img')) el.remove()
+  }
   if (screen === 'ficha') { dropFakeReviews(doc); renderDetail(doc, product) }
   if (screen === 'carrito') renderCart(doc, cartItems)
   if (screen === 'login' || screen === 'registro') harmonizeAccounts(doc)
