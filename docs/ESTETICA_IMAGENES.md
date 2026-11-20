@@ -33,9 +33,14 @@ como el mismo azul del header y los botones. La menta se usa solo en acentos y d
 
 ## Marca
 
-- Usar el **mini logo**: una **T en trazo fino dentro de un rombo con esquinas
-  redondeadas**, relleno menta y trazo azul (`logo-mark.svg`). Variante blanco/negro
-  (`logo-mark-mono.svg`) para favicon y fondos claros. Es el sello de la marca.
+- Usar el **isologo**: **T dentro de un rombo con esquinas redondeadas**. Rombo y T
+  comparten color y peso (azul noche `#0B192C`), con un único nodo verde `#00A651`
+  en la intersección. Interior transparente. `logo-mark.svg`; variante mono en
+  `logo-mark-mono.svg` para favicon y fondos claros.
+- **Sistema de marca:** clear space mínimo = 1× la altura del símbolo; tamaño mínimo
+  24 px; nunca Gradient, sombra ni contorno en el tipográfico. El logotipo usa Inter
+  Medium (500), tracking cerrado, sin negrita: "Techno" azul noche y "Store" azul
+  `#0066FF`. El símbolo se alinea ópticamente con la altura de capa del texto.
 - No agregar sellos de certificación ("Auth Reseller", "Official", "GeForce Partner").
 
 ## Texto de connector
