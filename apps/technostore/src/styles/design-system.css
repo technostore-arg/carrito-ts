@@ -199,13 +199,17 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 .header-action__badge { position: absolute; top: -3px; right: -3px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px; background: var(--ds-primary-container); color: #fff; font-size: 10px; font-weight: 500; display: grid; place-items: center; }
 @media (max-width: 520px) { .header-action__label { display: none; } .header-action { padding: 0 10px; } }
 
-/* Jerarquía más liviana: menos peso y titulares apenas más chicos */
-.stitch-view .font-extrabold { font-weight: 600 !important; }
-.stitch-view .font-bold { font-weight: 500 !important; }
-.stitch-view h1, .stitch-view h2, .stitch-view h3 { font-weight: 600 !important; }
-.stitch-view .text-headline-lg { font-size: 22px !important; }
-.stitch-view .text-headline-md { font-size: 19px !important; }
-.stitch-view .text-headline-sm { font-size: 16px !important; }
+/* Jerarquía liviana: pesos 400/500 y titulares chicos en todo el sistema */
+.stitch-view .font-extrabold, .stitch-view .font-bold,
+.stitch-view h1, .stitch-view h2, .stitch-view h3 { font-weight: 500 !important; }
+.stitch-view h1 { font-size: 20px !important; }
+.stitch-view .text-headline-lg { font-size: 20px !important; }
+.stitch-view .text-headline-md { font-size: 17px !important; }
+.stitch-view .text-headline-sm { font-size: 14px !important; }
+.stitch-view .text-body-lg, .stitch-view .text-body-md { font-size: 13px !important; }
+.stitch-view .text-label-lg { font-size: 12px !important; }
+.stitch-view [data-page-info], .stitch-view footer h4 { font-family: 'Quicksand', 'Inter', sans-serif; font-size: 12px; font-weight: 500; }
+.stitch-view .header-action { font-family: 'Quicksand', 'Inter', sans-serif; }
 
 /* Gran gorro de Papá Noel inclinado sobre una esquina del logo */
 .logo-lockup { position: relative; display: inline-flex; }

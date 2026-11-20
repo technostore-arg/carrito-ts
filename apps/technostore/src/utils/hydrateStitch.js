@@ -72,10 +72,13 @@ function normalizeCopy(doc) {
 }
 
 function replaceLogo(doc) {
-  const wrap = [...doc.querySelectorAll('div.flex.items-center.gap-2')]
-    .find(d => /memory/.test(d.textContent || '') && /Techno/.test(d.textContent || ''))
+  // Desktop y mobile usan clases distintas: buscar el div más chico con ícono + nombre.
+  const candidates = [...doc.querySelectorAll('header div')]
+    .filter(d => /memory/.test(d.textContent || '') && /Techno/.test(d.textContent || ''))
+    .sort((a, b) => a.textContent.length - b.textContent.length)
+  const wrap = candidates[0]
   if (wrap) {
-    wrap.className = 'flex items-center gap-2 logo-lockup'
+    wrap.className = 'logo-lockup flex items-center'
     wrap.innerHTML = '<img src="/logo-lockup.png" alt="TechnoStore" class="h-9 w-auto max-w-[230px] object-contain">'
   }
 }
@@ -105,12 +108,14 @@ function simplifyStitch(doc) {
     // El catálogo unificado reemplaza estas secciones redundantes.
     else if (/Explor.*Categor.as Populares/i.test(t)) section.remove()
     else if (/M.s Vendidos|Productos destacados/i.test(t)) section.remove()
+    else if (/Env.o Gratis desde|BENEFICIOS Y CONFIANZA/i.test(t)) section.remove()
   }
 }
 
 function addSearch(doc, cartCount = 0) {
   // Acciones del header siempre visibles y con etiqueta clara (sin breakpoints).
-  const actions = [...doc.querySelectorAll('header div')].find(d => d.classList.contains('gap-6') && d.classList.contains('shrink-0'))
+  const actions = [...doc.querySelectorAll('header div')].find(d =>
+    /person/.test(d.textContent || '') && /shopping_(bag|cart)/.test(d.textContent || '') && d.children.length <= 4)
   if (actions) {
     actions.className = 'flex items-center gap-2 shrink-0'
     actions.innerHTML = `<button type="button" data-path="carrito-de-compras" class="header-action" aria-label="Carrito">
@@ -120,6 +125,18 @@ function addSearch(doc, cartCount = 0) {
       <button type="button" data-path="mis-pedidos" class="header-action" aria-label="Mi cuenta">
         <span class="material-symbols-outlined">person</span><span class="header-action__label">Mi cuenta</span>
       </button>`
+  }
+  // Mobile: el header no trae buscador, agregamos una fila compacta.
+  if (!doc.querySelector('header input[placeholder^="Buscar"]')) {
+    const rowHost = doc.querySelector('header > div')
+    if (rowHost) {
+      const row = doc.createElement('div')
+      row.className = 'px-margin-mobile pb-2'
+      row.innerHTML = `<div class="relative" data-stitch-search-wrap><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span><input data-stitch-search type="search" placeholder="Buscar productos, SKU…" aria-label="Buscar productos" class="w-full h-10 pl-10 pr-3 rounded-xl bg-surface-container-low text-body-sm text-on-surface outline-none"><div data-stitch-suggest class="hidden absolute z-50 top-full mt-2 w-full bg-surface-pure rounded-xl shadow-lg border border-border-subtle overflow-hidden"></div></div>`
+      rowHost.appendChild(row)
+      const main = doc.querySelector('main')
+      if (main) main.className = main.className.replace(/\bpt-20\b/, 'pt-32')
+    }
   }
   if (doc.querySelector('[data-stitch-search]')) return
   const wrapSuggest = (input, wrap) => {
