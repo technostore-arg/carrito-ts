@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { resolveStitchAction } from '../utils/stitchActions.js'
 import { hydrateStitch } from '../utils/hydrateStitch.js'
 
-export default function StitchView({ name, inline = false, products = [], categorias = [], cartItems = [], cartCount = 0, product = null, onClose, onAction, onProduct, onAdd }) {
+export default function StitchView({ name, inline = false, products = [], categorias = [], cartItems = [], cartCount = 0, product = null, onClose, onAction, onProduct, onAdd, onQty, onRemove }) {
   const ref = useRef(null)
   const [html, setHtml] = useState('')
 
@@ -61,6 +61,10 @@ export default function StitchView({ name, inline = false, products = [], catego
         track?.scrollBy({ left: carousel.getAttribute('data-carousel') === 'next' ? 340 : -340, behavior: 'smooth' })
         return
       }
+      const qty = el.closest('[data-qty]')
+      if (qty) { e.preventDefault(); onQty?.(qty.getAttribute('data-qty'), qty.getAttribute('data-delta')); return }
+      const rm = el.closest('[data-remove]')
+      if (rm) { e.preventDefault(); onRemove?.(rm.getAttribute('data-remove')); return }
       const add = el.closest('[data-add]')
       if (add) { e.preventDefault(); onAdd?.(add.getAttribute('data-add')); return }
       const sku = el.closest('[data-sku]')
@@ -70,7 +74,7 @@ export default function StitchView({ name, inline = false, products = [], catego
     }
     root.addEventListener('click', onClick)
     return () => root.removeEventListener('click', onClick)
-  }, [html, onClose, onAction, onProduct, onAdd])
+  }, [html, onClose, onAction, onProduct, onAdd, onQty, onRemove])
 
   // Catálogo unificado: filtros, orden y paginación (12 por página).
   useEffect(() => {

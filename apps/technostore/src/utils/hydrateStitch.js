@@ -253,31 +253,46 @@ function renderCart(doc, cartItems = []) {
   const main = doc.querySelector('main')
   if (!main) return
   const rows = cartItems.length ? cartItems.map(it => {
+    const sku = it.sku || it.product?.sku || ''
     const p = it.product || it
-    const sku = it.sku || p.sku || ''
     const precio = Number(p.precio_transferencia ?? p.precio) || 0
-    const img = p.imagenes?.[0] || p.image || ''
-    return `<div class="bg-surface-pure rounded-2xl p-4 shadow-sm flex gap-4 items-center" data-cart-item="${esc(sku)}">
-      <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-surface-container-low p-2 shrink-0"><img class="w-full h-full object-contain" src="${esc(img)}" alt=""></div>
-      <div class="flex-1 min-w-0"><h3 class="font-headline-sm text-headline-sm font-bold text-on-surface truncate">${esc(p.nombre || p.name || sku)}</h3>
-      <p class="font-label-sm text-label-sm text-on-surface-variant">${esc(p.marca || '')} · Cantidad: ${Number(it.qty) || 1}</p>
-      <p class="price-strong font-headline-sm text-headline-sm font-bold text-primary mt-1">${money(precio * (Number(it.qty) || 1))}</p></div>
-      <button type="button" data-add="${esc(sku)}" class="w-9 h-9 rounded-lg bg-surface-container text-on-surface shrink-0">+</button>
+    const qty = Number(it.qty) || 1
+    const img = p.imagen || p.imagenes?.[0] || p.image || ''
+    return `<div class="checkout-item" data-cart-item="${esc(sku)}">
+      <div class="checkout-item__media"><img src="${esc(img)}" alt=""></div>
+      <div class="checkout-item__info">
+        <p class="checkout-item__brand">${esc(p.marca || '')}</p>
+        <h3 class="checkout-item__name">${esc(p.nombre || p.name || sku)}</h3>
+        <p class="checkout-item__unit">${money(precio)} por unidad</p>
+        <div class="checkout-item__controls">
+          <div class="qty-stepper">
+            <button type="button" data-qty="${esc(sku)}" data-delta="-1" aria-label="Restar cantidad">−</button>
+            <span>${qty}</span>
+            <button type="button" data-qty="${esc(sku)}" data-delta="1" aria-label="Sumar cantidad">+</button>
+          </div>
+          <button type="button" class="checkout-remove" data-remove="${esc(sku)}">Eliminar</button>
+        </div>
+      </div>
+      <div class="price-strong checkout-item__total">${money(precio * qty)}</div>
     </div>`
-  }).join('') : '<div class="bg-surface-pure rounded-2xl p-6 shadow-sm"><p class="font-body-md text-body-md text-on-surface-variant">Tu carrito está vacío.</p><a href="#" data-path="catalogo-de-productos" class="inline-block mt-3 font-label-md text-primary">Ver productos →</a></div>'
+  }).join('') : '<div class="checkout-empty"><p>Tu carrito está vacío.</p><a href="#" data-path="catalogo-de-productos">Ver productos →</a></div>'
   const total = cartItems.reduce((s, it) => s + (Number(it.product?.precio_transferencia ?? it.precio_transferencia ?? it.precio) || 0) * (Number(it.qty) || 1), 0)
   for (const h of doc.querySelectorAll('h1')) if (!main.contains(h)) h.remove()
-  main.innerHTML = `<div class="w-full px-margin py-space-xl">
-    <div class="flex items-center justify-between gap-3 mb-6"><h1 class="font-headline-lg text-headline-lg font-bold text-on-surface">Mi carrito</h1>
-      <span class="font-label-md text-label-md text-on-surface-variant">${cartItems.length} producto${cartItems.length === 1 ? '' : 's'}</span></div>
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-      <div class="lg:col-span-8 space-y-4">${rows}</div>
-      <aside class="lg:col-span-4 bg-surface-pure rounded-2xl p-6 shadow-sm">
-        <h2 class="font-headline-sm text-headline-sm font-bold text-on-surface mb-4">Resumen de compra</h2>
-        <div class="flex items-center justify-between font-body-md text-body-md text-on-surface-variant mb-2"><span>Subtotal</span><b class="price-strong text-on-surface">${money(total)}</b></div>
-        <p class="font-label-sm text-label-sm text-on-surface-variant mb-5">El costo de envío se calcula al finalizar la compra.</p>
-        <button type="button" data-path="carrito-de-compras" class="w-full h-12 rounded-xl bg-primary-container text-on-primary font-label-md font-bold">Finalizar compra</button>
-        <a href="#" data-path="catalogo-de-productos" class="block text-center mt-3 font-label-md text-primary">Seguir comprando</a>
+  main.innerHTML = `<div class="checkout-page">
+    <div class="checkout-head">
+      <div><span class="checkout-eyebrow">TU COMPRA</span><h1>Mi carrito</h1></div>
+      <span class="checkout-count">${cartItems.length} producto${cartItems.length === 1 ? '' : 's'}</span>
+    </div>
+    <div class="checkout-steps" aria-hidden="true"><span class="is-active">1 · Carrito</span><span>2 · Envío</span><span>3 · Pago</span></div>
+    <div class="checkout-grid">
+      <div class="checkout-list">${rows}</div>
+      <aside class="checkout-summary">
+        <h2>Resumen de compra</h2>
+        <div class="checkout-line"><span>Subtotal</span><b class="price-strong">${money(total)}</b></div>
+        <div class="checkout-line checkout-line--muted"><span>Envío</span><span>Se calcula al finalizar</span></div>
+        <div class="checkout-total"><span>Total</span><b class="price-strong">${money(total)}</b></div>
+        <button type="button" data-path="finalizar-compra" class="checkout-cta" ${cartItems.length ? '' : 'disabled'}>Finalizar compra</button>
+        <a href="#" data-path="catalogo-de-productos" class="checkout-back">Seguir comprando</a>
       </aside>
     </div>
   </div>`

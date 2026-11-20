@@ -27,7 +27,7 @@ import ChatWidget from "./components/ChatWidget"
 import { useCart } from "./context/CartContext"
 
 export default function App() {
-  const { addToCart, items: cartItems, count: cartCount, toast } = useCart()
+  const { addToCart, items: cartItems, count: cartCount, updateQty, removeFromCart, toast } = useCart()
   const base = import.meta.env.BASE_URL || "/"
   const { products, loading, refreshQuotes } = useCatalog()
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -330,6 +330,7 @@ export default function App() {
           if (action === 'catalog') scrollToCatalog()
           if (action === 'advisory') setAsesoramientoOpen(true)
           if (action === 'rma') setRmaOpen(true)
+          if (action === 'checkout') setCheckoutOpen(true)
         }}
         onProduct={(sku) => {
           const p = allProducts.find(x => x.sku === sku)
@@ -353,12 +354,15 @@ export default function App() {
           product={selectedProduct}
           onProduct={(sku) => { const p = allProducts.find(x => x.sku === sku); if (p) openProduct(p) }}
           onAdd={(sku) => { const p = allProducts.find(x => x.sku === sku); if (p) addToCart(p) }}
+          onQty={(sku, delta) => updateQty(sku, Number(delta) || 0)}
+          onRemove={(sku) => removeFromCart(sku)}
           onClose={() => { setAuthOpen(false); setCheckoutOpen(false); setDrawerOpen(false); setSelectedProduct(null); setStitchExtra(null) }}
           onAction={(action) => {
             const closeAll = () => { setAuthOpen(false); setCheckoutOpen(false); setDrawerOpen(false); setSelectedProduct(null); setStitchExtra(null) }
             if (action === 'catalog') { closeAll(); scrollToCatalog() }
             if (action === 'cart') { closeAll(); setDrawerOpen(true) }
             if (action === 'account') { closeAll(); setAuthOpen(true) }
+            if (action === 'checkout') { closeAll(); setCheckoutOpen(true) }
             if (action === 'shipping') { closeAll(); setStitchExtra('envio') }
             if (action === 'tracking') { closeAll(); setStitchExtra('confirmacion') }
           }}
