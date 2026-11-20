@@ -23,6 +23,7 @@ import AsesoramientoModal from "./components/AsesoramientoModal"
 const RmaModal = lazy(() => import("./components/RmaModal"))
 import { authClient } from "./lib/auth.js"
 import WhatsAppFloat from "./components/WhatsAppFloat"
+import ChatWidget from "./components/ChatWidget"
 import { useCart } from "./context/CartContext"
 
 export default function App() {
@@ -354,6 +355,8 @@ export default function App() {
               if (p) addToCart(p)
             }}
           />
+          <WhatsAppFloat />
+          <ChatWidget />
           <button className="stitch-switch" onClick={() => setStitchMode(false)}>Ver UI funcional</button>
         </>
       ) : (

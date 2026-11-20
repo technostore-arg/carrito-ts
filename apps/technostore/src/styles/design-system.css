@@ -166,9 +166,33 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 .stitch-view { min-height: 100vh; }
 .stitch-switch { position: fixed; left: 12px; bottom: 12px; z-index: 80; background: var(--ds-trust-shield); color: #fff; border: 0; border-radius: 999px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: var(--ds-shadow-lg); }
 
+/* Asistente con IA: botón y panel flotantes */
+.ts-chat-btn { position: fixed; right: 24px; bottom: 92px; z-index: 9998; width: 54px; height: 54px; border: 0; border-radius: 50%; background: var(--ds-primary-container); color: #fff; box-shadow: 0 6px 22px rgba(0,102,255,.35); cursor: pointer; display: grid; place-items: center; font-size: 18px; }
+.ts-chat-btn .material-symbols-outlined { font-size: 26px; }
+.ts-chat-panel { position: fixed; right: 24px; bottom: 156px; z-index: 9998; width: min(370px, calc(100vw - 32px)); height: min(480px, calc(100vh - 190px)); display: flex; flex-direction: column; background: #fff; border-radius: 18px; box-shadow: 0 18px 50px rgba(11,25,44,.22); overflow: hidden; }
+.ts-chat-head { display: flex; align-items: center; gap: 10px; padding: 14px 16px; background: var(--ds-trust-shield); color: #fff; }
+.ts-chat-head img { width: 26px; height: 26px; }
+.ts-chat-head div { flex: 1; line-height: 1.25; }
+.ts-chat-head b { font-size: 14px; font-weight: 600; display: block; }
+.ts-chat-head small { font-size: 10px; color: #b9c6e6; }
+.ts-chat-head button { background: none; border: 0; color: #fff; cursor: pointer; font-size: 14px; }
+.ts-chat-body { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: var(--ds-surface-subtle); }
+.ts-chat-msg { max-width: 88%; padding: 9px 12px; border-radius: 12px; font-size: 13px; line-height: 1.45; white-space: pre-wrap; }
+.ts-chat-msg--assistant { background: #fff; color: var(--ds-on-surface); border: 1px solid var(--ds-border-subtle); align-self: flex-start; }
+.ts-chat-msg--user { background: var(--ds-primary-container); color: #fff; align-self: flex-end; }
+.ts-chat-error { font-size: 12px; color: #ba1a1a; }
+.ts-chat-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px 0; }
+.ts-chat-quick button { border: 1px solid var(--ds-border-subtle); background: #fff; border-radius: 999px; padding: 5px 9px; font-size: 11px; color: var(--ds-on-surface-variant); cursor: pointer; }
+.ts-chat-quick button:hover { border-color: var(--ds-primary-container); color: var(--ds-primary-container); }
+.ts-chat-input { display: flex; gap: 8px; padding: 10px 12px 12px; }
+.ts-chat-input input { flex: 1; min-width: 0; border: 1px solid var(--ds-border-subtle); border-radius: 10px; padding: 9px 11px; font-size: 13px; outline: none; }
+.ts-chat-input input:focus { border-color: var(--ds-primary-container); }
+.ts-chat-input button { border: 0; border-radius: 10px; background: var(--ds-primary-container); color: #fff; padding: 0 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.ts-chat-input button:disabled { opacity: .5; cursor: not-allowed; }
+
 /* Gran gorro de Papá Noel inclinado sobre una esquina del logo */
 .logo-lockup { position: relative; display: inline-flex; }
-.xmas-santa-hat { position: absolute; left: -3px; bottom: 23px; width: 46px; height: 36px; z-index: 5; pointer-events: none; transform: rotate(-14deg); filter: drop-shadow(0 3px 4px rgba(11,25,44,.2)); }
+.xmas-santa-hat { position: absolute; right: -14px; bottom: 26px; width: 50px; height: 38px; z-index: 5; pointer-events: none; transform: rotate(16deg); filter: drop-shadow(0 3px 4px rgba(11,25,44,.2)); }
 .xmas-santa-hat img { width: 100%; height: 100%; object-fit: contain; display: block; }
 [data-carousel-track] { scroll-snap-type: x mandatory; scrollbar-width: none; }
 [data-carousel-track]::-webkit-scrollbar { display: none; }

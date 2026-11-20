@@ -81,13 +81,21 @@ function replaceLogo(doc) {
 }
 
 function simplifyStitch(doc) {
-  // Sacar el sub-menú superior (Laptops & Mac, Smartphones, Audio Hi-Fi, ...).
   const header = doc.querySelector('header')
+  const main = doc.querySelector('main')
+  // Sacar la franja negra superior; queda un botón de WhatsApp flotante.
+  const topbar = header?.firstElementChild
+  if (topbar && /Envíos asegurados|WhatsApp Directo|Garantía/i.test(topbar.textContent || '')) topbar.remove()
+  // Sacar el sub-menú superior (Laptops & Mac, Smartphones, Audio Hi-Fi, ...).
   const submenu = header?.lastElementChild
-  if (submenu && /Laptops & Mac|Smartphones & iPhone|Monitores & Accesorios/i.test(submenu.textContent || '')) {
-    submenu.remove()
-    const main = doc.querySelector('main')
-    if (main) main.className = main.className.replace(/\bpt-44\b/, 'pt-32')
+  if (submenu && /Laptops & Mac|Smartphones & iPhone|Monitores & Accesorios/i.test(submenu.textContent || '')) submenu.remove()
+  if (main) main.className = main.className.replace(/\bpt-44\b/, 'pt-24').replace(/\bpt-32\b/, 'pt-24')
+  // Sacar la etiqueta "Semana Tech 2025".
+  const badge = [...doc.querySelectorAll('span')].find(s => /Semana Tech/i.test(s.textContent || ''))
+  if (badge) {
+    const parent = badge.parentElement
+    badge.remove()
+    if (parent && !parent.children.length) parent.remove()
   }
   // Quitar seciones "de relleno" que cargan visualmente la home sin aportar a la búsqueda.
   for (const section of [...doc.querySelectorAll('section')]) {
