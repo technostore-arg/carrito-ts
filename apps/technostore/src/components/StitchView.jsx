@@ -13,7 +13,8 @@ export default function StitchView({ name, inline = false, products = [], catego
     const mq = window.matchMedia('(max-width: 700px)')
     let alive = true
     const load = () => {
-      const device = mq.matches ? 'mobile' : 'desktop'
+      const forceMobile = new URLSearchParams(window.location.search).get('device') === 'mobile'
+    const device = (mq.matches || forceMobile) ? 'mobile' : 'desktop'
       fetch(`${import.meta.env.BASE_URL}stitch/${name}-${device}.html`)
         .then(r => (r.ok ? r.text() : ''))
         .then(text => {
