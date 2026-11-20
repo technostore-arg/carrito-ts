@@ -114,9 +114,10 @@ function simplifyStitch(doc) {
 
 function addSearch(doc, cartCount = 0) {
   // Acciones del header siempre visibles y con etiqueta clara (sin breakpoints).
+  const depth = d => { let n = 0, p = d; while (p) { n++; p = p.parentElement } return n }
   const actions = [...doc.querySelectorAll('header div')]
     .filter(d => /person/.test(d.textContent || '') && /shopping_(bag|cart)/.test(d.textContent || '') && d.children.length <= 4)
-    .sort((a, b) => a.textContent.length - b.textContent.length)[0]
+    .sort((a, b) => (a.textContent.length - b.textContent.length) || (depth(b) - depth(a)))[0]
   if (actions) {
     actions.className = 'flex items-center gap-2 shrink-0'
     actions.innerHTML = `<button type="button" data-path="carrito-de-compras" class="header-action" aria-label="Carrito">
