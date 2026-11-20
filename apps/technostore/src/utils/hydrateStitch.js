@@ -23,8 +23,8 @@ function productCard(p) {
   <div class="flex items-center justify-between mb-3"><span class="px-2.5 py-1 bg-surface-container-high text-primary font-label-sm text-label-sm rounded-md font-bold flex items-center gap-1">${brand}</span><span class="px-2 py-0.5 bg-secondary-fixed/30 text-secondary font-label-sm text-label-sm rounded-md font-semibold">${stock}</span></div>
   <div class="w-full h-48 bg-surface-container-low rounded-xl p-4 flex items-center justify-center overflow-hidden mb-4 relative"><img class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" src="${esc(p.imagenes?.[0] || '')}" alt=""></div>
   <div class="flex flex-col flex-1"><h3 class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight mt-0.5">${esc(p.nombre || p.sku || '')}</h3>
-  <div class="font-headline-md text-headline-md text-on-surface font-extrabold tracking-tight mt-0.5">${money(p.precio_transferencia ?? p.precio)}</div>
-  <p class="font-label-sm text-label-sm text-secondary font-bold mt-0.5">${money(p.precio_mercadopago ?? p.precio_lista)} en tarjeta</p></div>
+  <div class="price-strong font-headline-md text-headline-md text-on-surface font-extrabold tracking-tight mt-0.5">${money(p.precio_transferencia ?? p.precio)}</div>
+  <p class="price-strong font-label-sm text-label-sm text-secondary font-bold mt-0.5">${money(p.precio_mercadopago ?? p.precio_lista)} en tarjeta</p></div>
   <div class="mt-5 space-y-2"><button class="w-full h-11 bg-primary-container hover:bg-primary text-on-primary rounded-xl font-label-md text-label-md font-bold flex items-center justify-center gap-2 shadow-sm transition-colors" data-add="${esc(p.sku)}">Agregar al Carrito</button>
   <a class="w-full h-9 bg-surface-container hover:bg-surface-container-high text-on-surface rounded-lg font-label-sm text-label-sm font-semibold flex items-center justify-center transition-colors" data-path="detalle-de-producto" data-sku="${esc(p.sku)}" href="#">Ver Ficha Técnica Completa</a></div></div>`
 }
@@ -114,6 +114,8 @@ function simplifyStitch(doc) {
 }
 
 function addSearch(doc, cartCount = 0) {
+  // El nav viejo ("Promociones / Garantías / Mis Pedidos") desborda el header desktop.
+  for (const n of doc.querySelectorAll('header nav')) n.remove()
   // Acciones del header siempre visibles y con etiqueta clara (sin breakpoints).
   const depth = d => { let n = 0, p = d; while (p) { n++; p = p.parentElement } return n }
   const actions = [...doc.querySelectorAll('header div')]
@@ -259,7 +261,7 @@ function renderCart(doc, cartItems = []) {
       <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-surface-container-low p-2 shrink-0"><img class="w-full h-full object-contain" src="${esc(img)}" alt=""></div>
       <div class="flex-1 min-w-0"><h3 class="font-headline-sm text-headline-sm font-bold text-on-surface truncate">${esc(p.nombre || p.name || sku)}</h3>
       <p class="font-label-sm text-label-sm text-on-surface-variant">${esc(p.marca || '')} · Cantidad: ${Number(it.qty) || 1}</p>
-      <p class="font-headline-sm text-headline-sm font-bold text-primary mt-1">${money(precio * (Number(it.qty) || 1))}</p></div>
+      <p class="price-strong font-headline-sm text-headline-sm font-bold text-primary mt-1">${money(precio * (Number(it.qty) || 1))}</p></div>
       <button type="button" data-add="${esc(sku)}" class="w-9 h-9 rounded-lg bg-surface-container text-on-surface shrink-0">+</button>
     </div>`
   }).join('') : '<div class="bg-surface-pure rounded-2xl p-6 shadow-sm"><p class="font-body-md text-body-md text-on-surface-variant">Tu carrito está vacío.</p><a href="#" data-path="catalogo-de-productos" class="inline-block mt-3 font-label-md text-primary">Ver productos →</a></div>'
@@ -272,7 +274,7 @@ function renderCart(doc, cartItems = []) {
       <div class="lg:col-span-8 space-y-4">${rows}</div>
       <aside class="lg:col-span-4 bg-surface-pure rounded-2xl p-6 shadow-sm">
         <h2 class="font-headline-sm text-headline-sm font-bold text-on-surface mb-4">Resumen de compra</h2>
-        <div class="flex items-center justify-between font-body-md text-body-md text-on-surface-variant mb-2"><span>Subtotal</span><b class="text-on-surface">${money(total)}</b></div>
+        <div class="flex items-center justify-between font-body-md text-body-md text-on-surface-variant mb-2"><span>Subtotal</span><b class="price-strong text-on-surface">${money(total)}</b></div>
         <p class="font-label-sm text-label-sm text-on-surface-variant mb-5">El costo de envío se calcula al finalizar la compra.</p>
         <button type="button" data-path="carrito-de-compras" class="w-full h-12 rounded-xl bg-primary-container text-on-primary font-label-md font-bold">Finalizar compra</button>
         <a href="#" data-path="catalogo-de-productos" class="block text-center mt-3 font-label-md text-primary">Seguir comprando</a>
@@ -295,12 +297,12 @@ function renderDetail(doc, product) {
       <div class="lg:col-span-6 bg-surface-container-low rounded-2xl p-6 flex items-center justify-center"><img class="w-full h-auto max-h-[460px] object-contain" src="${esc(img)}" alt="${esc(product.nombre || '')}"></div>
       <div class="lg:col-span-6 space-y-5">
         <span class="inline-block px-3 py-1 rounded-full bg-surface-container-high text-primary font-label-sm font-bold">${esc(product.marca || '')}</span>
-        <h1 class="font-headline-lg text-headline-lg font-bold text-on-surface">${esc(product.nombre || product.name || '')}</h1>
+        <h1 class="ficha-title font-headline-lg text-headline-lg font-bold text-on-surface">${esc(product.nombre || product.name || '')}</h1>
         <p class="font-body-md text-body-md text-on-surface-variant">${esc(product.descripcion || product.description || 'Producto con stock real y factura.')}</p>
-        <div><div class="font-display-hero text-display-hero font-extrabold text-on-surface">${money(precio)}</div>
-          ${lista > precio ? `<p class="font-label-md text-secondary font-bold">${money(lista)} en tarjeta</p>` : ''}</div>
+        <div><div class="price-strong font-display-hero text-display-hero font-extrabold text-on-surface">${money(precio)}</div>
+          ${lista > precio ? `<p class="price-strong font-label-md text-secondary font-bold">${money(lista)} en tarjeta</p>` : ''}</div>
         <button type="button" data-add="${esc(product.sku)}" class="h-12 px-8 rounded-xl bg-primary-container text-on-primary font-label-md font-bold">Agregar al carrito</button>
-        ${specs.length ? `<div class="bg-surface-pure rounded-2xl p-5 shadow-sm"><h2 class="font-headline-sm text-headline-sm font-bold text-on-surface mb-3">Ficha técnica</h2>
+        ${specs.length ? `<div class="bg-surface-pure rounded-2xl p-5 shadow-sm"><h2 class="ficha-subtitle font-headline-sm text-headline-sm font-bold text-on-surface mb-3">Ficha técnica</h2>
           <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">${specs.slice(0, 12).map(s => `<div class="flex justify-between gap-3 border-b border-border-subtle py-2 font-body-sm"><dt class="text-on-surface-variant">${esc(s.label || s.name || '')}</dt><dd class="font-bold text-on-surface text-right">${esc(s.value ?? s.val ?? '')}</dd></div>`).join('')}</dl></div>` : ''}
       </div>
     </div>
