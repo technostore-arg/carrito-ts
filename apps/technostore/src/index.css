@@ -4,6 +4,10 @@
    Inter · Sin gradients, sin glass, sin ruido
    ============================================================ */
 
+/* Hallmark: tres pesos (400/500/600); precios en 600 */
+.font-label-sm, .font-label-md, .font-label-lg, [class*="font-bold"], [class*="font-extrabold"] { font-weight: 400 !important; }
+.price-strong { font-weight: 600 !important; }
+
 :root {
   --bg: #fbfbfd;
   --bg-card: #ffffff;
