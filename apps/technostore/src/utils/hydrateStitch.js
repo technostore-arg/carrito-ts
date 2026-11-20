@@ -428,38 +428,18 @@ function reworkHome(doc, products = []) {
     </div>`
   }
 
-  // 3) Garantías: nada de "12 meses con cambio directo"; disclaimer + botón RMA.
-  for (const el of doc.querySelectorAll('span, p, li')) {
-    if (el.children.length) continue
-    const t = (el.textContent || '').trim()
-    if (/Garantía Oficial 12 Meses/i.test(t)) el.textContent = 'Productos originales con factura'
-    else if (/garantía oficial directa del fabricante por 12 meses/i.test(t)) el.textContent = 'Productos originales con factura electrónica A o B. Las garantías se gestionan por RMA.'
-    else if (/30 días de prueba y cambio directo/i.test(t)) el.textContent = 'Gestión de garantías y RMA'
-    else if (/RMA y servicio técnico express/i.test(t)) el.textContent = 'Seguimiento por email'
-    else if (/validación inmediata de garantía oficial de fábrica/i.test(t)) el.textContent = 'con número de serie y factura correspondiente.'
-    else if (/Póliza de reposición total automática/i.test(t)) el.textContent = 'Embalaje reforzado para proteger el producto durante el transporte.'
-  }
-  const compra = [...doc.querySelectorAll('footer h4')].find(h => /Compra Protegida/i.test(h.textContent || ''))
-  if (compra) {
-    const block = compra.parentElement
-    const rma = doc.createElement('button')
-    rma.setAttribute('data-path', 'rma')
-    rma.className = 'mt-3 px-4 py-2 rounded-lg bg-primary-container text-on-primary font-label-md font-bold'
-    rma.textContent = 'GARANTÍA / RMA'
-    block.appendChild(rma)
-    const note = doc.createElement('p')
-    note.className = 'font-label-sm text-label-sm text-on-surface-variant mt-2 leading-relaxed'
-    note.textContent = 'Las garantías están sujetas a revisión del producto, con un plazo de hasta 7 días para la resolución. Luego se aplican los plazos de garantía de cada marca.'
-    block.appendChild(note)
-  }
-
-  // 4) Tira inferior de pasarelas: SOLO el botón de información fiscal.
-  const pasarelas = doc.querySelector('footer > div.bg-surface-subtle')
-  if (pasarelas) {
-    pasarelas.className = 'bg-surface-subtle py-2 border-b border-border-subtle'
-    pasarelas.innerHTML = `<div class="w-full px-margin flex items-center justify-between gap-3">
-      <span class="font-label-sm text-label-sm text-on-surface-variant">Datos fiscales y facturación</span>
-      <button type="button" data-path="informacion-fiscal" class="px-3 py-1.5 rounded-lg bg-surface-pure border border-border-subtle text-primary font-label-md font-bold">Información fiscal</button>
+  // 3) Footer: solo la tira fiscal, GARANTÍA/RMA y el disclaimer de garantías.
+  const footer = doc.querySelector('footer')
+  if (footer) {
+    footer.innerHTML = `<div class="w-full px-margin py-2 bg-surface-subtle border-b border-border-subtle">
+      <div class="w-full flex items-center justify-between gap-3">
+        <span class="font-label-sm text-label-sm text-on-surface-variant">Datos fiscales y facturación</span>
+        <button type="button" data-path="informacion-fiscal" class="px-3 py-1.5 rounded-lg bg-surface-pure border border-border-subtle text-primary font-label-md font-bold">Información fiscal</button>
+      </div>
+    </div>
+    <div class="w-full px-margin py-6 flex flex-wrap items-center justify-between gap-4">
+      <button type="button" data-path="rma" class="px-4 py-2 rounded-lg bg-primary-container text-on-primary font-label-md font-bold">GARANTÍA / RMA</button>
+      <p class="font-label-sm text-label-sm text-on-surface-variant leading-relaxed max-w-xl">Las garantías están sujetas a revisión del producto, con un plazo de hasta 7 días para la resolución. Luego se aplican los plazos de garantía de cada marca.</p>
     </div>`
   }
   // Tira de marcas: divisora fina, logos con tipografía y tamaños uniformes.
