@@ -109,6 +109,7 @@ function simplifyStitch(doc) {
     else if (/Explor.*Categor.as Populares/i.test(t)) section.remove()
     else if (/M.s Vendidos|Productos destacados/i.test(t)) section.remove()
     else if (/Env.o Gratis desde|BENEFICIOS Y CONFIANZA/i.test(t)) section.remove()
+    else if (/Compró (MacBook|Sony)|Hace \d+ d.as|Opiniones Verificadas|Mariano L\.|Camila R\./i.test(t)) section.remove()
   }
 }
 
