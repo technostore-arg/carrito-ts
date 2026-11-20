@@ -168,8 +168,8 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 
 /* Gran gorro de Papá Noel inclinado sobre una esquina del logo */
 .logo-lockup { position: relative; display: inline-flex; }
-.xmas-santa-hat { position: absolute; top: -22px; right: -20px; width: 52px; height: 52px; z-index: 5; pointer-events: none; transform: rotate(18deg); filter: drop-shadow(0 3px 5px rgba(11,25,44,.22)); }
-.xmas-santa-hat svg { width: 100%; height: 100%; display: block; }
+.xmas-santa-hat { position: absolute; left: -3px; bottom: 23px; width: 46px; height: 36px; z-index: 5; pointer-events: none; transform: rotate(-14deg); filter: drop-shadow(0 3px 4px rgba(11,25,44,.2)); }
+.xmas-santa-hat img { width: 100%; height: 100%; object-fit: contain; display: block; }
 [data-carousel-track] { scroll-snap-type: x mandatory; scrollbar-width: none; }
 [data-carousel-track]::-webkit-scrollbar { display: none; }
 [data-carousel-track] > * { scroll-snap-align: start; }

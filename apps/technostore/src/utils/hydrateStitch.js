@@ -165,11 +165,7 @@ function addXmasDecor(doc) {
       const hat = doc.createElement('span')
       hat.className = 'xmas-santa-hat'
       hat.setAttribute('aria-hidden', 'true')
-      hat.innerHTML = `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-        <path d="M18 56C22 30 40 12 66 16c-7 16-20 30-38 40Z" fill="#E02424" stroke="#A81818" stroke-width="2" stroke-linejoin="round"/>
-        <rect x="10" y="52" width="44" height="13" rx="6.5" fill="#FFFFFF" stroke="#DDE2F7" stroke-width="1.5"/>
-        <circle cx="66" cy="15" r="10" fill="#FFFFFF" stroke="#DDE2F7" stroke-width="1.5"/>
-      </svg>`
+      hat.innerHTML = '<img src="/santa-hat.webp" alt="">'
       wrap.appendChild(hat)
     }
   }
