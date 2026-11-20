@@ -455,7 +455,6 @@ function reworkHome(doc, products = []) {
 
   // 5) CyberTrust: franja fina al final (antes ocupaba ~585px y robaba protagonismo).
   const trust = [...doc.querySelectorAll('section')].find(s => /Seguridad de nivel corporativo/i.test(s.textContent || ''))
-  const footer = doc.querySelector('footer')
   if (trust) {
     trust.setAttribute('data-cybertrust', '')
     trust.className = 'w-full px-margin py-3 bg-surface-subtle border-t border-border-subtle'
