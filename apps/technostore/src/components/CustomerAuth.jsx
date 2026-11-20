@@ -72,6 +72,7 @@ export default function CustomerAuth({ open, onClose, initialError = '', session
       <div className="auth-overlay" onClick={onClose} />
       <div className="auth-card">
         <button className="icon-btn auth-close" onClick={onClose} aria-label="Cerrar">✕</button>
+        <img src="/logo-lockup.png" alt="TechnoStore" className="auth-logo" />
         <h2>Mi cuenta</h2>
         {!isAuthConfigured && <p className="auth-error">La autenticación no está configurada en este entorno.</p>}
         {user ? (

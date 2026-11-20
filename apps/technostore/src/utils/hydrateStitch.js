@@ -109,6 +109,9 @@ function simplifyStitch(doc) {
 }
 
 function addSearch(doc) {
+  // Botón "Mi cuenta" coherente con el resto del header.
+  const account = [...doc.querySelectorAll('header div')].find(d => d.classList.contains('rounded-full') && /person/.test(d.textContent || ''))
+  if (account) account.outerHTML = '<button type="button" data-path="mis-pedidos" class="h-9 px-3 rounded-full bg-surface-container text-on-surface font-label-sm font-bold flex items-center gap-1.5"><span class="material-symbols-outlined text-base">person</span>Mi cuenta</button>'
   if (doc.querySelector('[data-stitch-search]')) return
   const wrapSuggest = (input, wrap) => {
     input.setAttribute('data-stitch-search', '')
@@ -177,6 +180,100 @@ function addXmasDecor(doc) {
       wrap.appendChild(hat)
     }
   }
+}
+
+const FAKE_CLAIMS = /Facturación Automática|Monitoreo Satelital|Financiación Oficial Exclusiva|Concierge WhatsApp|10% OFF Extra de Bienvenida|Bóveda de Garantías|Atención y Despacho Prioritario|Atención & Despacho Prioritario|Devolución Gratis 30 Días|Factura A o B Automática|Embalaje Blindado Sellado|Soporte Técnico 24\/7|Garantía Directa de Fabricante|Prueba de 30 Días|Envíos Blindados y Asegurados|Seguridad Bancaria TLS|ISO\/IEC 27001|100% Bonificado|Cupón TechWeek|Reservados:|14:59 min/i
+
+function dropFakeClaims(doc) {
+  const nodes = [...doc.querySelectorAll('div, span, p, h3, h4, li')].reverse()
+  const isIcon = c => c.classList?.contains('material-symbols-outlined')
+  for (const el of nodes) {
+    if (!el.parentElement) continue
+    const kids = [...el.children]
+    if (kids.length > 1 || (kids.length === 1 && !isIcon(kids[0]))) continue
+    const t = (el.textContent || '').trim()
+    if (!t || t.length > 160 || !FAKE_CLAIMS.test(t)) continue
+    const parent = el.parentElement
+    el.remove()
+    if ([...parent.children].every(isIcon)) parent.remove()
+  }
+}
+
+function dropFakeReviews(doc) {
+  const heading = [...doc.querySelectorAll('h2, h3')].find(h => /Opiniones Reales|Clientes TechnoStore|Opiniones Verificadas/i.test(h.textContent || ''))
+  if (!heading) return
+  const section = heading.closest('section')
+  if (section) { section.remove(); return }
+  let node = heading.parentElement
+  for (let i = 0; i < 3 && node; i++) { const next = node.parentElement; node.remove(); node = next }
+}
+
+function harmonizeAccounts(doc) {
+  const hero = [...doc.querySelectorAll('h2')].find(h => /operaciones tecnológicas|ecosistema de hardware/i.test(h.textContent || ''))
+  if (hero) hero.textContent = 'Tu espacio TechnoStore'
+  const h1 = doc.querySelector('h1')
+  if (h1 && /Hola de nuevo/i.test(h1.textContent || '')) h1.textContent = 'Ingresá a tu cuenta'
+  else if (h1 && /Crear tu cuenta/i.test(h1.textContent || '')) h1.textContent = 'Creá tu cuenta'
+  const testimonial = [...doc.querySelectorAll('p')].find(p => /Marina Valenzuela|Directora Operaciones/i.test(p.textContent || ''))
+  if (testimonial) (testimonial.closest('div[class*="rounded"]') || testimonial.parentElement)?.remove()
+}
+
+function renderCart(doc, cartItems = []) {
+  const main = doc.querySelector('main')
+  if (!main || !cartItems.length) return
+  const rows = cartItems.map(it => {
+    const p = it.product || it
+    const sku = it.sku || p.sku || ''
+    const precio = Number(p.precio_transferencia ?? p.precio) || 0
+    const img = p.imagenes?.[0] || p.image || ''
+    return `<div class="bg-surface-pure rounded-2xl p-4 shadow-sm flex gap-4 items-center" data-cart-item="${esc(sku)}">
+      <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-surface-container-low p-2 shrink-0"><img class="w-full h-full object-contain" src="${esc(img)}" alt=""></div>
+      <div class="flex-1 min-w-0"><h3 class="font-headline-sm text-headline-sm font-bold text-on-surface truncate">${esc(p.nombre || p.name || sku)}</h3>
+      <p class="font-label-sm text-label-sm text-on-surface-variant">${esc(p.marca || '')} · Cantidad: ${Number(it.qty) || 1}</p>
+      <p class="font-headline-sm text-headline-sm font-bold text-primary mt-1">${money(precio * (Number(it.qty) || 1))}</p></div>
+      <button type="button" data-add="${esc(sku)}" class="w-9 h-9 rounded-lg bg-surface-container text-on-surface shrink-0">+</button>
+    </div>`
+  }).join('')
+  const total = cartItems.reduce((s, it) => s + (Number(it.product?.precio_transferencia ?? it.precio_transferencia ?? it.precio) || 0) * (Number(it.qty) || 1), 0)
+  main.innerHTML = `<div class="w-full px-margin py-space-xl">
+    <div class="flex items-center justify-between gap-3 mb-6"><h1 class="font-headline-lg text-headline-lg font-bold text-on-surface">Mi carrito</h1>
+      <span class="font-label-md text-label-md text-on-surface-variant">${cartItems.length} producto${cartItems.length === 1 ? '' : 's'}</span></div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div class="lg:col-span-8 space-y-4">${rows}</div>
+      <aside class="lg:col-span-4 bg-surface-pure rounded-2xl p-6 shadow-sm">
+        <h2 class="font-headline-sm text-headline-sm font-bold text-on-surface mb-4">Resumen de compra</h2>
+        <div class="flex items-center justify-between font-body-md text-body-md text-on-surface-variant mb-2"><span>Subtotal</span><b class="text-on-surface">${money(total)}</b></div>
+        <p class="font-label-sm text-label-sm text-on-surface-variant mb-5">El costo de envío se calcula al finalizar la compra.</p>
+        <button type="button" data-path="carrito-de-compras" class="w-full h-12 rounded-xl bg-primary-container text-on-primary font-label-md font-bold">Finalizar compra</button>
+        <a href="#" data-path="catalogo-de-productos" class="block text-center mt-3 font-label-md text-primary">Seguir comprando</a>
+      </aside>
+    </div>
+  </div>`
+}
+
+function renderDetail(doc, product) {
+  const main = doc.querySelector('main')
+  if (!main || !product) return
+  const precio = Number(product.precio_transferencia ?? product.precio) || 0
+  const lista = Number(product.precio_lista ?? product.precio_mercadopago) || 0
+  const specs = Array.isArray(product.specs) ? product.specs
+    : Object.entries(product.especificaciones || {}).map(([k, v]) => ({ label: k, value: v }))
+  const img = product.imagenes?.[0] || product.image || ''
+  main.innerHTML = `<div class="w-full px-margin py-space-xl">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div class="lg:col-span-6 bg-surface-container-low rounded-2xl p-6 flex items-center justify-center"><img class="w-full h-auto max-h-[460px] object-contain" src="${esc(img)}" alt="${esc(product.nombre || '')}"></div>
+      <div class="lg:col-span-6 space-y-5">
+        <span class="inline-block px-3 py-1 rounded-full bg-surface-container-high text-primary font-label-sm font-bold">${esc(product.marca || '')}</span>
+        <h1 class="font-headline-lg text-headline-lg font-bold text-on-surface">${esc(product.nombre || product.name || '')}</h1>
+        <p class="font-body-md text-body-md text-on-surface-variant">${esc(product.descripcion || product.description || 'Producto con stock real y factura.')}</p>
+        <div><div class="font-display-hero text-display-hero font-extrabold text-on-surface">${money(precio)}</div>
+          ${lista > precio ? `<p class="font-label-md text-secondary font-bold">${money(lista)} en tarjeta</p>` : ''}</div>
+        <button type="button" data-add="${esc(product.sku)}" class="h-12 px-8 rounded-xl bg-primary-container text-on-primary font-label-md font-bold">Agregar al carrito</button>
+        ${specs.length ? `<div class="bg-surface-pure rounded-2xl p-5 shadow-sm"><h2 class="font-headline-sm text-headline-sm font-bold text-on-surface mb-3">Ficha técnica</h2>
+          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">${specs.slice(0, 12).map(s => `<div class="flex justify-between gap-3 border-b border-border-subtle py-2 font-body-sm"><dt class="text-on-surface-variant">${esc(s.label || s.name || '')}</dt><dd class="font-bold text-on-surface text-right">${esc(s.value ?? s.val ?? '')}</dd></div>`).join('')}</dl></div>` : ''}
+      </div>
+    </div>
+  </div>`
 }
 
 function buildHeroSlider() {
@@ -363,23 +460,29 @@ function buildCatalog(products = [], categorias = []) {
 </section>`
 }
 
-export function hydrateStitch(doc, { products = [], categorias = [] } = {}) {
+export function hydrateStitch(doc, { products = [], categorias = [], cartItems = [], product = null, screen = 'home' } = {}) {
   normalizeCopy(doc)
   replaceLogo(doc)
   simplifyStitch(doc)
+  dropFakeClaims(doc)
+  if (screen === 'ficha') { dropFakeReviews(doc); renderDetail(doc, product) }
+  if (screen === 'carrito') renderCart(doc, cartItems)
+  if (screen === 'login' || screen === 'registro') harmonizeAccounts(doc)
   addSearch(doc)
-  seasonalAndHero(doc, products)
-  reworkHome(doc, products)
-  // Catálogo único con filtros: reemplaza "categorías + destacados + más vendidos".
-  if (products.length && !doc.querySelector('[data-catalog]')) {
-    const trust = doc.querySelector('[data-cybertrust]') || [...doc.querySelectorAll('section')].find(s => /Seguridad de nivel corporativo/i.test(s.textContent || ''))
-    const footer = doc.querySelector('footer')
-    const holder = doc.createElement('div')
-    holder.innerHTML = buildCatalog(products, categorias)
-    const node = holder.firstElementChild
-    if (trust) trust.before(node)
-    else if (footer) footer.before(node)
-    else doc.querySelector('main')?.appendChild(node) || doc.body.appendChild(node)
+  if (screen === 'home') {
+    seasonalAndHero(doc, products)
+    reworkHome(doc, products)
+    // Catálogo único con filtros: reemplaza "categorías + destacados + más vendidos".
+    if (products.length && !doc.querySelector('[data-catalog]')) {
+      const trust = doc.querySelector('[data-cybertrust]') || [...doc.querySelectorAll('section')].find(s => /Seguridad de nivel corporativo/i.test(s.textContent || ''))
+      const footer = doc.querySelector('footer')
+      const holder = doc.createElement('div')
+      holder.innerHTML = buildCatalog(products, categorias)
+      const node = holder.firstElementChild
+      if (trust) trust.before(node)
+      else if (footer) footer.before(node)
+      else doc.querySelector('main')?.appendChild(node) || doc.body.appendChild(node)
+    }
   }
   addXmasDecor(doc)
   return doc

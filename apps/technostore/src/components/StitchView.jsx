@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { resolveStitchAction } from '../utils/stitchActions.js'
 import { hydrateStitch } from '../utils/hydrateStitch.js'
 
-export default function StitchView({ name, inline = false, products = [], categorias = [], onClose, onAction, onProduct, onAdd }) {
+export default function StitchView({ name, inline = false, products = [], categorias = [], cartItems = [], product = null, onClose, onAction, onProduct, onAdd }) {
   const ref = useRef(null)
   const [html, setHtml] = useState('')
 
@@ -19,7 +19,7 @@ export default function StitchView({ name, inline = false, products = [], catego
         .then(text => {
           if (!alive) return
           const doc = new DOMParser().parseFromString(text, 'text/html')
-          hydrateStitch(doc, { products, categorias })
+          hydrateStitch(doc, { products, categorias, cartItems, product, screen: name })
           setHtml(doc.body.innerHTML)
         })
         .catch(() => alive && setHtml(''))
@@ -27,7 +27,7 @@ export default function StitchView({ name, inline = false, products = [], catego
     load()
     mq.addEventListener('change', load)
     return () => { alive = false; mq.removeEventListener('change', load) }
-  }, [name, products, categorias])
+  }, [name, products, categorias, cartItems, product])
 
   useEffect(() => {
     if (!html || !ref.current) return

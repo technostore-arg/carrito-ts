@@ -27,7 +27,7 @@ import ChatWidget from "./components/ChatWidget"
 import { useCart } from "./context/CartContext"
 
 export default function App() {
-  const { addToCart, count: cartCount, toast } = useCart()
+  const { addToCart, items: cartItems, count: cartCount, toast } = useCart()
   const base = import.meta.env.BASE_URL || "/"
   const { products, loading, refreshQuotes } = useCatalog()
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -423,9 +423,12 @@ export default function App() {
       <AsesoramientoModal open={asesoramientoOpen} onClose={() => setAsesoramientoOpen(false)} />
       <Suspense fallback={null}>{rmaOpen && <RmaModal open onClose={() => setRmaOpen(false)} />}</Suspense>
       {selectedProduct && <ProductDetail producto={selectedProduct} onClose={() => setSelectedProduct(null)} onAddToCart={addToCart} />}
-      {(authOpen || checkoutOpen || drawerOpen || selectedProduct || stitchExtra) && (
+      {(checkoutOpen || drawerOpen || selectedProduct || stitchExtra) && (
         <StitchView
-          name={stitchExtra || (authOpen ? 'login' : checkoutOpen ? 'pago' : drawerOpen ? 'carrito' : 'ficha')}
+          name={stitchExtra || (checkoutOpen ? 'pago' : drawerOpen ? 'carrito' : 'ficha')}
+          products={allProducts}
+          cartItems={cartItems}
+          product={selectedProduct}
           onClose={() => { setAuthOpen(false); setCheckoutOpen(false); setDrawerOpen(false); setSelectedProduct(null); setStitchExtra(null) }}
           onAction={(action) => {
             const closeAll = () => { setAuthOpen(false); setCheckoutOpen(false); setDrawerOpen(false); setSelectedProduct(null); setStitchExtra(null) }
