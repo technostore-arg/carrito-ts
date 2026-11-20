@@ -220,6 +220,8 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 .stitch-view .hero-slide > span.bg-gradient-to-t small,
 .stitch-view .hero-slide > span.bg-gradient-to-t b { color: #fff !important; }
 /* Borde del select en el contenedor del buscador (Stitch le pone bg-surface-subtle) */
+/* Bordes de los campos de filtro del catálogo */
+.stitch-view [data-catalog-filters] select { border-color: #6b7280 !important; background: #fff !important; }
 .stitch-view header select.bg-transparent,
 .stitch-view header input.flex-1 {
   border: 1px solid #5b6270 !important;
