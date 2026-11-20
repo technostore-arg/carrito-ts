@@ -10,12 +10,11 @@ export default function StitchView({ name, inline = false, products = [], catego
 
   useEffect(() => {
     if (!name) { setHtml(''); return }
+    // Una sola fuente de verdad: el HTML desktop, hidratado y responsive, en cualquier ancho.
     const mq = window.matchMedia('(max-width: 900px)')
     let alive = true
     const load = () => {
-      const forceMobile = new URLSearchParams(window.location.search).get('device') === 'mobile'
-    const device = (mq.matches || forceMobile) ? 'mobile' : 'desktop'
-      fetch(`${import.meta.env.BASE_URL}stitch/${name}-${device}.html`)
+      fetch(`${import.meta.env.BASE_URL}stitch/${name}-desktop.html`)
         .then(r => (r.ok ? r.text() : ''))
         .then(text => {
           if (!alive) return
@@ -26,8 +25,7 @@ export default function StitchView({ name, inline = false, products = [], catego
         .catch(() => alive && setHtml(''))
     }
     load()
-    mq.addEventListener('change', load)
-    return () => { alive = false; mq.removeEventListener('change', load) }
+    return () => { alive = false }
   }, [name, products, categorias, cartItems, cartCount, product])
 
   useEffect(() => {
