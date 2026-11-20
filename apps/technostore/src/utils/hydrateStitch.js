@@ -159,17 +159,65 @@ const XMAS_STICKERS = {
   snow: '<span class="xmas-sticker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="1.3" stroke-linecap="round"><path d="M12 2v20M4 6l16 12M20 6 4 18M12 2 9 5m3-3 3 3M12 22l-3-3m3 3 3-3M4 6l.4 3.6M4 6l3.6-.4M20 18l-.4-3.6M20 18l-3.6.4M20 6l-3.6-.4M20 6l-.4 3.6M4 18l3.6.4M4 18l.4-3.6"/></svg></span>',
   star: '<span class="xmas-sticker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#00A651" stroke-width="1.4" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5 5 19"/></svg></span>',
   pine: '<span class="xmas-sticker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#00A651" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 5 11h3l-4 6h16l-4-6h3L12 2Z"/><path d="M12 17v5"/></svg></span>',
+  bell: '<span class="xmas-sticker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#E02424" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8Z"/><path d="M13.7 20a2 2 0 0 1-3.4 0"/></svg></span>',
+  ornament: '<span class="xmas-sticker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#E02424" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="14" r="7"/><path d="M12 7V3m-3 1h6M9 14h6M12 11v6"/></svg></span>',
+  envelope: '<span class="xmas-sticker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>',
+  cup: '<span class="xmas-sticker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#E02424" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Z"/><path d="M17 9h2a2.5 2.5 0 0 1 0 5h-2M7 3c0 1-1 1.5-1 2.5M11 3c0 1-1 1.5-1 2.5"/></svg></span>',
 }
+
+const smallSticker = s => s.replace('class="xmas-sticker"', 'class="xmas-sticker xmas-sticker--sm"')
 
 function addXmasStickers(doc) {
   const title = doc.querySelector('[data-catalog] h2')
   if (title) title.insertAdjacentHTML('afterend', XMAS_STICKERS.gift)
   const count = doc.querySelector('[data-catalog-count]')
   if (count?.parentElement) count.parentElement.insertAdjacentHTML('beforeend', XMAS_STICKERS.snow)
+  const pay = [...doc.querySelectorAll('section')].find(s => /SiPago/.test(s.textContent || ''))
+  if (pay?.firstElementChild) pay.firstElementChild.insertAdjacentHTML('beforeend', smallSticker(XMAS_STICKERS.bell))
   const trust = doc.querySelector('[data-cybertrust] div')
-  if (trust) trust.insertAdjacentHTML('beforeend', XMAS_STICKERS.star)
+  if (trust) { trust.insertAdjacentHTML('beforeend', XMAS_STICKERS.star); trust.insertAdjacentHTML('beforeend', smallSticker(XMAS_STICKERS.cup)) }
   const fiscal = doc.querySelector('footer > div.bg-surface-subtle .flex')
   if (fiscal) fiscal.insertAdjacentHTML('beforeend', XMAS_STICKERS.pine)
+  const advise = doc.querySelector('[data-path="asesoramiento"]')
+  if (advise) advise.insertAdjacentHTML('afterbegin', smallSticker(XMAS_STICKERS.envelope))
+}
+
+// Capa de atmósfera: nieve fina dentro del banner (sin registro, se apaga con reduced-motion).
+function addSnow(doc) {
+  const slider = doc.querySelector('[data-hero-slider] > div')
+  if (!slider || slider.querySelector('.hero-snow')) return
+  const snow = doc.createElement('div')
+  snow.className = 'hero-snow'
+  snow.setAttribute('aria-hidden', 'true')
+  let dots = ''
+  for (let i = 0; i < 12; i++) {
+    const size = 2 + (i % 3)
+    const left = (i * 8 + 4) % 100
+    const dur = 11 + (i % 5) * 1.6
+    const delay = -(i * 1.4)
+    const opacity = 0.28 + (i % 4) * 0.09
+    dots += `<i style="left:${left}%;width:${size}px;height:${size}px;animation-duration:${dur}s;animation-delay:${delay}s;opacity:${opacity}"></i>`
+  }
+  snow.innerHTML = dots
+  slider.appendChild(snow)
+}
+
+// Capa de ritmo: separadores finos con ornamento entre secciones.
+function addSeasonalDividers(doc) {
+  const targets = [
+    { el: [...doc.querySelectorAll('section')].find(s => /SiPago/.test(s.textContent || '')), icon: XMAS_STICKERS.ornament },
+    { el: [...doc.querySelectorAll('section')].find(s => /Marcas/.test(s.textContent || '')), icon: XMAS_STICKERS.snow },
+    { el: doc.querySelector('[data-catalog]'), icon: XMAS_STICKERS.star },
+    { el: doc.querySelector('[data-cybertrust]'), icon: XMAS_STICKERS.pine },
+  ]
+  for (const t of targets) {
+    if (!t.el) continue
+    const div = doc.createElement('div')
+    div.className = 'season-divider'
+    div.setAttribute('aria-hidden', 'true')
+    div.innerHTML = `<span></span>${t.icon}<span></span>`
+    t.el.before(div)
+  }
 }
 
 function buildHeroSlider() {
@@ -382,5 +430,7 @@ export function hydrateStitch(doc, { products = [], categorias = [] } = {}) {
     else doc.querySelector('main')?.appendChild(node) || doc.body.appendChild(node)
   }
   addXmasStickers(doc)
+  addSnow(doc)
+  addSeasonalDividers(doc)
   return doc
 }
