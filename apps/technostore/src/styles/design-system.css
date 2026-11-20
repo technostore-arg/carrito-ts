@@ -201,9 +201,11 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 /* Campos del buscador con borde visible (contraste de borde >= 3:1) */
 .stitch-view header input, .stitch-view header select,
 .stitch-view header div input, .stitch-view header div select {
-  border: 1px solid #646b7a !important;
-  box-shadow: inset 0 0 0 1px #646b7a !important;
+  border: 2px solid #5b6270 !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 1px #5b6270 !important;
 }
+.stitch-view header .bg-surface-subtle { background: #e8eaf0 !important; }
 /* Texto del pie con contraste suficiente sobre el fondo claro */
 .stitch-view footer .text-on-surface-variant, .stitch-view footer p, .stitch-view footer span, .stitch-view footer a { color: #3c4250 !important; }
 .stitch-view .font-label-sm { font-size: 12px !important; }
