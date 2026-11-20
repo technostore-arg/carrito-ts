@@ -183,7 +183,7 @@ function addSearch(doc, cartCount = 0) {
 function seasonalAndHero(doc, products = []) {
   // HERO: copy breve (antes: "Renová tu setup con tecnología oficial y financiación garantizada.")
   const h1 = doc.querySelector('h1')
-  if (h1) h1.innerHTML = 'El sitio de <span class="text-primary-container">confianza</span> para tus compras tech'
+  if (h1) h1.innerHTML = 'El sitio de <span class="ds-accent-ink">confianza</span> para tus compras tech'
   const sub = doc.querySelector('h1')?.parentElement?.querySelector('p.font-body-lg')
   if (sub) sub.innerHTML = 'Armado de computadoras, computadoras gamer y componentes con stock real. ¿No sabés qué elegir? Te asesoramos sin cargo.'
 
@@ -507,7 +507,7 @@ function buildCatalog(products = [], categorias = []) {
     <label class="flex flex-col gap-1"><span class="font-label-sm text-on-surface-variant">Ordenar por</span><select data-order class="${f}">
       ${opt('destacados', 'Destacados')}${opt('oferta', 'En oferta')}${opt('precio-asc', 'Menor precio')}${opt('precio-desc', 'Mayor precio')}${opt('nombre', 'Nombre A — Z')}
     </select></label>
-    <div class="flex items-end"><button type="button" data-catalog-reset class="h-10 w-full px-4 rounded-lg border border-border-subtle text-on-surface-variant font-label-md hover:bg-surface-container transition-colors">Limpiar filtros</button></div>
+    <div class="flex items-end"><button type="button" data-catalog-reset class="ds-reset-filter h-10 w-full px-4 rounded-lg border border-border-subtle text-on-surface-variant font-label-md hover:bg-surface-container transition-colors">Limpiar filtros</button></div>
   </div>
   <div data-catalog-grid class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
     ${items.map(productCard).join('')}

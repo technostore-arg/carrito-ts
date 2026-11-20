@@ -190,6 +190,24 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 .ts-chat-input button { border: 0; border-radius: 10px; background: var(--ds-primary-container); color: #fff; padding: 0 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
 .ts-chat-input button:disabled { opacity: .5; cursor: not-allowed; }
 
+/* Hallmark audit fixes */
+.ds-accent-ink { color: #00399c !important; }
+.stitch-view .text-primary-container { color: #00399c !important; }
+.stitch-view .text-tertiary-container, .stitch-view .text-secondary-fixed { color: #00480f !important; }
+.stitch-view .text-on-surface-variant { color: #414756 !important; }
+.ds-reset-filter { white-space: nowrap; }
+.stitch-view h1, .stitch-view h2, .stitch-view h3, .stitch-view [data-catalog-item] h3 { text-wrap: balance; }
+.stitch-view p { text-wrap: pretty; line-height: 1.45 !important; }
+/* Campos del buscador con borde visible (contraste de borde >= 3:1) */
+.stitch-view header select, .stitch-view header input { border-color: #8b90a0 !important; }
+/* Fila de búsqueda mobile: sin desbordes a 375px */
+@media (max-width: 60rem) {
+  .stitch-view header > div > div { flex-wrap: wrap; gap: 8px !important; }
+  .stitch-view header .flex-1.max-w-2xl { flex-basis: 100% !important; max-width: 100% !important; min-width: 0; }
+  .stitch-view header .px-margin-mobile.pb-2 { padding-left: 0 !important; padding-right: 0 !important; min-width: 0; }
+}
+@media (max-width: 30rem) { .ds-reset-filter { font-size: 11px; padding-left: 6px; padding-right: 6px; } }
+
 /* Checkout / carrito */
 .checkout-page { width: 100%; padding: 32px 2rem 48px; max-width: 1280px; margin: 0 auto; }
 .checkout-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
