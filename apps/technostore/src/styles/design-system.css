@@ -209,8 +209,22 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 /* Texto del pie con contraste suficiente sobre el fondo claro */
 .stitch-view footer .text-on-surface-variant, .stitch-view footer p, .stitch-view footer span, .stitch-view footer a { color: #3c4250 !important; }
 .stitch-view .font-label-sm { font-size: 12px !important; }
-/* Caption del banner con fondo propio para no depender del degradado */
-.stitch-view .hero-slide > span.bg-gradient-to-t { background: rgba(11,25,44,.72) !important; }
+/* Caption del banner: fondo sólido, sin degradados (contraste estable en los 6 slides) */
+.stitch-view .hero-slide > span.bg-gradient-to-t {
+  background: #0b192c !important;
+  color: #fff !important;
+  left: 12px !important; right: auto !important; bottom: 12px !important;
+  width: max-content !important; max-width: calc(100% - 24px);
+  padding: 8px 12px !important; border-radius: 10px;
+}
+.stitch-view .hero-slide > span.bg-gradient-to-t small,
+.stitch-view .hero-slide > span.bg-gradient-to-t b { color: #fff !important; }
+/* Borde del select en el contenedor del buscador (Stitch le pone bg-surface-subtle) */
+.stitch-view header .bg-surface-subtle select,
+.stitch-view header .bg-surface-subtle input {
+  border: 1px solid #5b6270 !important;
+  background: #fff !important;
+}
 /* Fila de búsqueda mobile: sin desbordes a 375px */
 @media (max-width: 60rem) {
   .stitch-view header > div > div { flex-wrap: wrap; gap: 8px !important; }
