@@ -4,9 +4,15 @@
    Inter · Sin gradients, sin glass, sin ruido
    ============================================================ */
 
-/* Hallmark: tres pesos (400/500/600); precios en 600 */
+/* Sistema tipográfico único: Quicksand para titulares, Inter para cuerpo. */
+h1, h2, h3, .catalog-title, .checkout-head h1, .auth-card h2, .asesor-card h2,
+.checkout-card h2, .checkout-summary h2 { font-family: 'Quicksand', 'Inter', sans-serif !important; }
+h1, h2, h3 { font-weight: 600 !important; }
+/* Sin eyebrows: las etiquetas son cuerpo, en minúscula y sin tracking. */
+.text-primary.font-label-md.uppercase, .uppercase.tracking-widest { letter-spacing: 0 !important; text-transform: none !important; }
+/* Tres pesos (400/500/600); precios en 600. */
 .font-label-sm, .font-label-md, .font-label-lg, [class*="font-bold"], [class*="font-extrabold"] { font-weight: 400 !important; }
-.price-strong { font-weight: 600 !important; }
+.price-strong, .catalog-title { font-weight: 600 !important; }
 
 :root {
   --bg: #fbfbfd;

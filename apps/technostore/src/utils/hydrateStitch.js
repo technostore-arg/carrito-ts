@@ -114,9 +114,15 @@ function simplifyStitch(doc) {
   }
 }
 
-function addSearch(doc, cartCount = 0) {
+function addSearch(doc, cartCount = 0, categorias = []) {
   // El nav viejo ("Promociones / Garantías / Mis Pedidos") desborda el header desktop.
   for (const n of doc.querySelectorAll('header nav')) n.remove()
+  // El select del header debe mostrar nuestras categorías reales, no las del mockup.
+  const sel = doc.querySelector('header select')
+  if (sel && categorias.length) {
+    sel.innerHTML = [['', 'Todas las categorías'], ...categorias.map(c => [c.id, c.label || c.id])]
+      .map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join('')
+  }
   // Acciones del header siempre visibles y con etiqueta clara (sin breakpoints).
   const depth = d => { let n = 0, p = d; while (p) { n++; p = p.parentElement } return n }
   const actions = [...doc.querySelectorAll('header div')]
@@ -494,7 +500,7 @@ function buildCatalog(products = [], categorias = []) {
   const f = 'bg-surface-container-low border border-border-subtle rounded-lg px-3 py-2 text-label-md text-on-surface outline-none'
   return `<section id="catalogo" class="w-full px-margin py-space-xl" data-catalog>
   <div class="flex items-end justify-between mb-4 gap-3 flex-wrap">
-    <div><div class="text-primary font-label-md font-bold uppercase tracking-widest">Catálogo completo</div><h2 class="font-headline-lg text-headline-lg font-bold text-on-surface">Todos los productos</h2></div>
+    <h2 class="catalog-title font-headline-lg text-headline-lg text-on-surface">Todos los productos</h2>
     <span class="font-label-md text-on-surface-variant"><b data-catalog-count>${items.length}</b> productos · <span data-catalog-updated>actualizando…</span></span>
   </div>
   <div class="bg-surface-pure rounded-xl shadow-sm p-4 mb-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3" data-catalog-filters>
@@ -531,7 +537,7 @@ export function hydrateStitch(doc, { products = [], categorias = [], cartItems =
   const CHECKOUT_STEPS = { carrito: 'cart', envio: 'shipping', pago: 'payment', confirmacion: 'done' }
   if (CHECKOUT_STEPS[screen]) renderCheckout(doc, cartItems, CHECKOUT_STEPS[screen])
   if (screen === 'login' || screen === 'registro') harmonizeAccounts(doc)
-  addSearch(doc, cartCount)
+  addSearch(doc, cartCount, categorias)
   if (screen === 'home') {
     seasonalAndHero(doc, products)
     reworkHome(doc, products)
