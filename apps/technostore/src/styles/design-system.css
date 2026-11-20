@@ -220,10 +220,11 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 .stitch-view .hero-slide > span.bg-gradient-to-t small,
 .stitch-view .hero-slide > span.bg-gradient-to-t b { color: #fff !important; }
 /* Borde del select en el contenedor del buscador (Stitch le pone bg-surface-subtle) */
-.stitch-view header .bg-surface-subtle select,
-.stitch-view header .bg-surface-subtle input {
+.stitch-view header select.bg-transparent,
+.stitch-view header input.flex-1 {
   border: 1px solid #5b6270 !important;
   background: #fff !important;
+  box-shadow: 0 0 0 1px #5b6270 !important;
 }
 /* Fila de búsqueda mobile: sin desbordes a 375px */
 @media (max-width: 60rem) {
