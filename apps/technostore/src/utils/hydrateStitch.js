@@ -108,10 +108,19 @@ function simplifyStitch(doc) {
   }
 }
 
-function addSearch(doc) {
-  // Botón "Mi cuenta" coherente con el resto del header.
-  const account = [...doc.querySelectorAll('header div')].find(d => d.classList.contains('rounded-full') && /person/.test(d.textContent || ''))
-  if (account) account.outerHTML = '<button type="button" data-path="mis-pedidos" class="h-9 px-3 rounded-full bg-surface-container text-on-surface font-label-sm font-bold flex items-center gap-1.5"><span class="material-symbols-outlined text-base">person</span>Mi cuenta</button>'
+function addSearch(doc, cartCount = 0) {
+  // Acciones del header siempre visibles y con etiqueta clara (sin breakpoints).
+  const actions = [...doc.querySelectorAll('header div')].find(d => d.classList.contains('gap-6') && d.classList.contains('shrink-0'))
+  if (actions) {
+    actions.className = 'flex items-center gap-2 shrink-0'
+    actions.innerHTML = `<button type="button" data-path="carrito-de-compras" class="header-action" aria-label="Carrito">
+        <span class="material-symbols-outlined">shopping_cart</span><span class="header-action__label">Carrito</span>
+        <span class="header-action__badge" data-cart-count>${Number(cartCount) || 0}</span>
+      </button>
+      <button type="button" data-path="mis-pedidos" class="header-action" aria-label="Mi cuenta">
+        <span class="material-symbols-outlined">person</span><span class="header-action__label">Mi cuenta</span>
+      </button>`
+  }
   if (doc.querySelector('[data-stitch-search]')) return
   const wrapSuggest = (input, wrap) => {
     input.setAttribute('data-stitch-search', '')
@@ -460,7 +469,7 @@ function buildCatalog(products = [], categorias = []) {
 </section>`
 }
 
-export function hydrateStitch(doc, { products = [], categorias = [], cartItems = [], product = null, screen = 'home' } = {}) {
+export function hydrateStitch(doc, { products = [], categorias = [], cartItems = [], cartCount = 0, product = null, screen = 'home' } = {}) {
   normalizeCopy(doc)
   replaceLogo(doc)
   simplifyStitch(doc)
@@ -468,7 +477,7 @@ export function hydrateStitch(doc, { products = [], categorias = [], cartItems =
   if (screen === 'ficha') { dropFakeReviews(doc); renderDetail(doc, product) }
   if (screen === 'carrito') renderCart(doc, cartItems)
   if (screen === 'login' || screen === 'registro') harmonizeAccounts(doc)
-  addSearch(doc)
+  addSearch(doc, cartCount)
   if (screen === 'home') {
     seasonalAndHero(doc, products)
     reworkHome(doc, products)

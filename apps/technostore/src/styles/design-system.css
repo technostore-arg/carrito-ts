@@ -190,6 +190,23 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 .ts-chat-input button { border: 0; border-radius: 10px; background: var(--ds-primary-container); color: #fff; padding: 0 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
 .ts-chat-input button:disabled { opacity: .5; cursor: not-allowed; }
 
+/* Header: acciones claras en cualquier ancho y tipografía coherente */
+.stitch-view header, .stitch-view header button, .stitch-view header a, .stitch-view header input, .stitch-view header select { font-family: 'Quicksand', 'Inter', sans-serif; }
+.stitch-view header button, .stitch-view header a { font-weight: 500 !important; }
+.header-action { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 12px; border-radius: 999px; background: var(--ds-surface-container); color: var(--ds-on-surface); font-size: 12px; font-weight: 500; white-space: nowrap; }
+.header-action .material-symbols-outlined { font-size: 19px; }
+.header-action__label { line-height: 1; }
+.header-action__badge { position: absolute; top: -3px; right: -3px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px; background: var(--ds-primary-container); color: #fff; font-size: 10px; font-weight: 500; display: grid; place-items: center; }
+@media (max-width: 520px) { .header-action__label { display: none; } .header-action { padding: 0 10px; } }
+
+/* Jerarquía más liviana: menos peso y titulares apenas más chicos */
+.stitch-view .font-extrabold { font-weight: 600 !important; }
+.stitch-view .font-bold { font-weight: 500 !important; }
+.stitch-view h1, .stitch-view h2, .stitch-view h3 { font-weight: 600 !important; }
+.stitch-view .text-headline-lg { font-size: 22px !important; }
+.stitch-view .text-headline-md { font-size: 19px !important; }
+.stitch-view .text-headline-sm { font-size: 16px !important; }
+
 /* Gran gorro de Papá Noel inclinado sobre una esquina del logo */
 .logo-lockup { position: relative; display: inline-flex; }
 .xmas-santa-hat { position: absolute; right: -14px; bottom: 26px; width: 50px; height: 38px; z-index: 5; pointer-events: none; transform: rotate(16deg); filter: drop-shadow(0 3px 4px rgba(11,25,44,.2)); }

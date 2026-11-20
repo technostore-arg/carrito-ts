@@ -339,6 +339,7 @@ export default function App() {
             name={stitchScreen}
             products={allProducts}
             categorias={categorias}
+            cartCount={cartCount}
             onAction={(action) => {
               if (action === 'cart') setDrawerOpen(true)
               if (action === 'account') setAuthOpen(true)
