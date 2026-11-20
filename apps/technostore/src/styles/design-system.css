@@ -210,15 +210,15 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 .stitch-view footer .text-on-surface-variant, .stitch-view footer p, .stitch-view footer span, .stitch-view footer a { color: #3c4250 !important; }
 .stitch-view .font-label-sm { font-size: 12px !important; }
 /* Caption del banner: fondo sólido, sin degradados (contraste estable en los 6 slides) */
-.stitch-view .hero-slide > span.bg-gradient-to-t {
-  background: #0b192c !important;
-  color: #fff !important;
-  left: 12px !important; right: auto !important; bottom: 12px !important;
-  width: max-content !important; max-width: calc(100% - 24px);
-  padding: 8px 12px !important; border-radius: 10px;
+.hero-slide__caption {
+  position: absolute; left: 12px; bottom: 12px; z-index: 8;
+  display: inline-flex; align-items: center; gap: 8px;
+  max-width: calc(100% - 24px); padding: 8px 12px; border-radius: 10px;
+  background: #0b192c; color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.25);
 }
-.stitch-view .hero-slide > span.bg-gradient-to-t small,
-.stitch-view .hero-slide > span.bg-gradient-to-t b { color: #fff !important; }
+.hero-slide__caption-logo { width: 16px; height: 16px; flex: none; }
+.hero-slide__caption small { display: block; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
+.hero-slide__caption b { display: block; font-size: 13px; font-weight: 500; line-height: 1.2; }
 /* Borde del select en el contenedor del buscador (Stitch le pone bg-surface-subtle) */
 /* Bordes de los campos de filtro del catálogo */
 .stitch-view [data-catalog-filters] select { border-color: #6b7280 !important; background: #fff !important; }

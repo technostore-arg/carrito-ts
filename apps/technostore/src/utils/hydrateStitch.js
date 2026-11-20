@@ -340,9 +340,9 @@ function buildHeroSlider() {
   <div class="relative w-full h-[340px] sm:h-[380px] rounded-2xl overflow-hidden bg-surface-container-low shadow-xl">
     ${HERO_SLIDES.map((s, i) => `<a class="hero-slide absolute inset-0 flex items-center justify-center${i === 0 ? ' is-active' : ''}" data-hero-slide="${i}" data-path="detalle-de-producto" data-sku="${esc(s.sku)}" href="#">
       <img class="hero-slide__img relative z-[1] w-full h-full object-cover" src="${esc(s.img)}" alt="Imagen representativa de ${esc(s.tag)}">
-      <span class="absolute bottom-0 left-0 right-0 z-10 p-4 pt-10 bg-gradient-to-t from-black/60 to-transparent text-white text-left">
-        <span class="flex items-center gap-2 mb-1"><img src="/logo-mark.svg" alt="" class="h-4 w-4"><small class="block uppercase tracking-wider opacity-80 text-xs">${esc(s.tag)}</small></span>
-        <b class="text-lg">${esc(s.name)}</b>
+      <span class="hero-slide__caption">
+        <img src="/logo-mark.svg" alt="" class="hero-slide__caption-logo">
+        <span><small>${esc(s.tag)}</small><b>${esc(s.name)}</b></span>
       </span>
     </a>`).join('')}
     <button type="button" data-hero-prev aria-label="Anterior" class="hero-slider__arrow hero-slider__arrow--prev">‹</button>
