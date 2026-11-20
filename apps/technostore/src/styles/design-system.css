@@ -161,7 +161,8 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 }
 
 /* ---------- Vistas Stitch (paridad visual) ---------- */
-body:has(.stitch-overlay) > div > .stitch-view > header { visibility: hidden !important; }
+body:has(.stitch-overlay) .stitch-view > header:first-child { visibility: hidden !important; }
+.stitch-overlay .stitch-view > header { visibility: visible !important; }
 .stitch-overlay .stitch-view > header { position: sticky !important; top: 0; z-index: 30; }
 .stitch-overlay .stitch-view > header .flex-1.max-w-2xl { display: none !important; }
 .stitch-overlay { position: fixed; inset: 0; z-index: 200; background: var(--ds-background); overflow-y: auto; }
