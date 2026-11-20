@@ -432,6 +432,8 @@ export default function App() {
           products={allProducts}
           cartItems={cartItems}
           product={selectedProduct}
+          onProduct={(sku) => { const p = allProducts.find(x => x.sku === sku); if (p) openProduct(p) }}
+          onAdd={(sku) => { const p = allProducts.find(x => x.sku === sku); if (p) addToCart(p) }}
           onClose={() => { setAuthOpen(false); setCheckoutOpen(false); setDrawerOpen(false); setSelectedProduct(null); setStitchExtra(null) }}
           onAction={(action) => {
             const closeAll = () => { setAuthOpen(false); setCheckoutOpen(false); setDrawerOpen(false); setSelectedProduct(null); setStitchExtra(null) }

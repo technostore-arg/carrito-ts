@@ -248,8 +248,8 @@ function harmonizeAccounts(doc) {
 
 function renderCart(doc, cartItems = []) {
   const main = doc.querySelector('main')
-  if (!main || !cartItems.length) return
-  const rows = cartItems.map(it => {
+  if (!main) return
+  const rows = cartItems.length ? cartItems.map(it => {
     const p = it.product || it
     const sku = it.sku || p.sku || ''
     const precio = Number(p.precio_transferencia ?? p.precio) || 0
@@ -261,7 +261,7 @@ function renderCart(doc, cartItems = []) {
       <p class="font-headline-sm text-headline-sm font-bold text-primary mt-1">${money(precio * (Number(it.qty) || 1))}</p></div>
       <button type="button" data-add="${esc(sku)}" class="w-9 h-9 rounded-lg bg-surface-container text-on-surface shrink-0">+</button>
     </div>`
-  }).join('')
+  }).join('') : '<div class="bg-surface-pure rounded-2xl p-6 shadow-sm"><p class="font-body-md text-body-md text-on-surface-variant">Tu carrito está vacío.</p><a href="#" data-path="catalogo-de-productos" class="inline-block mt-3 font-label-md text-primary">Ver productos →</a></div>'
   const total = cartItems.reduce((s, it) => s + (Number(it.product?.precio_transferencia ?? it.precio_transferencia ?? it.precio) || 0) * (Number(it.qty) || 1), 0)
   main.innerHTML = `<div class="w-full px-margin py-space-xl">
     <div class="flex items-center justify-between gap-3 mb-6"><h1 class="font-headline-lg text-headline-lg font-bold text-on-surface">Mi carrito</h1>
