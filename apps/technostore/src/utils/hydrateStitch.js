@@ -115,75 +115,33 @@ function simplifyStitch(doc) {
 }
 
 function addSearch(doc, cartCount = 0, categorias = []) {
-  // El nav viejo ("Promociones / Garantías / Mis Pedidos") desborda el header desktop.
-  for (const n of doc.querySelectorAll('header nav')) n.remove()
-  // El select del header debe mostrar nuestras categorías reales, no las del mockup.
-  const sel = doc.querySelector('header select')
-  if (sel && categorias.length) {
-    sel.innerHTML = [['', 'Todas las categorías'], ...categorias.map(c => [c.id, c.label || c.id])]
-      .map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join('')
-  }
-  // Acciones del header siempre visibles y con etiqueta clara (sin breakpoints).
-  const depth = d => { let n = 0, p = d; while (p) { n++; p = p.parentElement } return n }
-  const actions = [...doc.querySelectorAll('header div')]
-    .filter(d => /person/.test(d.textContent || '') && /shopping_(bag|cart)/.test(d.textContent || '') && d.children.length <= 4)
-    .sort((a, b) => (a.textContent.length - b.textContent.length) || (depth(b) - depth(a)))[0]
-  if (actions) {
-    actions.className = 'flex items-center gap-2 shrink-0'
-    actions.innerHTML = `<button type="button" data-path="carrito-de-compras" class="header-action" aria-label="Carrito">
-        <span class="material-symbols-outlined">shopping_cart</span><span class="header-action__label">Carrito</span>
-        <span class="header-action__badge" data-cart-count>${Number(cartCount) || 0}</span>
+  // Reemplazamos el header de Stitch por uno propio: limpio, responsive y con
+  // nuestras categorías reales. El original tenía dos filas que se cortaban en mobile.
+  const old = doc.querySelector('header')
+  if (!old) return
+  const options = [['', 'Todas las categorías'], ...categorias.map(c => [c.id, c.label || c.id])]
+    .map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join('')
+  old.className = 'ts-header'
+  old.innerHTML = `<div class="ts-header__inner">
+    <a class="ts-header__brand" data-path="catalogo-de-productos" href="#"><img src="/logo-lockup.png" alt="TechnoStore"></a>
+    <div class="ts-header__search" data-stitch-search-wrap>
+      <select data-cat-quick aria-label="Categoría">${options}</select>
+      <span class="material-symbols-outlined ts-header__search-icon">search</span>
+      <input data-stitch-search type="search" placeholder="Buscar productos, SKU…" aria-label="Buscar productos">
+      <div data-stitch-suggest class="hidden" role="listbox"></div>
+    </div>
+    <div class="ts-header__actions">
+      <button type="button" data-path="carrito-de-compras" class="ts-header__action" aria-label="Carrito">
+        <span class="material-symbols-outlined">shopping_cart</span><span class="ts-header__label">Carrito</span>
+        <span class="ts-header__badge" data-cart-count>${Number(cartCount) || 0}</span>
       </button>
-      <button type="button" data-path="mis-pedidos" class="header-action" aria-label="Mi cuenta">
-        <span class="material-symbols-outlined">person</span><span class="header-action__label">Mi cuenta</span>
-      </button>`
-  }
-  // Mobile: el header no trae buscador, agregamos una fila compacta.
-  if (!doc.querySelector('header input[placeholder^="Buscar"]')) {
-    const rowHost = doc.querySelector('header > div')
-    if (rowHost) {
-      const row = doc.createElement('div')
-      row.className = 'px-margin-mobile pb-2'
-      row.innerHTML = `<div class="relative" data-stitch-search-wrap><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span><input data-stitch-search type="search" placeholder="Buscar productos, SKU…" aria-label="Buscar productos" class="w-full h-10 pl-10 pr-3 rounded-xl bg-surface-container-low text-body-sm text-on-surface outline-none"><div data-stitch-suggest class="hidden absolute z-50 top-full mt-2 w-full bg-surface-pure rounded-xl shadow-lg border border-border-subtle overflow-hidden"></div></div>`
-      rowHost.appendChild(row)
-      const main = doc.querySelector('main')
-      if (main) main.className = main.className.replace(/\bpt-20\b/, 'pt-32')
-    }
-  }
-  if (doc.querySelector('[data-stitch-search]')) return
-  const wrapSuggest = (input, wrap) => {
-    input.setAttribute('data-stitch-search', '')
-    input.setAttribute('aria-label', 'Buscar productos')
-    wrap.setAttribute('data-stitch-search-wrap', '')
-    wrap.style.position = 'relative'
-    const box = doc.createElement('div')
-    box.setAttribute('data-stitch-suggest', '')
-    box.className = 'hidden absolute z-50 top-full mt-2 w-full bg-surface-pure rounded-xl shadow-lg border border-border-subtle overflow-hidden'
-    wrap.appendChild(box)
-  }
-  // El header nativo de Stitch es fixed y tapa cualquier header inyectado:
-  // conectamos la búsqueda en vivo directamente a SU input.
-  const nativeInput = doc.querySelector('header input[placeholder^="Buscar"]')
-  if (nativeInput) {
-    const wrap = nativeInput.parentElement
-    wrapSuggest(nativeInput, wrap)
-    const btn = wrap.querySelector('button')
-    if (btn) btn.setAttribute('data-path', 'catalogo-de-productos')
-    return
-  }
-  // Fallback para pantallas sin header nativo.
-  const header = doc.createElement('div')
-  header.className = 'sticky top-0 z-40 w-full bg-surface-pure/95 backdrop-blur border-b border-border-subtle px-margin py-3'
-  header.innerHTML = `<div class="w-full max-w-[1440px] mx-auto flex items-center gap-4">
-  <a class="font-extrabold text-xl tracking-tight text-on-surface shrink-0" data-path="catalogo-de-productos" href="#">Techno<span class="text-primary-container">Store</span></a>
-  <div class="relative flex-1 max-w-2xl" data-stitch-search-wrap>
-    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-base">search</span>
-    <input data-stitch-search type="search" placeholder="Buscar GPU, notebook, RAM, SKU…" aria-label="Buscar productos" class="w-full h-11 pl-10 pr-4 rounded-xl bg-surface-container-low border border-border-subtle text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary-container">
-    <div data-stitch-suggest class="hidden absolute z-50 top-full mt-2 w-full bg-surface-pure rounded-xl shadow-lg border border-border-subtle overflow-hidden"></div>
-  </div>
-  <a class="shrink-0 h-10 px-4 rounded-xl bg-trust-shield text-surface-pure font-label-md font-bold flex items-center gap-2" data-path="carrito-de-compras" href="#"><span class="material-symbols-outlined text-base">shopping_cart</span>Carrito</a>
-</div>`
-  doc.body.prepend(header)
+      <button type="button" data-path="mis-pedidos" class="ts-header__action" aria-label="Mi cuenta">
+        <span class="material-symbols-outlined">person</span><span class="ts-header__label">Mi cuenta</span>
+      </button>
+    </div>
+  </div>`
+  const main = doc.querySelector('main')
+  if (main) main.className = main.className.replace(/\bpt-44\b|\bpt-32\b|\bpt-24\b|\bpt-20\b/g, 'ts-main')
 }
 
 function seasonalAndHero(doc, products = []) {

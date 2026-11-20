@@ -203,13 +203,6 @@ body:has(.stitch-overlay) .stitch-view > header:first-child { visibility: hidden
 .stitch-view h1, .stitch-view h2, .stitch-view h3, .stitch-view [data-catalog-item] h3 { text-wrap: balance; }
 .stitch-view p { text-wrap: pretty; line-height: 1.45 !important; }
 /* Campos del buscador con borde visible (contraste de borde >= 3:1) */
-.stitch-view header input, .stitch-view header select,
-.stitch-view header div input, .stitch-view header div select {
-  border: 2px solid #5b6270 !important;
-  background: #ffffff !important;
-  box-shadow: 0 0 0 1px #5b6270 !important;
-}
-.stitch-view header .bg-surface-subtle { background: #e8eaf0 !important; }
 /* Texto del pie con contraste suficiente sobre el fondo claro */
 .stitch-view footer .text-on-surface-variant, .stitch-view footer p, .stitch-view footer span, .stitch-view footer a { color: #3c4250 !important; }
 .stitch-view .font-label-sm { font-size: 12px !important; }
@@ -224,22 +217,39 @@ body:has(.stitch-overlay) .stitch-view > header:first-child { visibility: hidden
 /* Borde del select en el contenedor del buscador (Stitch le pone bg-surface-subtle) */
 /* Bordes de los campos de filtro del catálogo */
 .stitch-view [data-catalog-filters] select { border-color: #6b7280 !important; background: #fff !important; }
-.stitch-view header select.bg-transparent,
-.stitch-view header input.flex-1 {
-  border: 1px solid #5b6270 !important;
-  background: #fff !important;
-  box-shadow: 0 0 0 1px #5b6270 !important;
-}
 /* Fila de búsqueda mobile: sin desbordes a 375px */
-@media (max-width: 60rem) {
-  /* El buscador desktop (select + input) se corta en mobile: se oculta. */
-  .stitch-view header .flex-1.max-w-2xl { display: none !important; }
-  /* Solo queda la fila compacta de búsqueda, a todo el ancho. */
-  .stitch-view header .px-margin-mobile.pb-2 { padding-left: 1rem !important; padding-right: 1rem !important; }
   /* Logo sin el gorro en mobile para que no invada el header. */
   .stitch-view header .xmas-santa-hat { display: none !important; }
 }
 @media (max-width: 30rem) { .ds-reset-filter { font-size: 11px; padding-left: 6px; padding-right: 6px; } }
+
+
+/* Header propio: una sola fila, sin cortes, mismo sistema visual */
+.ts-header { position: sticky; top: 0; z-index: 60; width: 100%; background: rgba(255,255,255,.96); border-bottom: 1px solid var(--ds-border-subtle); }
+.ts-header__inner { max-width: 1440px; margin: 0 auto; padding: 10px 2rem; display: flex; align-items: center; gap: 20px; }
+.ts-header__brand { flex: none; display: flex; align-items: center; }
+.ts-header__brand img { height: 34px; width: auto; max-width: 190px; object-contain; }
+.ts-header__search { position: relative; flex: 1; min-width: 0; max-width: 700px; display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 12px; background: var(--ds-surface-container-low); border: 1px solid #707785; border-radius: 999px; }
+.ts-header__search select { flex: none; max-width: 150px; background: transparent; border: 0; border-right: 1px solid var(--ds-border-subtle); padding-right: 10px; color: var(--ds-on-surface-variant); font-size: 12px; outline: none; }
+.ts-header__search-icon { flex: none; font-size: 19px; color: var(--ds-on-surface-variant); }
+.ts-header__search input { flex: 1; min-width: 0; height: 100%; background: transparent; border: 0; outline: none; font-size: 13px; color: var(--ds-on-surface); }
+.ts-header__search [data-stitch-suggest] { position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 70; background: #fff; border: 1px solid var(--ds-border-subtle); border-radius: 12px; box-shadow: 0 12px 30px rgba(11,25,44,.14); overflow: hidden; }
+.ts-header__actions { flex: none; display: flex; align-items: center; gap: 8px; }
+.ts-header__action { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 12px; border: 0; border-radius: 999px; background: var(--ds-surface-container); color: var(--ds-on-surface); font-family: 'Quicksand', sans-serif; font-size: 12px; font-weight: 500; white-space: nowrap; cursor: pointer; }
+.ts-header__action .material-symbols-outlined { font-size: 19px; }
+.ts-header__badge { position: absolute; top: -3px; right: -3px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px; background: var(--ds-primary-container); color: #fff; font-size: 10px; display: grid; place-items: center; }
+.ts-main { padding-top: 0 !important; }
+@media (max-width: 900px) {
+  .ts-header__inner { padding: 8px 1rem; gap: 10px; flex-wrap: wrap; }
+  .ts-header__brand { order: 1; }
+  .ts-header__actions { order: 2; margin-left: auto; }
+  .ts-header__label { display: none; }
+  .ts-header__action { padding: 0 10px; }
+  .ts-header__search { order: 3; flex-basis: 100%; max-width: none; }
+  .ts-header__search select { max-width: 132px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+  .ts-header__search { gap: 6px; padding: 0 10px; }
+}
+@media (max-width: 380px) { .ts-header__search select { max-width: 110px; font-size: 11px; } }
 
 /* Footer: jerarquía discreta, sin bloques que compitan */
 .ds-footer-logo { opacity: .85; }
@@ -328,14 +338,7 @@ body:has(.stitch-overlay) .stitch-view > header:first-child { visibility: hidden
 @media (max-width: 560px) { .checkout-page { padding: 24px 1rem 40px; } .checkout-item { grid-template-columns: 64px minmax(0, 1fr); } .checkout-item__media { width: 64px; height: 64px; } .checkout-item__total { grid-column: 2; } }
 
 /* Header: acciones claras en cualquier ancho y tipografía coherente */
-.stitch-view header, .stitch-view header button, .stitch-view header a, .stitch-view header input, .stitch-view header select { font-family: 'Quicksand', 'Inter', sans-serif; }
-.stitch-view header button, .stitch-view header a { font-weight: 500 !important; }
-.header-action { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 12px; border-radius: 999px; background: var(--ds-surface-container); color: var(--ds-on-surface); font-size: 12px; font-weight: 500; white-space: nowrap; }
-.header-action .material-symbols-outlined { font-size: 19px; }
-.header-action__label { line-height: 1; }
-.header-action__badge { position: absolute; top: -3px; right: -3px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px; background: var(--ds-primary-container); color: #fff; font-size: 10px; font-weight: 500; display: grid; place-items: center; }
-@media (max-width: 520px) { .header-action__label { display: none; } .header-action { padding: 0 10px; } }
-
+@media (max-width: 520px) { 
 /* Jerarquía liviana: pesos 400/500 y titulares chicos en todo el sistema */
 /* Texto general sin negrita; el peso solo lo marcan los titulares */
 .stitch-view .font-extrabold, .stitch-view .font-bold, .stitch-view .font-semibold,
@@ -363,8 +366,7 @@ body .price-strong, body .checkout-item__total, body .checkout-total b, body .ch
 .stitch-view .text-body-lg, .stitch-view .text-body-md { font-size: 13px !important; }
 .stitch-view .text-label-lg { font-size: 12px !important; }
 .stitch-view [data-page-info], .stitch-view footer h4 { font-family: 'Quicksand', 'Inter', sans-serif; font-size: 12px; font-weight: 500; }
-.stitch-view .header-action { font-family: 'Quicksand', 'Inter', sans-serif; }
-
+.stitch-view 
 /* Gran gorro de Papá Noel inclinado sobre una esquina del logo */
 .logo-lockup { position: relative; display: inline-flex; }
 .xmas-santa-hat { position: absolute; right: -14px; bottom: 26px; width: 50px; height: 38px; z-index: 5; pointer-events: none; transform: rotate(16deg); filter: drop-shadow(0 3px 4px rgba(11,25,44,.2)); }
