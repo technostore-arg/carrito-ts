@@ -319,7 +319,7 @@ export default function App() {
   const openCheckout = () => { setDrawerOpen(false); setSelectedProduct(null); setCheckoutOpen(true) }
 
   return (
-    <div>
+    <div className={(checkoutStep || selectedProduct || stitchExtra) ? 'has-overlay' : ''}>
       <StitchView
         inline
         name={stitchScreen}

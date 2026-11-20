@@ -228,11 +228,22 @@ export default function StitchView({ name, inline = false, products = [], catego
     return () => { root.removeEventListener('input', onInput); root.removeEventListener('keydown', onKey) }
   }, [html, products])
 
+  // El header del overlay es el mismo de la home: se clona del portal para no duplicar estilos.
+  useEffect(() => {
+    if (inline || !ref.current) return
+    const view = ref.current
+    const host = view.querySelector('.overlay-header-slot')
+    if (!host || host.childElementCount) return
+    const source = document.querySelector('.stitch-view > header')
+    if (source) host.appendChild(source.cloneNode(true))
+  }, [html, inline])
+
   if (!name) return null
   const body = <div ref={ref} className="stitch-view" dangerouslySetInnerHTML={{ __html: html }} />
   if (inline) return body
   return (
     <div className="stitch-overlay" role="dialog" aria-modal="true" aria-label={name}>
+      <div className="overlay-header-slot" />
       <button className="stitch-overlay__close" onClick={onClose} aria-label="Cerrar"><span className="material-symbols-outlined">close</span>Cerrar</button>
       {body}
     </div>
