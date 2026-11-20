@@ -216,6 +216,9 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 .stitch-view h3.font-bold, .stitch-view h3.font-extrabold { font-weight: 500 !important; }
 .stitch-view h1 { font-size: 20px !important; }
 .stitch-view .text-headline-lg { font-size: 20px !important; }
+/* La ficha de producto tiene su propia jerarquía (va después de las reglas generales) */
+.stitch-view h1.ficha-title { font-size: 26px !important; font-weight: 600 !important; }
+.stitch-view h2.ficha-subtitle { font-size: 18px !important; font-weight: 500 !important; }
 .stitch-view .text-headline-md { font-size: 17px !important; }
 .stitch-view .text-headline-sm { font-size: 14px !important; }
 .stitch-view .text-body-lg, .stitch-view .text-body-md { font-size: 13px !important; }
