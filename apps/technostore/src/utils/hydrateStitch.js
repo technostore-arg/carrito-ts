@@ -74,7 +74,7 @@ function normalizeCopy(doc) {
 function replaceLogo(doc) {
   const wrap = [...doc.querySelectorAll('div.flex.items-center.gap-2')]
     .find(d => /memory/.test(d.textContent || '') && /Techno/.test(d.textContent || ''))
-  if (wrap) wrap.innerHTML = '<img src="/logo-mark.svg" alt="" class="h-10 w-10 object-contain shrink-0"><span class="font-medium text-[22px] leading-none tracking-tight text-on-surface whitespace-nowrap">Techno<span class="text-primary-container">Store</span></span>'
+  if (wrap) wrap.innerHTML = '<img src="/logo-lockup.png" alt="TechnoStore" class="h-9 w-auto max-w-[230px] object-contain">'
 }
 
 function simplifyStitch(doc) {
