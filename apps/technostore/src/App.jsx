@@ -331,6 +331,10 @@ export default function App() {
           if (action === 'advisory') setAsesoramientoOpen(true)
           if (action === 'rma') setRmaOpen(true)
           if (action === 'checkout') setCheckoutOpen(true)
+          if (action === 'checkout-envio') { setDrawerOpen(false); setStitchExtra('envio') }
+          if (action === 'checkout-pago') setStitchExtra('pago')
+          if (action === 'checkout-confirmar') setStitchExtra('confirmacion')
+          if (action === 'checkout-carrito') { setStitchExtra(null); setDrawerOpen(true) }
         }}
         onProduct={(sku) => {
           const p = allProducts.find(x => x.sku === sku)
@@ -363,6 +367,10 @@ export default function App() {
             if (action === 'cart') { closeAll(); setDrawerOpen(true) }
             if (action === 'account') { closeAll(); setAuthOpen(true) }
             if (action === 'checkout') { closeAll(); setCheckoutOpen(true) }
+            if (action === 'checkout-envio') { closeAll(); setStitchExtra('envio') }
+            if (action === 'checkout-pago') { closeAll(); setStitchExtra('pago') }
+            if (action === 'checkout-confirmar') { closeAll(); setStitchExtra('confirmacion') }
+            if (action === 'checkout-carrito') { closeAll(); setDrawerOpen(true) }
             if (action === 'shipping') { closeAll(); setStitchExtra('envio') }
             if (action === 'tracking') { closeAll(); setStitchExtra('confirmacion') }
           }}

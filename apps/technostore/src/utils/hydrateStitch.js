@@ -250,50 +250,60 @@ function harmonizeAccounts(doc) {
   if (testimonial) (testimonial.closest('div[class*="rounded"]') || testimonial.parentElement)?.remove()
 }
 
-function renderCart(doc, cartItems = []) {
+function renderCheckout(doc, cartItems = [], step = 'cart') {
   const main = doc.querySelector('main')
   if (!main) return
-  const rows = cartItems.length ? cartItems.map(it => {
-    const sku = it.sku || it.product?.sku || ''
-    const p = it.product || it
-    const precio = Number(p.precio_transferencia ?? p.precio) || 0
-    const qty = Number(it.qty) || 1
-    const img = p.imagen || p.imagenes?.[0] || p.image || ''
-    return `<div class="checkout-item" data-cart-item="${esc(sku)}">
-      <div class="checkout-item__media"><img src="${esc(img)}" alt=""></div>
-      <div class="checkout-item__info">
-        <p class="checkout-item__brand">${esc(p.marca || '')}</p>
-        <h3 class="checkout-item__name">${esc(p.nombre || p.name || sku)}</h3>
-        <p class="checkout-item__unit">${money(precio)} por unidad</p>
-        <div class="checkout-item__controls">
-          <div class="qty-stepper">
-            <button type="button" data-qty="${esc(sku)}" data-delta="-1" aria-label="Restar cantidad">−</button>
-            <span>${qty}</span>
-            <button type="button" data-qty="${esc(sku)}" data-delta="1" aria-label="Sumar cantidad">+</button>
-          </div>
-          <button type="button" class="checkout-remove" data-remove="${esc(sku)}">Eliminar</button>
-        </div>
-      </div>
-      <div class="price-strong checkout-item__total">${money(precio * qty)}</div>
-    </div>`
-  }).join('') : '<div class="checkout-empty"><p>Tu carrito está vacío.</p><a href="#" data-path="catalogo-de-productos">Ver productos →</a></div>'
   const total = cartItems.reduce((s, it) => s + (Number(it.product?.precio_transferencia ?? it.precio_transferencia ?? it.precio) || 0) * (Number(it.qty) || 1), 0)
+  const precioTarjeta = cartItems.reduce((s, it) => s + (Number(it.product?.precio_mercadopago ?? it.precio_mercadopago ?? it.precio_lista ?? it.precio) || 0) * (Number(it.qty) || 1), 0)
+  const ahorro = Math.max(0, precioTarjeta - total)
+  const shipOptions = [
+    { id: 'domicilio', label: 'Envío a domicilio', note: 'Calculá el costo por código postal', price: null },
+    { id: 'retiro', label: 'Retiro en punto cercano', note: 'Coordinación por WhatsApp', price: 'A coordinar' },
+  ]
+  const payOptions = [
+    { id: 'transferencia', label: 'Transferencia / DEBIN', note: `Mejor precio · ahorrás ${money(ahorro)}`, tag: 'Recomendado' },
+    { id: 'mercadopago', label: 'Mercado Pago', note: 'Tarjetas y Mercado Crédito', tag: '' },
+    { id: 'openpay', label: 'Openpay by BBVA', note: 'Tarjetas de crédito y débito', tag: '' },
+    { id: 'sipago', label: 'SiPago Credicoop', note: 'Tarjetas de crédito y débito', tag: '' },
+    { id: 'efectivo', label: 'Efectivo', note: 'Al recibir o retirar', tag: '' },
+  ]
+  const current = step === 'cart' ? 0 : step === 'shipping' ? 1 : step === 'payment' ? 2 : 3
+  const stepName = ['Carrito', 'Envío', 'Pago', 'Confirmación'][current]
   for (const h of doc.querySelectorAll('h1')) if (!main.contains(h)) h.remove()
   main.innerHTML = `<div class="checkout-page">
-    <div class="checkout-head">
-      <div><span class="checkout-eyebrow">TU COMPRA</span><h1>Mi carrito</h1></div>
-      <span class="checkout-count">${cartItems.length} producto${cartItems.length === 1 ? '' : 's'}</span>
-    </div>
-    <div class="checkout-steps" aria-hidden="true"><span class="is-active">1 · Carrito</span><span>2 · Envío</span><span>3 · Pago</span></div>
+    <div class="checkout-head"><div><span class="checkout-eyebrow">TU COMPRA</span><h1>${step === 'cart' ? 'Mi carrito' : step === 'shipping' ? 'Datos de envío' : step === 'payment' ? 'Medio de pago' : 'Compra confirmada'}</h1></div><span class="checkout-count">${cartItems.length} producto${cartItems.length === 1 ? '' : 's'}</span></div>
+    <div class="checkout-steps" aria-hidden="true">${['Carrito', 'Envío', 'Pago', 'Confirmación'].map((n, i) => `<span class="${i === current ? 'is-active' : ''}">${i + 1} · ${n}</span>`).join('')}</div>
     <div class="checkout-grid">
-      <div class="checkout-list">${rows}</div>
+      <div class="checkout-list">
+        ${step === 'cart' ? (cartItems.length ? cartItems.map(it => {
+          const sku = it.sku || it.product?.sku || ''
+          const p = it.product || it
+          const precio = Number(p.precio_transferencia ?? p.precio) || 0
+          const qty = Number(it.qty) || 1
+          const img = p.imagen || p.imagenes?.[0] || p.image || ''
+          return `<div class="checkout-item" data-cart-item="${esc(sku)}">
+            <div class="checkout-item__media"><img src="${esc(img)}" alt=""></div>
+            <div class="checkout-item__info"><p class="checkout-item__brand">${esc(p.marca || '')}</p><h3 class="checkout-item__name">${esc(p.nombre || p.name || sku)}</h3><p class="checkout-item__unit">${money(precio)} por unidad</p>
+              <div class="checkout-item__controls"><div class="qty-stepper"><button type="button" data-qty="${esc(sku)}" data-delta="-1" aria-label="Restar">−</button><span>${qty}</span><button type="button" data-qty="${esc(sku)}" data-delta="1" aria-label="Sumar">+</button></div><button type="button" class="checkout-remove" data-remove="${esc(sku)}">Eliminar</button></div></div>
+            <div class="price-strong checkout-item__total">${money(precio * qty)}</div></div>`
+        }).join('') : '<div class="checkout-empty"><p>Tu carrito está vacío.</p><a href="#" data-path="catalogo-de-productos">Ver productos →</a></div>') : ''}
+        ${step === 'shipping' ? `<div class="checkout-card"><h2>Opciones de entrega</h2><div class="checkout-options">${shipOptions.map((o, i) => `<button type="button" class="checkout-option ${i === 0 ? 'is-selected' : ''}" data-ship="${o.id}"><span class="checkout-radio"></span><span><b>${o.label}</b><small>${o.note}</small></span><em>${o.price || ''}</em></button>`).join('')}</div>
+          <div class="checkout-fields"><label>Código postal<input type="text" inputmode="numeric" maxlength="4" placeholder="Ej. 1425" data-cp></label><label>Dirección<input type="text" placeholder="Calle y número" data-address></label><label>Nombre y apellido<input type="text" placeholder="Como figura en el comprobante" data-name></label></div>
+          <p class="checkout-note">El costo final se calcula con el código postal y se muestra antes de confirmar.</p></div>` : ''}
+        ${step === 'payment' ? `<div class="checkout-card"><h2>Elegí cómo pagar</h2><div class="transfer-banner"><span class="material-symbols-outlined">savings</span><div><b>Mejor precio por transferencia</b><small>Pagando con transferencia o DEBIN ahorrás ${money(ahorro)} respecto del precio en tarjeta. Incluye impuestos.</small></div></div>
+          <div class="checkout-options">${payOptions.map((o, i) => `<button type="button" class="checkout-option ${i === 0 ? 'is-selected' : ''}" data-pay="${o.id}"><span class="checkout-radio"></span><span><b>${o.label}</b><small>${o.note}</small></span>${o.tag ? `<em class="checkout-tag">${o.tag}</em>` : ''}</button>`).join('')}</div>
+          <p class="checkout-note">Las cuotas y promociones se aplican en el checkout de cada pasarela y están sujetas a aprobación. No mostramos datos de tarjeta en este sitio.</p></div>` : ''}
+        ${step === 'done' ? `<div class="checkout-card checkout-done"><span class="material-symbols-outlined">check_circle</span><h2>Solicitud recibida</h2><p>Te vamos a contactar por WhatsApp o email para coordinar el pago y el envío. Este sitio no procesa datos de tarjeta.</p></div>` : ''}
+      </div>
       <aside class="checkout-summary">
         <h2>Resumen de compra</h2>
         <div class="checkout-line"><span>Subtotal</span><b class="price-strong">${money(total)}</b></div>
-        <div class="checkout-line checkout-line--muted"><span>Envío</span><span>Se calcula al finalizar</span></div>
+        ${ahorro > 0 ? `<div class="checkout-line checkout-line--save"><span>Ahorro por transferencia</span><b>${money(ahorro)}</b></div>` : ''}
+        <div class="checkout-line checkout-line--muted"><span>Envío</span><span>${step === 'shipping' ? 'Según código postal' : 'Se calcula en el próximo paso'}</span></div>
+        ${step !== 'cart' ? `<div class="checkout-line"><span>Cupón</span><span data-coupon-label>Sin aplicar</span></div><div class="coupon-row"><input type="text" placeholder="Código de descuento" data-coupon><button type="button" data-coupon-add>Aplicar</button></div><button type="button" class="coupon-remove" data-coupon-remove>Quitar cupón</button>` : ''}
         <div class="checkout-total"><span>Total</span><b class="price-strong">${money(total)}</b></div>
-        <button type="button" data-path="finalizar-compra" class="checkout-cta" ${cartItems.length ? '' : 'disabled'}>Finalizar compra</button>
-        <a href="#" data-path="catalogo-de-productos" class="checkout-back">Seguir comprando</a>
+        ${step === 'cart' ? `<button type="button" data-path="checkout-envio" class="checkout-cta" ${cartItems.length ? '' : 'disabled'}>Continuar al envío</button>` : step === 'shipping' ? `<button type="button" data-path="checkout-pago" class="checkout-cta">Continuar al pago</button>` : step === 'payment' ? `<button type="button" data-path="checkout-confirmar" class="checkout-cta">Confirmar solicitud</button>` : `<a href="#" data-path="catalogo-de-productos" class="checkout-cta checkout-cta--link">Seguir comprando</a>`}
+        <a href="#" data-path="${step === 'cart' ? 'catalogo-de-productos' : 'checkout-carrito'}" class="checkout-back">${step === 'cart' ? 'Seguir comprando' : 'Volver al carrito'}</a>
       </aside>
     </div>
   </div>`
@@ -518,7 +528,8 @@ export function hydrateStitch(doc, { products = [], categorias = [], cartItems =
     if (/MacBook Air 13\.6|Sony WH-1000XM5/.test(el.textContent || '') && el.querySelector('img')) el.remove()
   }
   if (screen === 'ficha') { dropFakeReviews(doc); renderDetail(doc, product) }
-  if (screen === 'carrito') renderCart(doc, cartItems)
+  const CHECKOUT_STEPS = { carrito: 'cart', envio: 'shipping', pago: 'payment', confirmacion: 'done' }
+  if (CHECKOUT_STEPS[screen]) renderCheckout(doc, cartItems, CHECKOUT_STEPS[screen])
   if (screen === 'login' || screen === 'registro') harmonizeAccounts(doc)
   addSearch(doc, cartCount)
   if (screen === 'home') {

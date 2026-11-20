@@ -5,7 +5,7 @@ const GROUPS = {
   account: ['mis-pedidos', 'order-history', 'mi-cuenta-y-garantias', 'iniciar-sesion', 'registro-de-usuario'],
   advisory: ['asesoramiento', 'asesoramiento-pc', 'solicitar-asesoramiento', 'armado-de-pc'],
   rma: ['rma', 'garantia-rma', 'garantia'],
-  checkout: ['finalizar-compra', 'checkout', 'pago'],
+  checkout: ['checkout-envio', 'checkout-pago', 'checkout-confirmar', 'checkout-carrito', 'finalizar-compra', 'checkout', 'pago'],
   security: ['garantias-y-seguridad', 'data-security', 'soporte-garantias', 'security-center'],
   payments: ['promociones-bancarias', 'ofertas-y-bancos', 'payment-method'],
   shipping: ['shipping-address'],

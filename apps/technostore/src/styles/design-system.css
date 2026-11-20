@@ -226,6 +226,36 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 .checkout-cta { width: 100%; height: 46px; border: 0; border-radius: 999px; background: var(--ds-primary-container); color: #fff; font-family: 'Quicksand', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; }
 .checkout-cta:disabled { opacity: .5; cursor: not-allowed; }
 .checkout-back { display: block; margin-top: 12px; text-align: center; font-size: 12px; color: var(--ds-primary-container); }
+.checkout-card { padding: 22px; border: 1px solid var(--ds-border-subtle); border-radius: 16px; background: #fff; }
+.checkout-card h2 { margin: 0 0 16px; font-size: 16px; font-weight: 500; }
+.checkout-options { display: grid; gap: 8px; }
+.checkout-option { display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 14px; border: 1px solid var(--ds-border-subtle); border-radius: 12px; background: #fff; text-align: left; cursor: pointer; font-family: inherit; }
+.checkout-option.is-selected { border-color: var(--ds-primary-container); background: rgba(0,102,255,.05); }
+.checkout-option > span:nth-child(2) { flex: 1; min-width: 0; }
+.checkout-option b { display: block; font-size: 13px; font-weight: 500; }
+.checkout-option small { display: block; margin-top: 2px; font-size: 11px; color: var(--ds-on-surface-variant); }
+.checkout-radio { width: 16px; height: 16px; border: 2px solid var(--ds-outline); border-radius: 50%; flex: none; }
+.checkout-option.is-selected .checkout-radio { border-color: var(--ds-primary-container); background: radial-gradient(circle, var(--ds-primary-container) 0 40%, transparent 45%); }
+.checkout-option em { font-size: 11px; color: var(--ds-on-surface-variant); font-style: normal; }
+.checkout-tag { padding: 4px 8px !important; border-radius: 999px; background: rgba(0,166,81,.12); color: #006d2f !important; font-weight: 500; }
+.checkout-fields { display: grid; gap: 10px; margin-top: 18px; }
+.checkout-fields label { display: grid; gap: 5px; font-size: 11px; color: var(--ds-on-surface-variant); }
+.checkout-fields input, .coupon-row input { width: 100%; padding: 10px 12px; border: 1px solid var(--ds-border-subtle); border-radius: 10px; font-size: 13px; outline: none; }
+.checkout-fields input:focus, .coupon-row input:focus { border-color: var(--ds-primary-container); }
+.checkout-note { margin: 16px 0 0; font-size: 11px; line-height: 1.5; color: var(--ds-on-surface-variant); }
+.transfer-banner { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; padding: 14px; border-radius: 12px; background: rgba(0,166,81,.1); }
+.transfer-banner .material-symbols-outlined { color: #006d2f; }
+.transfer-banner b { display: block; font-size: 13px; font-weight: 500; }
+.transfer-banner small { display: block; margin-top: 3px; font-size: 11px; color: var(--ds-on-surface-variant); line-height: 1.45; }
+.checkout-line--save { color: #006d2f; font-size: 12px; }
+.coupon-row { display: flex; gap: 6px; margin-bottom: 6px; }
+.coupon-row input { flex: 1; min-width: 0; }
+.coupon-row button { padding: 0 12px; border: 1px solid var(--ds-primary-container); border-radius: 10px; background: #fff; color: var(--ds-primary-container); font-size: 11px; font-weight: 500; cursor: pointer; }
+.coupon-remove { border: 0; background: none; padding: 0; font-size: 11px; color: var(--ds-on-surface-variant); text-decoration: underline; cursor: pointer; }
+.checkout-cta--link { display: grid; place-items: center; text-decoration: none; }
+.checkout-done { text-align: center; padding: 40px 24px; }
+.checkout-done .material-symbols-outlined { font-size: 44px; color: #006d2f; }
+.checkout-done p { font-size: 13px; line-height: 1.5; color: var(--ds-on-surface-variant); max-width: 420px; margin: 10px auto 0; }
 @media (max-width: 560px) { .checkout-page { padding: 24px 1rem 40px; } .checkout-item { grid-template-columns: 64px minmax(0, 1fr); } .checkout-item__media { width: 64px; height: 64px; } .checkout-item__total { grid-column: 2; } }
 
 /* Header: acciones claras en cualquier ancho y tipografía coherente */
