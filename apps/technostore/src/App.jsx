@@ -127,6 +127,8 @@ export default function App() {
     const current = new URLSearchParams(window.location.search)
     const verifier = current.get("neon_auth_session_verifier")
     if (verifier) sp.set("neon_auth_session_verifier", verifier)
+    const device = current.get("device")
+    if (device) sp.set("device", device)
     const qs = sp.toString()
     window.history.replaceState(null, "", qs ? `${base}?${qs}` : base)
   }, [categoria, marcas, rango, qDebounced, orden, cpu, ram, ssd, condicion, calidad, batMin, disponibilidad, base])

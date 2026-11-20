@@ -219,7 +219,7 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 [data-carousel-track]::-webkit-scrollbar { display: none; }
 [data-carousel-track] > * { scroll-snap-align: start; }
 .hero-compact { padding-top: 16px !important; padding-bottom: 16px !important; }
-.hero-compact h1 { font-size: 22px !important; line-height: 1.2 !important; }
+.hero-compact h1 { font-size: 20px !important; line-height: 1.2 !important; }
 .hero-compact .ds-hero__badges, .hero-compact [data-alt] { display: none !important; }
 
 /* Carrusel de imágenes del banner principal */
