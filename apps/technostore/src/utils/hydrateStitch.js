@@ -74,7 +74,10 @@ function normalizeCopy(doc) {
 function replaceLogo(doc) {
   const wrap = [...doc.querySelectorAll('div.flex.items-center.gap-2')]
     .find(d => /memory/.test(d.textContent || '') && /Techno/.test(d.textContent || ''))
-  if (wrap) wrap.innerHTML = '<img src="/logo-lockup.png" alt="TechnoStore" class="h-9 w-auto max-w-[230px] object-contain">'
+  if (wrap) {
+    wrap.className = 'flex items-center gap-2 logo-lockup'
+    wrap.innerHTML = '<img src="/logo-lockup.png" alt="TechnoStore" class="h-9 w-auto max-w-[230px] object-contain">'
+  }
 }
 
 function simplifyStitch(doc) {
@@ -153,70 +156,22 @@ const HERO_SLIDES = [
   { tag: 'Mini PC', name: 'ASUS NUC Ultra 7', img: '/banner/banner-minipc.webp' },
 ]
 
-// Stickers navideños: trazo fino, azul/menta, en zonas periféricas (nunca sobre el producto).
-const XMAS_STICKERS = {
-  gift: '<span class="xmas-sticker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#00A651" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="12" rx="2"/><path d="M3 13h18M12 9v12M12 9C9 5 5 6 5 8c0 1 3 1 7 1Zm0 0c3-4 7-3 7-1 0 1-3 1-7 1Z"/></svg></span>',
-  snow: '<span class="xmas-sticker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="1.3" stroke-linecap="round"><path d="M12 2v20M4 6l16 12M20 6 4 18M12 2 9 5m3-3 3 3M12 22l-3-3m3 3 3-3M4 6l.4 3.6M4 6l3.6-.4M20 18l-.4-3.6M20 18l-3.6.4M20 6l-3.6-.4M20 6l-.4 3.6M4 18l3.6.4M4 18l.4-3.6"/></svg></span>',
-  star: '<span class="xmas-sticker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#00A651" stroke-width="1.4" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5 5 19"/></svg></span>',
-  pine: '<span class="xmas-sticker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#00A651" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 5 11h3l-4 6h16l-4-6h3L12 2Z"/><path d="M12 17v5"/></svg></span>',
-  bell: '<span class="xmas-sticker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#E02424" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8Z"/><path d="M13.7 20a2 2 0 0 1-3.4 0"/></svg></span>',
-  ornament: '<span class="xmas-sticker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#E02424" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="14" r="7"/><path d="M12 7V3m-3 1h6M9 14h6M12 11v6"/></svg></span>',
-  envelope: '<span class="xmas-sticker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>',
-  cup: '<span class="xmas-sticker" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#E02424" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Z"/><path d="M17 9h2a2.5 2.5 0 0 1 0 5h-2M7 3c0 1-1 1.5-1 2.5M11 3c0 1-1 1.5-1 2.5"/></svg></span>',
-}
-
-const smallSticker = s => s.replace('class="xmas-sticker"', 'class="xmas-sticker xmas-sticker--sm"')
-
-function addXmasStickers(doc) {
-  const title = doc.querySelector('[data-catalog] h2')
-  if (title) title.insertAdjacentHTML('afterend', XMAS_STICKERS.gift)
-  const count = doc.querySelector('[data-catalog-count]')
-  if (count?.parentElement) count.parentElement.insertAdjacentHTML('beforeend', XMAS_STICKERS.snow)
-  const pay = [...doc.querySelectorAll('section')].find(s => /SiPago/.test(s.textContent || ''))
-  if (pay?.firstElementChild) pay.firstElementChild.insertAdjacentHTML('beforeend', smallSticker(XMAS_STICKERS.bell))
-  const trust = doc.querySelector('[data-cybertrust] div')
-  if (trust) { trust.insertAdjacentHTML('beforeend', XMAS_STICKERS.star); trust.insertAdjacentHTML('beforeend', smallSticker(XMAS_STICKERS.cup)) }
-  const fiscal = doc.querySelector('footer > div.bg-surface-subtle .flex')
-  if (fiscal) fiscal.insertAdjacentHTML('beforeend', XMAS_STICKERS.pine)
-  const advise = doc.querySelector('[data-path="asesoramiento"]')
-  if (advise) advise.insertAdjacentHTML('afterbegin', smallSticker(XMAS_STICKERS.envelope))
-}
-
-// Capa de atmósfera: nieve fina dentro del banner (sin registro, se apaga con reduced-motion).
-function addSnow(doc) {
-  const slider = doc.querySelector('[data-hero-slider] > div')
-  if (!slider || slider.querySelector('.hero-snow')) return
-  const snow = doc.createElement('div')
-  snow.className = 'hero-snow'
-  snow.setAttribute('aria-hidden', 'true')
-  let dots = ''
-  for (let i = 0; i < 12; i++) {
-    const size = 2 + (i % 3)
-    const left = (i * 8 + 4) % 100
-    const dur = 11 + (i % 5) * 1.6
-    const delay = -(i * 1.4)
-    const opacity = 0.28 + (i % 4) * 0.09
-    dots += `<i style="left:${left}%;width:${size}px;height:${size}px;animation-duration:${dur}s;animation-delay:${delay}s;opacity:${opacity}"></i>`
-  }
-  snow.innerHTML = dots
-  slider.appendChild(snow)
-}
-
-// Capa de ritmo: separadores finos con ornamento entre secciones.
-function addSeasonalDividers(doc) {
-  const targets = [
-    { el: [...doc.querySelectorAll('section')].find(s => /SiPago/.test(s.textContent || '')), icon: XMAS_STICKERS.ornament },
-    { el: [...doc.querySelectorAll('section')].find(s => /Marcas/.test(s.textContent || '')), icon: XMAS_STICKERS.snow },
-    { el: doc.querySelector('[data-catalog]'), icon: XMAS_STICKERS.star },
-    { el: doc.querySelector('[data-cybertrust]'), icon: XMAS_STICKERS.pine },
-  ]
-  for (const t of targets) {
-    if (!t.el) continue
-    const div = doc.createElement('div')
-    div.className = 'season-divider'
-    div.setAttribute('aria-hidden', 'true')
-    div.innerHTML = `<span></span>${t.icon}<span></span>`
-    t.el.before(div)
+// Navidad: un solo gesto — gran gorro inclinado sobre una esquina del logo.
+function addXmasDecor(doc) {
+  const logo = doc.querySelector('header img[src="/logo-lockup.png"]')
+  if (logo) {
+    const wrap = logo.parentElement
+    if (wrap && !wrap.querySelector('.xmas-santa-hat')) {
+      const hat = doc.createElement('span')
+      hat.className = 'xmas-santa-hat'
+      hat.setAttribute('aria-hidden', 'true')
+      hat.innerHTML = `<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18 56C22 30 40 12 66 16c-7 16-20 30-38 40Z" fill="#E02424" stroke="#A81818" stroke-width="2" stroke-linejoin="round"/>
+        <rect x="10" y="52" width="44" height="13" rx="6.5" fill="#FFFFFF" stroke="#DDE2F7" stroke-width="1.5"/>
+        <circle cx="66" cy="15" r="10" fill="#FFFFFF" stroke="#DDE2F7" stroke-width="1.5"/>
+      </svg>`
+      wrap.appendChild(hat)
+    }
   }
 }
 
@@ -227,13 +182,6 @@ function buildHeroSlider() {
       <img class="hero-slide__img relative z-[1] w-full h-full object-cover" src="${esc(s.img)}" alt="${esc(s.name)}">
       <span class="absolute bottom-0 left-0 right-0 z-10 p-4 pt-10 bg-gradient-to-t from-black/60 to-transparent text-white text-left"><small class="block uppercase tracking-wider opacity-80 text-xs">${esc(s.tag)}</small><b class="text-lg">${esc(s.name)}</b></span>
     </a>`).join('')}
-    <span class="hero-slider__frost" aria-hidden="true"></span>
-    <div class="xmas-editorial" aria-label="Felices Fiestas">
-      <img src="/logo-mark.svg" alt="" class="h-4 w-4 object-contain">
-      <span>Felices Fiestas</span>
-      <span class="xmas-editorial__sep"></span>
-      <span class="xmas-editorial__brand">TechnoStore</span>
-    </div>
     <button type="button" data-hero-prev aria-label="Anterior" class="hero-slider__arrow hero-slider__arrow--prev">‹</button>
     <button type="button" data-hero-next aria-label="Siguiente" class="hero-slider__arrow hero-slider__arrow--next">›</button>
     <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">${HERO_SLIDES.map((_, i) => `<button type="button" data-hero-dot="${i}" aria-label="Imagen ${i + 1}" class="hero-slider__dot${i === 0 ? ' is-active' : ''}"></button>`).join('')}</div>
@@ -429,8 +377,6 @@ export function hydrateStitch(doc, { products = [], categorias = [] } = {}) {
     else if (footer) footer.before(node)
     else doc.querySelector('main')?.appendChild(node) || doc.body.appendChild(node)
   }
-  addXmasStickers(doc)
-  addSnow(doc)
-  addSeasonalDividers(doc)
+  addXmasDecor(doc)
   return doc
 }
