@@ -263,8 +263,9 @@ function renderCheckout(doc, cartItems = [], step = 'cart') {
   const precioTarjeta = cartItems.reduce((s, it) => s + (Number(it.product?.precio_mercadopago ?? it.precio_mercadopago ?? it.precio_lista ?? it.precio) || 0) * (Number(it.qty) || 1), 0)
   const ahorro = Math.max(0, precioTarjeta - total)
   const shipOptions = [
-    { id: 'domicilio', label: 'Envío a domicilio', note: 'Calculá el costo por código postal', price: null },
-    { id: 'retiro', label: 'Retiro en punto cercano', note: 'Coordinación por WhatsApp', price: 'A coordinar' },
+    { id: 'caba', label: 'Mensajería privada', note: 'CABA y alrededores', price: '' },
+    { id: 'provincias', label: 'Correo a provincias', note: 'Todo el país', price: '' },
+    { id: 'retiro', label: 'Retiro en nuestra oficina', note: 'Barrio Norte · con previa confirmación', price: '' },
   ]
   const payOptions = [
     { id: 'transferencia', label: 'Transferencia / DEBIN', note: `Mejor precio · ahorrás ${money(ahorro)}`, tag: 'Recomendado' },
