@@ -211,14 +211,10 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 .stitch-view .font-label-sm { font-size: 12px !important; }
 /* Caption del banner: fondo sólido, sin degradados (contraste estable en los 6 slides) */
 .hero-slide__caption {
-  position: absolute !important; left: 12px !important; bottom: 12px !important;
-  top: auto !important; right: auto !important;
-  align-self: flex-end; flex: none;
-  display: inline-flex; align-items: center; gap: 8px;
-  width: max-content; max-width: calc(100% - 24px); padding: 8px 12px; border-radius: 10px;
+  position: absolute; left: 12px; bottom: 12px; z-index: 8;
+  display: block; width: auto; padding: 8px 12px; border-radius: 10px;
   background: #0b192c; color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.25);
 }
-.hero-slide__caption-logo { width: 16px; height: 16px; flex: none; }
 .hero-slide__caption small { display: block; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
 .hero-slide__caption b { display: block; font-size: 13px; font-weight: 500; line-height: 1.2; }
 /* Borde del select en el contenedor del buscador (Stitch le pone bg-surface-subtle) */

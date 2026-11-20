@@ -340,10 +340,7 @@ function buildHeroSlider() {
   <div class="relative w-full h-[340px] sm:h-[380px] rounded-2xl overflow-hidden bg-surface-container-low shadow-xl">
     ${HERO_SLIDES.map((s, i) => `<a class="hero-slide absolute inset-0 flex items-center justify-center${i === 0 ? ' is-active' : ''}" data-hero-slide="${i}" data-path="detalle-de-producto" data-sku="${esc(s.sku)}" href="#">
       <img class="hero-slide__img relative z-[1] w-full h-full object-cover" src="${esc(s.img)}" alt="Imagen representativa de ${esc(s.tag)}">
-      <span class="hero-slide__caption">
-        <img src="/logo-mark.svg" alt="" class="hero-slide__caption-logo">
-        <span><small>${esc(s.tag)}</small><b>${esc(s.name)}</b></span>
-      </span>
+      <span class="hero-slide__caption"><small>${esc(s.tag)}</small><b>${esc(s.name)}</b></span>
     </a>`).join('')}
     <button type="button" data-hero-prev aria-label="Anterior" class="hero-slider__arrow hero-slider__arrow--prev">‹</button>
     <button type="button" data-hero-next aria-label="Siguiente" class="hero-slider__arrow hero-slider__arrow--next">›</button>
