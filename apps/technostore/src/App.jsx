@@ -37,7 +37,6 @@ export default function App() {
   const [authSession, setAuthSession] = useState(null)
   const [stitchCatalog, setStitchCatalog] = useState(true)
   const [stitchExtra, setStitchExtra] = useState(null)
-  const [stitchMode, setStitchMode] = useState(true)
   const [asesoramientoOpen, setAsesoramientoOpen] = useState(false)
   const [rmaOpen, setRmaOpen] = useState(false)
   const [stitchScreen, setStitchScreen] = useState('home')
@@ -319,113 +318,33 @@ export default function App() {
 
   return (
     <div>
-      {!stitchMode && <Header
-        search={q}
-        onSearchChange={setQ}
-        activeCategory={categoria}
-        activeBrand={categoria === "todos" && marcas.length === 1 && marcas[0] === "Apple" ? "Apple" : ""}
-        cartCount={cartCount}
-        onCart={() => setDrawerOpen(true)}
-        onAccount={() => setAuthOpen(true)}
-        onSelectCategory={handleSelectCategory}
+      <StitchView
+        inline
+        name={stitchScreen}
+        products={allProducts}
         categorias={categorias}
-        suggestions={searchSuggests}
-        onOpenProduct={openProduct}
-        onSeeAllResults={scrollToCatalog}
-      />}
-
-      {stitchMode ? (
-        <>
-          <StitchView
-            inline
-            name={stitchScreen}
-            products={allProducts}
-            categorias={categorias}
-            cartCount={cartCount}
-            onAction={(action) => {
-              if (action === 'cart') setDrawerOpen(true)
-              if (action === 'account') setAuthOpen(true)
-              if (action === 'catalog') scrollToCatalog()
-              if (action === 'advisory') setAsesoramientoOpen(true)
-              if (action === 'rma') setRmaOpen(true)
-            }}
-            onProduct={(sku) => {
-              const p = allProducts.find(x => x.sku === sku)
-              if (p) openProduct(p)
-            }}
-            onAdd={(sku) => {
-              const p = allProducts.find(x => x.sku === sku)
-              if (p) addToCart(p)
-            }}
-          />
-          <WhatsAppFloat />
-          <ChatWidget />
-          <button className="stitch-switch" onClick={() => setStitchMode(false)}>Ver UI funcional</button>
-        </>
-      ) : (
-        <>
-      <main>
-        <Home
-          products={allProducts}
-          categorias={categorias}
-          onExplore={scrollToCatalog}
-          onSelectCategory={handleSelectCategory}
-          onOpenProduct={openProduct}
-          onAddToCart={addToCart}
-        />
-        {source !== null && categoria === "todos" && marcas.length === 0 && !qDebounced.trim() && (
-          <AppleSpotlight products={allProducts} onOpen={openProduct} onVerTodos={handleApple} />
-        )}
-        <section id="catalogo" className="container">
-          {source !== null && allProducts.length === 0 ? (
-            <div className="catalog-empty">
-              <span className="eyebrow">Catálogo en renovación</span>
-              <h2>Estamos armando una selección <em>más corta y mejor</em></h2>
-              <p>Volvemos en breve con los productos que mejor rotan: iPhones nuevos y usados con garantía, MacBooks, SSD, memorias y periféricos. Si necesitás algo puntual, escribinos.</p>
-              <a className="btn-primary" href="https://wa.me/5491127650658?text=Hola%2C%20quiero%20consultar%20por%20un%20producto" target="_blank" rel="noreferrer">Consultar por WhatsApp</a>
-            </div>
-          ) : (
-            <>
-              <div className="section-intro">
-                <span className="eyebrow">Catálogo TechnoStore</span>
-                <h2>Todo lo que necesitás, <em>a un clic</em></h2>
-                <p className="muted" style={{ marginTop: 8, maxWidth: 560 }}>Celulares, notebooks, hardware y accesorios con precios claros, envío gratis y filtros que ayudan.</p>
-              </div>
-              <FilterPanel
-                categoria={categoria} marcas={marcas} rango={rango} orden={orden} cpu={cpu} ram={ram} ssd={ssd}
-                condicion={condicion} calidad={calidad} batMin={batMin} disponibilidad={disponibilidad}
-                onCategoria={c => { setCategoria(c); scrollToCatalog() }}
-                onMarcas={setMarcas} onRango={setRango} onOrden={setOrden} onCpu={setCpu} onRam={setRam} onSsd={setSsd}
-                onCondicion={setCondicion} onCalidad={setCalidad} onBatMin={setBatMin} onDisponibilidad={setDisponibilidad}
-                marcasDisponibles={marcasDisponibles} marcaCounts={marcaCounts}
-                cpuOptions={specOpts.cpus} ramOptions={specOpts.rams} ssdOptions={specOpts.ssds} rangeOptions={rangeOpts} visibleSpecs={visibleSpecs} counts={counts} categorias={categorias}
-                hasUsed={hasUsed} chips={chips}
-                totalVisibles={visibles.length} totalAll={allProducts.length}
-                hasFiltros={hasFiltros} onLimpiar={limpiarFiltros}
-              >
-                <ProductGrid
-                  products={source === null ? null : visibles}
-                  totalLabel={`${(source === null ? 0 : visibles.length)} producto${(source === null ? 0 : visibles.length) === 1 ? "" : "s"}`}
-                  onReset={limpiarFiltros}
-                  onDetail={openProduct} onAddToCart={addToCart}
-                />
-              </FilterPanel>
-            </>
-          )}
-        </section>
-      </main>
-      <Footer onSelectCategory={handleSelectCategory} />
+        cartCount={cartCount}
+        onAction={(action) => {
+          if (action === 'cart') setDrawerOpen(true)
+          if (action === 'account') setAuthOpen(true)
+          if (action === 'catalog') scrollToCatalog()
+          if (action === 'advisory') setAsesoramientoOpen(true)
+          if (action === 'rma') setRmaOpen(true)
+        }}
+        onProduct={(sku) => {
+          const p = allProducts.find(x => x.sku === sku)
+          if (p) openProduct(p)
+        }}
+        onAdd={(sku) => {
+          const p = allProducts.find(x => x.sku === sku)
+          if (p) addToCart(p)
+        }}
+      />
       <WhatsAppFloat />
-      <MobileCartBar onOpenCart={() => setDrawerOpen(true)} onCheckout={openCheckout} />
-      <button className="stitch-switch" onClick={() => setStitchMode(true)}>Ver diseño Stitch</button>
-        </>
-      )}
-      <DrawerCart open={drawerOpen} onClose={() => setDrawerOpen(false)} onCheckout={openCheckout} />
-      {checkoutOpen && <Checkout onClose={() => setCheckoutOpen(false)} />}
+      <ChatWidget />
       <CustomerAuth open={authOpen} onClose={() => setAuthOpen(false)} initialError={authError} session={authSession} onSession={setAuthSession} />
       <AsesoramientoModal open={asesoramientoOpen} onClose={() => setAsesoramientoOpen(false)} />
       <Suspense fallback={null}>{rmaOpen && <RmaModal open onClose={() => setRmaOpen(false)} />}</Suspense>
-      {selectedProduct && <ProductDetail producto={selectedProduct} onClose={() => setSelectedProduct(null)} onAddToCart={addToCart} />}
       {(checkoutOpen || drawerOpen || selectedProduct || stitchExtra) && (
         <StitchView
           name={stitchExtra || (checkoutOpen ? 'pago' : drawerOpen ? 'carrito' : 'ficha')}

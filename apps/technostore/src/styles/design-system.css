@@ -162,9 +162,9 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 
 /* ---------- Vistas Stitch (paridad visual) ---------- */
 .stitch-overlay { position: fixed; inset: 0; z-index: 200; background: var(--ds-background); overflow-y: auto; }
-.stitch-overlay__close { position: fixed; top: 12px; right: 12px; z-index: 210; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--ds-border-subtle); background: var(--ds-surface-pure); color: var(--ds-on-surface); cursor: pointer; font-size: 16px; }
+.stitch-overlay__close { position: fixed; top: 14px; right: 14px; z-index: 210; display: flex; align-items: center; gap: 6px; height: 42px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--ds-primary-container); color: #fff; font-family: 'Quicksand', sans-serif; font-size: 13px; font-weight: 500; box-shadow: 0 4px 14px rgba(0,102,255,.3); cursor: pointer; }
+.stitch-overlay__close .material-symbols-outlined { font-size: 20px; }
 .stitch-view { min-height: 100vh; }
-.stitch-switch { position: fixed; left: 12px; bottom: 12px; z-index: 80; background: var(--ds-trust-shield); color: #fff; border: 0; border-radius: 999px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: var(--ds-shadow-lg); }
 
 /* Asistente con IA: botón y panel flotantes */
 .ts-chat-btn { position: fixed; right: 24px; bottom: 92px; z-index: 9998; width: 54px; height: 54px; border: 0; border-radius: 50%; background: var(--ds-primary-container); color: #fff; box-shadow: 0 6px 22px rgba(0,102,255,.35); cursor: pointer; display: grid; place-items: center; font-size: 18px; }
@@ -200,7 +200,9 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 @media (max-width: 520px) { .header-action__label { display: none; } .header-action { padding: 0 10px; } }
 
 /* Jerarquía liviana: pesos 400/500 y titulares chicos en todo el sistema */
-.stitch-view .font-extrabold, .stitch-view .font-bold,
+/* Texto general sin negrita; el peso solo lo marcan los titulares */
+.stitch-view .font-extrabold, .stitch-view .font-bold, .stitch-view .font-semibold,
+.stitch-view b, .stitch-view strong, .stitch-view label { font-weight: 400 !important; }
 .stitch-view h1, .stitch-view h2, .stitch-view h3 { font-weight: 500 !important; }
 .stitch-view h1 { font-size: 20px !important; }
 .stitch-view .text-headline-lg { font-size: 20px !important; }

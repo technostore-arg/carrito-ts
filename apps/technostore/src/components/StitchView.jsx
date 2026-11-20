@@ -229,7 +229,7 @@ export default function StitchView({ name, inline = false, products = [], catego
   if (inline) return body
   return (
     <div className="stitch-overlay" role="dialog" aria-modal="true" aria-label={name}>
-      <button className="stitch-overlay__close" onClick={onClose} aria-label="Cerrar">✕</button>
+      <button className="stitch-overlay__close" onClick={onClose} aria-label="Cerrar"><span className="material-symbols-outlined">close</span>Cerrar</button>
       {body}
     </div>
   )
