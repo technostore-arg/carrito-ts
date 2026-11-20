@@ -189,14 +189,14 @@ function seasonalAndHero(doc, products = []) {
 
 }
 
-// Imágenes wide generadas para el banner principal (productos representativos).
+// Carrusel del banner: 6 productos reales con stock (las imágenes son representativas de la categoría).
 const HERO_SLIDES = [
-  { tag: 'Notebook Gaming', name: 'GIGABYTE AERO X16', img: '/banner/banner-notebook.webp' },
-  { tag: 'Monitor Gaming', name: 'ASUS TUF Gaming 34"', img: '/banner/banner-monitor.webp' },
-  { tag: 'Auriculares Gaming', name: 'ASUS ROG Delta II', img: '/banner/banner-auriculares.webp' },
-  { tag: 'Memoria RGB', name: 'ADATA XPG Lancer RGB', img: '/banner/banner-memoria.webp' },
-  { tag: 'Procesador', name: 'AMD Ryzen 7 7800X3D', img: '/banner/banner-procesador.webp' },
-  { tag: 'Mini PC', name: 'ASUS NUC Ultra 7', img: '/banner/banner-minipc.webp' },
+  { tag: 'Notebooks', name: 'HP Laptop R5-7520U 15,6"', sku: 'ELIT-HP-NOTB9TP2LA', img: '/banner/banner-notebook.webp' },
+  { tag: 'Monitores Gaming', name: 'Teros TE-2475G Gaming 24.5"', sku: 'ELIT-TERMONTE2475G', img: '/banner/banner-monitor.webp' },
+  { tag: 'Auriculares', name: 'Logitech H111', sku: 'ELIT-LOGMICH111', img: '/banner/banner-auriculares.webp' },
+  { tag: 'Memorias RAM', name: 'Kingston Fury DDR5 RGB 16GB', sku: 'ELIT-KFUMEM556C40B16', img: '/banner/banner-memoria.webp' },
+  { tag: 'Procesadores', name: 'AMD Ryzen 7 5700G', sku: 'ELIT-AMDPRO5700G8COR', img: '/banner/banner-procesador.webp' },
+  { tag: 'Mini PC', name: 'ASUS NUC Ultra 5', sku: 'ELIT-ASUMPC90AR00Q2M', img: '/banner/banner-minipc.webp' },
 ]
 
 // Navidad: un solo gesto — gran gorro inclinado sobre una esquina del logo.
@@ -338,9 +338,12 @@ function renderDetail(doc, product) {
 function buildHeroSlider() {
   return `<div class="hero-slider relative w-full" data-hero-slider>
   <div class="relative w-full h-[340px] sm:h-[380px] rounded-2xl overflow-hidden bg-surface-container-low shadow-xl">
-    ${HERO_SLIDES.map((s, i) => `<a class="hero-slide absolute inset-0 flex items-center justify-center${i === 0 ? ' is-active' : ''}" data-hero-slide="${i}" data-path="catalogo-de-productos" href="#">
-      <img class="hero-slide__img relative z-[1] w-full h-full object-cover" src="${esc(s.img)}" alt="${esc(s.name)}">
-      <span class="absolute bottom-0 left-0 right-0 z-10 p-4 pt-10 bg-gradient-to-t from-black/60 to-transparent text-white text-left"><small class="block uppercase tracking-wider opacity-80 text-xs">${esc(s.tag)}</small><b class="text-lg">${esc(s.name)}</b></span>
+    ${HERO_SLIDES.map((s, i) => `<a class="hero-slide absolute inset-0 flex items-center justify-center${i === 0 ? ' is-active' : ''}" data-hero-slide="${i}" data-path="detalle-de-producto" data-sku="${esc(s.sku)}" href="#">
+      <img class="hero-slide__img relative z-[1] w-full h-full object-cover" src="${esc(s.img)}" alt="Imagen representativa de ${esc(s.tag)}">
+      <span class="absolute bottom-0 left-0 right-0 z-10 p-4 pt-10 bg-gradient-to-t from-black/60 to-transparent text-white text-left">
+        <span class="flex items-center gap-2 mb-1"><img src="/logo-mark.svg" alt="" class="h-4 w-4"><small class="block uppercase tracking-wider opacity-80 text-xs">${esc(s.tag)}</small></span>
+        <b class="text-lg">${esc(s.name)}</b>
+      </span>
     </a>`).join('')}
     <button type="button" data-hero-prev aria-label="Anterior" class="hero-slider__arrow hero-slider__arrow--prev">‹</button>
     <button type="button" data-hero-next aria-label="Siguiente" class="hero-slider__arrow hero-slider__arrow--next">›</button>
