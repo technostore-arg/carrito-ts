@@ -264,6 +264,7 @@ function renderCart(doc, cartItems = []) {
     </div>`
   }).join('') : '<div class="bg-surface-pure rounded-2xl p-6 shadow-sm"><p class="font-body-md text-body-md text-on-surface-variant">Tu carrito está vacío.</p><a href="#" data-path="catalogo-de-productos" class="inline-block mt-3 font-label-md text-primary">Ver productos →</a></div>'
   const total = cartItems.reduce((s, it) => s + (Number(it.product?.precio_transferencia ?? it.precio_transferencia ?? it.precio) || 0) * (Number(it.qty) || 1), 0)
+  for (const h of doc.querySelectorAll('h1')) if (!main.contains(h)) h.remove()
   main.innerHTML = `<div class="w-full px-margin py-space-xl">
     <div class="flex items-center justify-between gap-3 mb-6"><h1 class="font-headline-lg text-headline-lg font-bold text-on-surface">Mi carrito</h1>
       <span class="font-label-md text-label-md text-on-surface-variant">${cartItems.length} producto${cartItems.length === 1 ? '' : 's'}</span></div>
@@ -288,6 +289,7 @@ function renderDetail(doc, product) {
   const specs = Array.isArray(product.specs) ? product.specs
     : Object.entries(product.especificaciones || {}).map(([k, v]) => ({ label: k, value: v }))
   const img = product.imagenes?.[0] || product.image || ''
+  for (const h of doc.querySelectorAll('h1')) if (!main.contains(h)) h.remove()
   main.innerHTML = `<div class="w-full px-margin py-space-xl">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
       <div class="lg:col-span-6 bg-surface-container-low rounded-2xl p-6 flex items-center justify-center"><img class="w-full h-auto max-h-[460px] object-contain" src="${esc(img)}" alt="${esc(product.nombre || '')}"></div>
