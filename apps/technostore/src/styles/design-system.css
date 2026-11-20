@@ -317,6 +317,8 @@ body { font-family: var(--ds-font); background: var(--ds-background); color: var
 /* Texto general sin negrita; el peso solo lo marcan los titulares */
 .stitch-view .font-extrabold, .stitch-view .font-bold, .stitch-view .font-semibold,
 .stitch-view b, .stitch-view strong, .stitch-view label { font-weight: 400 !important; }
+.stitch-view [class*="font-bold"], .stitch-view [class*="font-extrabold"] { font-weight: 400 !important; }
+.stitch-view .price-strong { font-weight: 600 !important; }
 .stitch-view h1, .stitch-view h2, .stitch-view h3 { font-weight: 500 !important; }
 /* Los precios sí van en negrita; el resto del texto no */
 .stitch-view .price-strong { font-weight: 600 !important; }
