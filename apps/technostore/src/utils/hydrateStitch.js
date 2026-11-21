@@ -390,22 +390,24 @@ function reworkHome(doc, products = []) {
   // 3) Footer: solo la tira fiscal, GARANTÍA/RMA y el disclaimer de garantías.
   const footer = doc.querySelector('footer')
   if (footer) {
-    footer.className = 'w-full bg-surface-pure border-t border-border-subtle mt-space-xl ds-footer'
-    footer.innerHTML = `<div class="w-full px-margin py-3 bg-surface-subtle border-b border-border-subtle">
-      <div class="w-full flex items-center justify-between gap-3">
-        <span class="font-label-sm text-label-sm text-on-surface-variant">Datos fiscales y facturación</span>
-        <button type="button" data-path="informacion-fiscal" class="px-3 py-1.5 rounded-lg bg-surface-pure border border-border-subtle text-primary font-label-md font-bold">Información fiscal</button>
+    footer.className = 'ds-footer w-full bg-surface-pure border-t border-border-subtle mt-space-xl'
+    footer.innerHTML = `<div class="ds-footer-grid w-full px-margin py-10">
+      <div class="ds-footer-brand">
+        <img src="/logo-lockup.png" alt="TechnoStore" class="ds-footer-logo">
+        <p>Computadoras, componentes y asesoramiento para tu próximo equipo.</p>
+      </div>
+      <div class="ds-footer-col">
+        <h3>Información</h3>
+        <button type="button" data-path="informacion-fiscal">Datos fiscales y facturación</button>
+      </div>
+      <div class="ds-footer-col">
+        <h3>Posventa</h3>
+        <button type="button" data-path="rma">Garantía y RMA</button>
+        <p class="ds-footer-note">Las garantías se revisan dentro de los 7 días hábiles. Cumplido ese plazo, se aplican los términos de cada fabricante.</p>
       </div>
     </div>
-    <div class="ds-footer-main w-full px-margin py-7 flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
-      <img src="/logo-lockup.png" alt="TechnoStore" class="h-8 w-auto max-w-[180px] object-contain ds-footer-logo">
-      <div class="ds-footer-legal max-w-xl">
-        <button type="button" data-path="rma" class="ds-footer-rma"><span class="material-symbols-outlined">verified_user</span>Garantía y RMA</button>
-        <p class="font-label-sm text-label-sm text-on-surface-variant leading-relaxed">Las garantías se revisan dentro de los 7 días hábiles. Cumplido ese plazo, se aplican los términos de cada fabricante.</p>
-      </div>
-    </div>
-    <div class="w-full px-margin py-3 border-t border-border-subtle">
-      <span class="font-label-sm text-label-sm text-on-surface-variant">© ${new Date().getFullYear()} TechnoStore</span>
+    <div class="ds-footer-bottom w-full px-margin py-3 border-t border-border-subtle">
+      <span>© ${new Date().getFullYear()} TechnoStore</span>
     </div>`
   }
   // Tira de marcas: divisora fina, logos con tipografía y tamaños uniformes.
