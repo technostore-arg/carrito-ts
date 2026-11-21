@@ -212,10 +212,8 @@ body:has(.stitch-overlay) .stitch-view > header:first-child { visibility: hidden
   display: block; width: auto; padding: 8px 12px; border-radius: 10px;
   background: #0b192c; color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.25);
 }
-.xmas-promo { position: absolute; top: 12px; left: 12px; z-index: 8; display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 10px; background: rgba(11,25,44,.86); color: #fff; }
-.xmas-promo .material-symbols-outlined { font-size: 18px; color: #66ff8e; }
-.xmas-promo b { display: block; font-size: 11px; font-weight: 600; }
-.xmas-promo small { display: block; font-size: 10px; opacity: .85; }
+.xmas-season-line { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 0 0 10px; font-size: 12px; color: var(--ds-on-surface-variant); }
+.xmas-season-line .material-symbols-outlined { font-size: 15px; color: var(--ds-primary-container); }
 .hero-slide__caption small { display: block; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
 .hero-slide__caption b { display: block; font-size: 13px; font-weight: 500; line-height: 1.2; }
 /* Borde del select en el contenedor del buscador (Stitch le pone bg-surface-subtle) */
@@ -415,5 +413,6 @@ body .price-strong, body .checkout-item__total, body .checkout-total b, body .ch
 .hero-slider__arrow--prev { left: 12px; }
 .hero-slider__arrow--next { right: 12px; }
 .hero-slider__arrow:hover { background: #fff; }
-.hero-slider__dot { width: 8px; height: 8px; border-radius: 999px; background: rgba(255,255,255,.55); border: 0; cursor: pointer; transition: width .2s, background .2s; }
-.hero-slider__dot.is-active { background: #fff; width: 22px; }
+.hero-slider__dot { width: 20px; height: 20px; display: grid; place-items: center; border: 0; background: none; color: rgba(255,255,255,.6); cursor: pointer; transition: color .2s, transform .2s; }
+.hero-slider__dot .material-symbols-outlined { font-size: 15px; }
+.hero-slider__dot.is-active { color: #66ff8e; transform: scale(1.15); }
