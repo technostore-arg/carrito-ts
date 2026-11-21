@@ -219,7 +219,6 @@ body:has(.stitch-overlay) .stitch-view > header:first-child { visibility: hidden
 .stitch-view [data-catalog-filters] select { border-color: #6b7280 !important; background: #fff !important; }
 /* Fila de búsqueda mobile: sin desbordes a 375px */
   /* Logo sin el gorro en mobile para que no invada el header. */
-  .stitch-view header .xmas-santa-hat { display: none !important; }
 }
 @media (max-width: 30rem) { .ds-reset-filter { font-size: 11px; padding-left: 6px; padding-right: 6px; } }
 
@@ -248,6 +247,8 @@ body:has(.stitch-overlay) .stitch-view > header:first-child { visibility: hidden
   .ts-header__search { order: 3; flex-basis: 100%; max-width: none; }
   .ts-header__search select { max-width: 132px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
   .ts-header__search { gap: 6px; padding: 0 10px; }
+  .ts-header__brand { position: relative; }
+  .xmas-santa-hat { right: -10px; bottom: 24px; width: 42px; height: 34px; }
 }
 @media (max-width: 380px) { .ts-header__search select { max-width: 110px; font-size: 11px; } }
 
