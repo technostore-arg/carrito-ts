@@ -357,6 +357,7 @@ export default function App() {
           products={allProducts}
           categorias={categorias}
           cartItems={cartItems}
+          cartCount={cartCount}
           product={selectedProduct}
           onProduct={(sku) => { const p = allProducts.find(x => x.sku === sku); if (p) openProduct(p) }}
           onAdd={(sku) => { const p = allProducts.find(x => x.sku === sku); if (p) addToCart(p) }}

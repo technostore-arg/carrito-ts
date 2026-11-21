@@ -162,6 +162,12 @@ export default function StitchView({ name, inline = false, products = [], catego
       }
     }
     const onChange = e => {
+      if (e.target.matches('[data-cat-quick]')) {
+        const cat = catalog.querySelector('[data-filter="cat"]')
+        if (cat) { cat.value = e.target.value; cat.dispatchEvent(new Event('change', { bubbles: true })) }
+        document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' })
+        return
+      }
       if (!e.target.matches('[data-filter], [data-order]')) return
       page = 1
       apply()

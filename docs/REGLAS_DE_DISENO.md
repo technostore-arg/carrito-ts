@@ -33,7 +33,7 @@
 - **Agregar al carrito** debe dar feedback visible inmediato (toast con check) y el badge actualizarse sin recargar el HTML.
 - Click dentro de un overlay no se propaga al header de la home.
 - Mobile: buscador en su propia fila, botones Carrito/Mi cuenta arriba a la derecha, sin cortes (`scrollWidth === innerWidth`). Verificar siempre con viewport real (375 px), no con el ancho del browser de escritorio.
-- Navidad: solo el gorro sobre el logo, inclinado y calzado, sin invadir. Sin franjas rojas, copos animados ni guirnaldas.
+- Navidad: **sin decoración navideña en la UI**. El gorro texturizado compite con el logo plano y se ve forzado; se eliminó. Si se quiere algo seasonal, debe salir del sistema visual (campaña puntual), no del header.
 
 ## 6. Verificación obligatoria antes de decir "listo"
 1. Build: `npm run build` en `apps/technostore`.

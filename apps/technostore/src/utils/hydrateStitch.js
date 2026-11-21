@@ -163,21 +163,6 @@ const HERO_SLIDES = [
   { tag: 'Mini PC', name: 'ASUS NUC Ultra 5', sku: 'ELIT-ASUMPC90AR00Q2M', img: '/banner/banner-minipc.webp' },
 ]
 
-// Navidad: un solo gesto — gran gorro inclinado sobre una esquina del logo.
-function addXmasDecor(doc) {
-  const logo = doc.querySelector('header img[src="/logo-lockup.png"]')
-  if (logo) {
-    const wrap = logo.parentElement
-    if (wrap && !wrap.querySelector('.xmas-santa-hat')) {
-      const hat = doc.createElement('span')
-      hat.className = 'xmas-santa-hat'
-      hat.setAttribute('aria-hidden', 'true')
-      hat.innerHTML = '<img src="/santa-hat.webp" alt="">'
-      wrap.appendChild(hat)
-    }
-  }
-}
-
 const FAKE_CLAIMS = /Facturación Automática|Monitoreo Satelital|Financiación Oficial Exclusiva|Concierge WhatsApp|10% OFF Extra de Bienvenida|Bóveda de Garantías|Atención y Despacho Prioritario|Atención & Despacho Prioritario|Devolución Gratis 30 Días|Factura A o B Automática|Embalaje Blindado Sellado|Soporte Técnico 24\/7|Garantía Directa de Fabricante|Prueba de 30 Días|Envíos Blindados y Asegurados|Seguridad Bancaria TLS|ISO\/IEC 27001|100% Bonificado|Cupón TechWeek|Reservados:|14:59 min|Cifrado Bancario de Grado Militar|Sesión Encriptada Tokenizada|TX-\d+|SSL 256-bit|Data Fiscal AFIP|Garantías Oficiales Incluidas|Opciones de Entrega Certificada/i
 
 function dropFakeClaims(doc) {
@@ -236,7 +221,7 @@ function renderCheckout(doc, cartItems = [], step = 'cart') {
   const stepName = ['Carrito', 'Envío', 'Pago', 'Confirmación'][current]
   for (const h of doc.querySelectorAll('h1')) if (!main.contains(h)) h.remove()
   main.innerHTML = `<div class="checkout-page">
-    <div class="checkout-head"><div><span class="checkout-eyebrow">TU COMPRA</span><h1>${step === 'cart' ? 'Mi carrito' : step === 'shipping' ? 'Datos de envío' : step === 'payment' ? 'Medio de pago' : 'Compra confirmada'}</h1></div><span class="checkout-count">${cartItems.length} producto${cartItems.length === 1 ? '' : 's'}</span></div>
+    <div class="checkout-head"><div><h1>${step === 'cart' ? 'Mi carrito' : step === 'shipping' ? 'Datos de envío' : step === 'payment' ? 'Medio de pago' : 'Compra confirmada'}</h1></div><span class="checkout-count">${cartItems.length} producto${cartItems.length === 1 ? '' : 's'}</span></div>
     <div class="checkout-steps" aria-hidden="true">${['Carrito', 'Envío', 'Pago', 'Confirmación'].map((n, i) => `<span class="${i === current ? 'is-active' : ''}">${i + 1} · ${n}</span>`).join('')}</div>
     <div class="checkout-grid">
       <div class="checkout-list">
@@ -299,7 +284,7 @@ function renderDetail(doc, product) {
         <div class="ficha-precios">
           <span class="ficha-precios__tag">Precio especial con transferencia</span>
           <div class="price-strong ficha-precios__main">${money(precio)}</div>
-          <div class="ficha-precios__card">O ${money(enTarjeta)} en tarjeta</div>
+          <div class="ficha-precios__card">${money(enTarjeta)} en tarjeta</div>
           <div class="ficha-precios__cuotas">3 cuotas de ${cuota(3)} · 6 de ${cuota(6)} · 12 de ${cuota(12)}</div>
         </div>
         <button type="button" data-add="${esc(product.sku)}" class="h-12 px-8 rounded-xl bg-primary-container text-on-primary font-label-md font-bold">Agregar al carrito</button>
@@ -383,20 +368,22 @@ function reworkHome(doc, products = []) {
     const cards = [...pay.querySelectorAll('.grid > div')].map(card => ({
       icon: card.querySelector('.material-symbols-outlined')?.textContent || 'payments',
       title: card.querySelector('h2')?.textContent.trim() || '',
-      badge: [...card.querySelectorAll('span')].map(s => s.textContent.trim()).find(t => /OFF|Cuotas|Cabal|Tech/i.test(t)) || '',
     }))
     // Openpay BBVA se eliminó con el claim de "12 cuotas"; se reincorpora sin promesas.
-    if (!cards.some(c => /Openpay/i.test(c.title))) cards.unshift({ icon: 'account_balance', title: 'Openpay BBVA', badge: '' })
+    if (!cards.some(c => /Openpay/i.test(c.title))) cards.unshift({ icon: 'account_balance', title: 'Openpay BBVA' })
     pay.className = 'w-full px-margin py-1.5 bg-surface-subtle border-b border-border-subtle'
     pay.innerHTML = `<div class="w-full flex flex-wrap items-center justify-center gap-x-8 gap-y-2 py-1">
       ${cards.map(c => `<div class="flex items-center gap-2 shrink-0">
         <span class="w-7 h-7 rounded-md bg-surface-pure text-primary flex items-center justify-center shrink-0 shadow-sm"><span class="material-symbols-outlined text-base">${esc(c.icon)}</span></span>
         <span class="font-label-sm text-label-sm font-semibold text-on-surface whitespace-nowrap">${esc(c.title)}</span>
-        ${c.badge ? `<span class="font-label-sm text-label-sm text-on-surface-variant whitespace-nowrap">· ${esc(c.badge)}</span>` : ''}
       </div>`).join('')}
     </div>`
   }
 
+
+}
+
+function compactFooter(doc) {
   // 3) Footer: solo la tira fiscal, GARANTÍA/RMA y el disclaimer de garantías.
   const footer = doc.querySelector('footer')
   if (footer) {
@@ -436,7 +423,10 @@ function reworkHome(doc, products = []) {
   if (trust) {
     trust.setAttribute('data-cybertrust', '')
     trust.className = 'ds-cybertrust w-full px-margin'
-    trust.innerHTML = '<span class="material-symbols-outlined" title="CyberTrust">verified_user</span>'
+    trust.innerHTML = `<div class="ds-cybertrust__chip">
+      <span class="material-symbols-outlined">verified_user</span>
+      <span class="ds-cybertrust__brand">CyberTrust™</span>
+    </div>`
     if (footer) { trust.remove(); footer.before(trust) }
   }
 }
@@ -490,6 +480,7 @@ export function hydrateStitch(doc, { products = [], categorias = [], cartItems =
   const CHECKOUT_STEPS = { carrito: 'cart', envio: 'shipping', pago: 'payment', confirmacion: 'done' }
   if (CHECKOUT_STEPS[screen]) renderCheckout(doc, cartItems, CHECKOUT_STEPS[screen])
   if (screen === 'login' || screen === 'registro') harmonizeAccounts(doc)
+  compactFooter(doc)
   addSearch(doc, cartCount, categorias)
   if (screen === 'home') {
     seasonalAndHero(doc, products)
@@ -506,6 +497,5 @@ export function hydrateStitch(doc, { products = [], categorias = [], cartItems =
       else doc.querySelector('main')?.appendChild(node) || doc.body.appendChild(node)
     }
   }
-  addXmasDecor(doc)
   return doc
 }

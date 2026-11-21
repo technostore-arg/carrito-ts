@@ -217,9 +217,6 @@ body:has(.stitch-overlay) .stitch-view > header:first-child { visibility: hidden
 /* Borde del select en el contenedor del buscador (Stitch le pone bg-surface-subtle) */
 /* Bordes de los campos de filtro del catálogo */
 .stitch-view [data-catalog-filters] select { border-color: #6b7280 !important; background: #fff !important; }
-/* Fila de búsqueda mobile: sin desbordes a 375px */
-  /* Logo sin el gorro en mobile para que no invada el header. */
-}
 @media (max-width: 30rem) { .ds-reset-filter { font-size: 11px; padding-left: 6px; padding-right: 6px; } }
 
 
@@ -247,8 +244,7 @@ body:has(.stitch-overlay) .stitch-view > header:first-child { visibility: hidden
   .ts-header__search { order: 3; flex-basis: 100%; max-width: none; }
   .ts-header__search select { max-width: 132px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
   .ts-header__search { gap: 6px; padding: 0 10px; }
-  .ts-header__brand { position: relative; }
-  .xmas-santa-hat { right: -10px; bottom: 24px; width: 42px; height: 34px; }
+  .xmas-santa-hat { width: 22px; height: 17px; top: -6px; }
 }
 @media (max-width: 380px) { .ts-header__search select { max-width: 110px; font-size: 11px; } }
 .ficha-precios { padding: 16px 18px; border: 1px solid var(--ds-border-subtle); border-radius: 14px; background: #fff; }
@@ -263,8 +259,10 @@ body:has(.stitch-overlay) .stitch-view > header:first-child { visibility: hidden
 .toast { z-index: 9995 !important; background: #0b192c !important; border: 1px solid rgba(255,255,255,.15); }
 .toast::before { content: 'check_circle'; font-family: 'Material Symbols Outlined'; color: #66ff8e; font-size: 18px; }
 
-.ds-cybertrust { padding: 1px 2rem !important; height: 18px; display: flex; align-items: center; justify-content: center; }
-.ds-cybertrust .material-symbols-outlined { font-size: 14px; color: var(--ds-primary-container); opacity: .75; }
+.ds-cybertrust { padding: 2px 2rem !important; display: flex; align-items: center; justify-content: center; }
+.ds-cybertrust__chip { display: inline-flex; align-items: center; gap: 5px; }
+.ds-cybertrust .material-symbols-outlined { font-size: 13px; color: var(--ds-primary-container); }
+.ds-cybertrust__brand { font-size: 10px; color: var(--ds-on-surface-variant); }
 
 /* Franjas divisoras compactas (CyberTrust, marcas, medios de pago) */
 .stitch-view [data-cybertrust], .stitch-view .bg-surface-subtle.border-y, .stitch-view .bg-surface-subtle.border-b { padding-top: 6px !important; padding-bottom: 6px !important; }
@@ -365,8 +363,6 @@ body:has(.stitch-overlay) .stitch-view > header:first-child { visibility: hidden
 .checkout-done p { font-size: 13px; line-height: 1.5; color: var(--ds-on-surface-variant); max-width: 420px; margin: 10px auto 0; }
 @media (max-width: 560px) { .checkout-page { padding: 24px 1rem 40px; } .checkout-item { grid-template-columns: 64px minmax(0, 1fr); } .checkout-item__media { width: 64px; height: 64px; } .checkout-item__total { grid-column: 2; } }
 
-/* Header: acciones claras en cualquier ancho y tipografía coherente */
-@media (max-width: 520px) { 
 /* Jerarquía liviana: pesos 400/500 y titulares chicos en todo el sistema */
 /* Texto general sin negrita; el peso solo lo marcan los titulares */
 .stitch-view .font-extrabold, .stitch-view .font-bold, .stitch-view .font-semibold,
@@ -394,10 +390,10 @@ body .price-strong, body .checkout-item__total, body .checkout-total b, body .ch
 .stitch-view .text-body-lg, .stitch-view .text-body-md { font-size: 13px !important; }
 .stitch-view .text-label-lg { font-size: 12px !important; }
 .stitch-view [data-page-info], .stitch-view footer h4 { font-family: 'Quicksand', 'Inter', sans-serif; font-size: 12px; font-weight: 500; }
-.stitch-view 
 /* Gran gorro de Papá Noel inclinado sobre una esquina del logo */
 .logo-lockup { position: relative; display: inline-flex; }
-.xmas-santa-hat { position: absolute; right: -14px; bottom: 26px; width: 50px; height: 38px; z-index: 5; pointer-events: none; transform: rotate(16deg); filter: drop-shadow(0 3px 4px rgba(11,25,44,.2)); }
+.ts-header__brand { position: relative; }
+.xmas-santa-hat { position: absolute; right: -2px; top: -8px; width: 26px; height: 20px; z-index: 5; pointer-events: none; transform: rotate(-15deg); transform-origin: bottom left; }
 .xmas-santa-hat img { width: 100%; height: 100%; object-fit: contain; display: block; }
 [data-carousel-track] { scroll-snap-type: x mandatory; scrollbar-width: none; }
 [data-carousel-track]::-webkit-scrollbar { display: none; }
