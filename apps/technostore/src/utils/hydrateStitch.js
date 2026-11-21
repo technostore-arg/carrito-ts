@@ -281,17 +281,27 @@ function renderDetail(doc, product) {
   const lista = Number(product.precio_lista ?? product.precio_mercadopago) || 0
   const specs = Array.isArray(product.specs) ? product.specs
     : Object.entries(product.especificaciones || {}).map(([k, v]) => ({ label: k, value: v }))
-  const img = product.imagenes?.[0] || product.image || ''
+  const imagenes = (product.imagenes && product.imagenes.length ? product.imagenes : [product.image]).filter(Boolean)
+  const img = imagenes[0] || ''
+  const enTarjeta = lista > precio ? lista : precio
+  const cuota = n => money(Math.round(enTarjeta / n))
   for (const h of doc.querySelectorAll('h1')) if (!main.contains(h)) h.remove()
   main.innerHTML = `<div class="w-full px-margin py-space-xl">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-      <div class="lg:col-span-6 bg-surface-container-low rounded-2xl p-6 flex items-center justify-center"><img class="w-full h-auto max-h-[460px] object-contain" src="${esc(img)}" alt="${esc(product.nombre || '')}"></div>
+      <div class="lg:col-span-6 space-y-3">
+        <div class="bg-surface-container-low rounded-2xl p-6 flex items-center justify-center"><img class="w-full h-auto max-h-[420px] object-contain" src="${esc(img)}" alt="${esc(product.nombre || '')}"></div>
+        ${imagenes.length > 1 ? `<div class="flex gap-2 overflow-x-auto pb-1">${imagenes.slice(1, 7).map(src => `<img class="w-16 h-16 rounded-lg bg-surface-container-low object-contain p-1 shrink-0 cursor-pointer" src="${esc(src)}" alt="">`).join('')}</div>` : ''}
+      </div>
       <div class="lg:col-span-6 space-y-5">
         <span class="inline-block px-3 py-1 rounded-full bg-surface-container-high text-primary font-label-sm font-bold">${esc(product.marca || '')}</span>
         <h1 class="ficha-title font-headline-lg text-headline-lg font-bold text-on-surface">${esc(product.nombre || product.name || '')}</h1>
         <p class="font-body-md text-body-md text-on-surface-variant">${esc(product.descripcion || product.description || 'Producto con stock real y factura.')}</p>
-        <div><div class="price-strong font-display-hero text-display-hero font-extrabold text-on-surface">${money(precio)}</div>
-          ${lista > precio ? `<p class="price-strong font-label-md text-secondary font-bold">${money(lista)} en tarjeta</p>` : ''}</div>
+        <div class="ficha-precios">
+          <span class="ficha-precios__tag">Precio especial con transferencia</span>
+          <div class="price-strong ficha-precios__main">${money(precio)}</div>
+          <div class="ficha-precios__card">O ${money(enTarjeta)} en tarjeta</div>
+          <div class="ficha-precios__cuotas">3 cuotas de ${cuota(3)} · 6 de ${cuota(6)} · 12 de ${cuota(12)}</div>
+        </div>
         <button type="button" data-add="${esc(product.sku)}" class="h-12 px-8 rounded-xl bg-primary-container text-on-primary font-label-md font-bold">Agregar al carrito</button>
         ${specs.length ? `<div class="bg-surface-pure rounded-2xl p-5 shadow-sm"><h2 class="ficha-subtitle font-headline-sm text-headline-sm font-bold text-on-surface mb-3">Ficha técnica</h2>
           <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">${specs.slice(0, 12).map(s => `<div class="flex justify-between gap-3 border-b border-border-subtle py-2 font-body-sm"><dt class="text-on-surface-variant">${esc(s.label || s.name || '')}</dt><dd class="font-bold text-on-surface text-right">${esc(s.value ?? s.val ?? '')}</dd></div>`).join('')}</dl></div>` : ''}
@@ -377,7 +387,7 @@ function reworkHome(doc, products = []) {
     }))
     // Openpay BBVA se eliminó con el claim de "12 cuotas"; se reincorpora sin promesas.
     if (!cards.some(c => /Openpay/i.test(c.title))) cards.unshift({ icon: 'account_balance', title: 'Openpay BBVA', badge: '' })
-    pay.className = 'w-full px-margin py-2 bg-surface-subtle border-b border-border-subtle'
+    pay.className = 'w-full px-margin py-1.5 bg-surface-subtle border-b border-border-subtle'
     pay.innerHTML = `<div class="w-full flex flex-wrap items-center justify-center gap-x-8 gap-y-2 py-1">
       ${cards.map(c => `<div class="flex items-center gap-2 shrink-0">
         <span class="w-7 h-7 rounded-md bg-surface-pure text-primary flex items-center justify-center shrink-0 shadow-sm"><span class="material-symbols-outlined text-base">${esc(c.icon)}</span></span>
@@ -414,7 +424,7 @@ function reworkHome(doc, products = []) {
   const brands = [...doc.querySelectorAll('section')].find(s => /Marcas Oficiales y Partners/i.test(s.textContent || ''))
   if (brands) {
     const MARCAS = ['Apple', 'SONY', 'SAMSUNG', 'NVIDIA', 'ASUS ROG', 'logitech G', 'Kingston FURY', 'intel', 'Lenovo']
-    brands.className = 'w-full px-margin py-2 bg-surface-subtle border-y border-border-subtle'
+    brands.className = 'w-full px-margin py-1.5 bg-surface-subtle border-y border-border-subtle'
     brands.innerHTML = `<div class="w-full flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
       <span class="font-label-sm text-label-sm font-bold uppercase tracking-wider text-on-surface-variant whitespace-nowrap">Marcas</span>
       ${MARCAS.map(n => `<span class="font-label-md text-label-md font-bold tracking-tight text-on-surface-variant whitespace-nowrap">${esc(n)}</span>`).join('')}
@@ -425,7 +435,7 @@ function reworkHome(doc, products = []) {
   const trust = [...doc.querySelectorAll('section')].find(s => /Seguridad de nivel corporativo/i.test(s.textContent || ''))
   if (trust) {
     trust.setAttribute('data-cybertrust', '')
-    trust.className = 'w-full px-margin py-3 bg-surface-subtle border-t border-border-subtle'
+    trust.className = 'w-full px-margin py-1.5 bg-surface-subtle border-t border-border-subtle'
     trust.innerHTML = `<div class="w-full flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center">
       <span class="material-symbols-outlined text-base text-primary">verified_user</span>
       <b class="font-label-sm text-label-sm text-on-surface">CyberTrust™</b>

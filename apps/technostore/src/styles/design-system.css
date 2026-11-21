@@ -251,6 +251,26 @@ body:has(.stitch-overlay) .stitch-view > header:first-child { visibility: hidden
   .xmas-santa-hat { right: -10px; bottom: 24px; width: 42px; height: 34px; }
 }
 @media (max-width: 380px) { .ts-header__search select { max-width: 110px; font-size: 11px; } }
+.ficha-precios { padding: 16px 18px; border: 1px solid var(--ds-border-subtle); border-radius: 14px; background: #fff; }
+.ficha-precios__tag { display: inline-block; margin-bottom: 4px; color: #006d2f; font-size: 11px; font-weight: 500; }
+.ficha-precios__main { font-size: 30px; line-height: 1.1; }
+.ficha-precios__card { margin-top: 6px; font-size: 12px; color: var(--ds-on-surface-variant); }
+.ficha-precios__cuotas { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--ds-border-subtle); font-size: 11px; color: var(--ds-on-surface-variant); }
+.img-fallback { display: grid; place-items: center; width: 100%; height: 100%; color: var(--ds-on-surface-variant); opacity: .5; font-size: 28px; }
+.checkout-item__media, [data-catalog-item] > div:first-child { position: relative; }
+
+/* Confirmación de agregado al carrito: visible y con ícono */
+.toast { z-index: 9995 !important; background: #0b192c !important; border: 1px solid rgba(255,255,255,.15); }
+.toast::before { content: 'check_circle'; font-family: 'Material Symbols Outlined'; color: #66ff8e; font-size: 18px; }
+
+/* Franjas divisoras compactas (CyberTrust, marcas, medios de pago) */
+.stitch-view [data-cybertrust], .stitch-view .bg-surface-subtle.border-y, .stitch-view .bg-surface-subtle.border-b { padding-top: 6px !important; padding-bottom: 6px !important; }
+@media (max-width: 900px) {
+  .stitch-view .bg-surface-subtle.border-y > div, .stitch-view .bg-surface-subtle.border-b > div { flex-wrap: nowrap !important; overflow-x: auto; gap: 12px !important; white-space: nowrap; }
+  .stitch-view .bg-surface-subtle.border-y span, .stitch-view .bg-surface-subtle.border-b span { font-size: 10px !important; flex: none; }
+  .stitch-view [data-cybertrust] > div { gap: 6px !important; flex-wrap: nowrap !important; overflow: hidden; }
+  .stitch-view [data-cybertrust] span, .stitch-view [data-cybertrust] b { font-size: 10px !important; white-space: nowrap; }
+}
 
 /* Footer: jerarquía discreta, sin bloques que compitan */
 .ds-footer-grid { max-width: 1440px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 28px; }

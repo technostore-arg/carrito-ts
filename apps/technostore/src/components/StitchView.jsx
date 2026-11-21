@@ -26,7 +26,31 @@ export default function StitchView({ name, inline = false, products = [], catego
     }
     load()
     return () => { alive = false }
-  }, [name, products, categorias, cartItems, cartCount, product])
+  }, [name, products, categorias, cartItems, product])
+
+  // Si una miniatura falla, mostrar un placeholder en vez del ícono roto.
+  useEffect(() => {
+    const onError = e => {
+      const img = e.target
+      if (img?.tagName !== 'IMG' || img.closest('.hero-slide')) return
+      const box = img.parentElement
+      if (box && !box.querySelector('.img-fallback')) {
+        const f = document.createElement('span')
+        f.className = 'img-fallback material-symbols-outlined'
+        f.textContent = 'image'
+        box.appendChild(f)
+      }
+      img.style.display = 'none'
+    }
+    document.addEventListener('error', onError, true)
+    return () => document.removeEventListener('error', onError, true)
+  }, [])
+
+  // El contador se actualiza directo, sin recargar todo el HTML (evita la demora).
+  useEffect(() => {
+    if (!ref.current) return
+    for (const el of ref.current.querySelectorAll('[data-cart-count]')) el.textContent = String(Number(cartCount) || 0)
+  }, [html, cartCount])
 
   useEffect(() => {
     if (!html || !ref.current) return
