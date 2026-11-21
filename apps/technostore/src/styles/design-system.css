@@ -263,10 +263,8 @@ body:has(.stitch-overlay) .stitch-view > header:first-child { visibility: hidden
 .toast { z-index: 9995 !important; background: #0b192c !important; border: 1px solid rgba(255,255,255,.15); }
 .toast::before { content: 'check_circle'; font-family: 'Material Symbols Outlined'; color: #66ff8e; font-size: 18px; }
 
-.ds-cybertrust { padding: 3px 2rem !important; }
-.ds-cybertrust > div { display: flex; align-items: center; justify-content: center; gap: 6px; }
-.ds-cybertrust .material-symbols-outlined { font-size: 13px; color: var(--ds-primary-container); }
-.ds-cybertrust span { font-size: 10px; color: var(--ds-on-surface-variant); }
+.ds-cybertrust { padding: 1px 2rem !important; height: 18px; display: flex; align-items: center; justify-content: center; }
+.ds-cybertrust .material-symbols-outlined { font-size: 14px; color: var(--ds-primary-container); opacity: .75; }
 
 /* Franjas divisoras compactas (CyberTrust, marcas, medios de pago) */
 .stitch-view [data-cybertrust], .stitch-view .bg-surface-subtle.border-y, .stitch-view .bg-surface-subtle.border-b { padding-top: 6px !important; padding-bottom: 6px !important; }

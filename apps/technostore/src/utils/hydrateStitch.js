@@ -435,11 +435,8 @@ function reworkHome(doc, products = []) {
   const trust = [...doc.querySelectorAll('section')].find(s => /Seguridad de nivel corporativo/i.test(s.textContent || ''))
   if (trust) {
     trust.setAttribute('data-cybertrust', '')
-    trust.className = 'ds-cybertrust w-full px-margin bg-surface-subtle border-t border-border-subtle'
-    trust.innerHTML = `<div>
-      <span class="material-symbols-outlined">verified_user</span>
-      <span>CyberTrust™ · Compra protegida</span>
-    </div>`
+    trust.className = 'ds-cybertrust w-full px-margin'
+    trust.innerHTML = '<span class="material-symbols-outlined" title="CyberTrust">verified_user</span>'
     if (footer) { trust.remove(); footer.before(trust) }
   }
 }
