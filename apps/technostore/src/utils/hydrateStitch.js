@@ -163,6 +163,18 @@ const HERO_SLIDES = [
   { tag: 'Mini PC', name: 'ASUS NUC Ultra 5', sku: 'ELIT-ASUMPC90AR00Q2M', img: '/banner/banner-minipc.webp' },
 ]
 
+// Navidad: gorro calzado sobre la "e" de TechnoStore, inclinado como apoyado en una cabeza.
+function addXmasHat(doc) {
+  const logo = doc.querySelector('.ts-header__brand img[src="/logo-lockup.png"]')
+  if (!logo || doc.querySelector('.xmas-santa-hat')) return
+  const hat = doc.createElement('span')
+  hat.className = 'xmas-santa-hat'
+  hat.setAttribute('aria-hidden', 'true')
+  hat.innerHTML = '<img src="/santa-hat.webp" alt="">'
+  logo.parentElement.appendChild(hat)
+}
+
+
 const FAKE_CLAIMS = /Facturación Automática|Monitoreo Satelital|Financiación Oficial Exclusiva|Concierge WhatsApp|10% OFF Extra de Bienvenida|Bóveda de Garantías|Atención y Despacho Prioritario|Atención & Despacho Prioritario|Devolución Gratis 30 Días|Factura A o B Automática|Embalaje Blindado Sellado|Soporte Técnico 24\/7|Garantía Directa de Fabricante|Prueba de 30 Días|Envíos Blindados y Asegurados|Seguridad Bancaria TLS|ISO\/IEC 27001|100% Bonificado|Cupón TechWeek|Reservados:|14:59 min|Cifrado Bancario de Grado Militar|Sesión Encriptada Tokenizada|TX-\d+|SSL 256-bit|Data Fiscal AFIP|Garantías Oficiales Incluidas|Opciones de Entrega Certificada/i
 
 function dropFakeClaims(doc) {
@@ -302,6 +314,7 @@ function buildHeroSlider() {
       <img class="hero-slide__img relative z-[1] w-full h-full object-cover" src="${esc(s.img)}" alt="Imagen representativa de ${esc(s.tag)}">
       <span class="hero-slide__caption"><small>${esc(s.tag)}</small><b>${esc(s.name)}</b></span>
     </a>`).join('')}
+    <span class="xmas-promo" aria-label="Promoción de Navidad"><span class="material-symbols-outlined">redeem</span><span><b>Navidad TechnoStore</b><small>Hasta 20% OFF en equipos seleccionados</small></span></span>
     <button type="button" data-hero-prev aria-label="Anterior" class="hero-slider__arrow hero-slider__arrow--prev">‹</button>
     <button type="button" data-hero-next aria-label="Siguiente" class="hero-slider__arrow hero-slider__arrow--next">›</button>
     <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">${HERO_SLIDES.map((_, i) => `<button type="button" data-hero-dot="${i}" aria-label="Imagen ${i + 1}" class="hero-slider__dot${i === 0 ? ' is-active' : ''}"></button>`).join('')}</div>
@@ -418,14 +431,15 @@ function compactFooter(doc) {
     </div>`
   }
 
-  // 5) CyberTrust: franja fina al final (antes ocupaba ~585px y robaba protagonismo).
+  // 5) CyberTrust: zócalo que separa la paginación del footer.
   const trust = [...doc.querySelectorAll('section')].find(s => /Seguridad de nivel corporativo/i.test(s.textContent || ''))
   if (trust) {
     trust.setAttribute('data-cybertrust', '')
     trust.className = 'ds-cybertrust w-full px-margin'
-    trust.innerHTML = `<div class="ds-cybertrust__chip">
+    trust.innerHTML = `<div class="ds-cybertrust__inner">
       <span class="material-symbols-outlined">verified_user</span>
       <span class="ds-cybertrust__brand">CyberTrust™</span>
+      <span class="ds-cybertrust__desc">Comprá con tranquilidad: productos originales, datos protegidos y factura siempre disponible.</span>
     </div>`
     if (footer) { trust.remove(); footer.before(trust) }
   }
@@ -482,6 +496,7 @@ export function hydrateStitch(doc, { products = [], categorias = [], cartItems =
   if (screen === 'login' || screen === 'registro') harmonizeAccounts(doc)
   compactFooter(doc)
   addSearch(doc, cartCount, categorias)
+  addXmasHat(doc)
   if (screen === 'home') {
     seasonalAndHero(doc, products)
     reworkHome(doc, products)
