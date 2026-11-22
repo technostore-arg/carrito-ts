@@ -170,7 +170,7 @@ function addXmasHat(doc) {
   const hat = doc.createElement('span')
   hat.className = 'xmas-santa-hat'
   hat.setAttribute('aria-hidden', 'true')
-  hat.innerHTML = '<img src="/santa-hat.svg" alt="">'
+  hat.innerHTML = '<img src="/santa-hat.webp" alt="">'
   logo.parentElement.appendChild(hat)
 }
 
