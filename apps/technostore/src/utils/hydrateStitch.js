@@ -308,8 +308,7 @@ function renderDetail(doc, product) {
 }
 
 function buildHeroSlider() {
-  return `<p class="xmas-season-line"><span class="material-symbols-outlined">ac_unit</span>Navidad TechnoStore · Envíos y asesoramiento durante todo diciembre</p>
-  <div class="hero-slider relative w-full" data-hero-slider>
+  return `<div class="hero-slider relative w-full" data-hero-slider>
   <div class="relative w-full h-[340px] sm:h-[380px] rounded-2xl overflow-hidden bg-surface-container-low shadow-xl">
     ${HERO_SLIDES.map((s, i) => `<a class="hero-slide absolute inset-0 flex items-center justify-center${i === 0 ? ' is-active' : ''}" data-hero-slide="${i}" data-path="detalle-de-producto" data-sku="${esc(s.sku)}" href="#">
       <img class="hero-slide__img relative z-[1] w-full h-full object-cover" src="${esc(s.img)}" alt="Imagen representativa de ${esc(s.tag)}">
@@ -317,7 +316,7 @@ function buildHeroSlider() {
     </a>`).join('')}
     <button type="button" data-hero-prev aria-label="Anterior" class="hero-slider__arrow hero-slider__arrow--prev">‹</button>
     <button type="button" data-hero-next aria-label="Siguiente" class="hero-slider__arrow hero-slider__arrow--next">›</button>
-    <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">${HERO_SLIDES.map((_, i) => `<button type="button" data-hero-dot="${i}" aria-label="Imagen ${i + 1}" class="hero-slider__dot${i === 0 ? ' is-active' : ''}"><span class="material-symbols-outlined">ac_unit</span></button>`).join('')}</div>
+    <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">${HERO_SLIDES.map((_, i) => `<button type="button" data-hero-dot="${i}" aria-label="Imagen ${i + 1}" class="hero-slider__dot${i === 0 ? ' is-active' : ''}"></button>`).join('')}</div>
   </div>
 </div>`
 }
@@ -426,7 +425,6 @@ function compactFooter(doc) {
     const MARCAS = ['Apple', 'SONY', 'SAMSUNG', 'NVIDIA', 'ASUS ROG', 'logitech G', 'Kingston FURY', 'intel', 'Lenovo']
     brands.className = 'w-full px-margin py-1.5 bg-surface-subtle border-y border-border-subtle'
     brands.innerHTML = `<div class="w-full flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
-      <img src="/xmas/garland.webp" alt="" class="xmas-garland-left">
       <span class="font-label-sm text-label-sm font-bold uppercase tracking-wider text-on-surface-variant whitespace-nowrap">Marcas</span>
       ${MARCAS.map(n => `<span class="font-label-md text-label-md font-bold tracking-tight text-on-surface-variant whitespace-nowrap">${esc(n)}</span>`).join('')}
     </div>`
@@ -458,7 +456,7 @@ function buildCatalog(products = [], categorias = []) {
   const f = 'bg-surface-container-low border border-border-subtle rounded-lg px-3 py-2 text-label-md text-on-surface outline-none'
   return `<section id="catalogo" class="w-full px-margin py-space-xl" data-catalog>
   <div class="flex items-end justify-between mb-4 gap-3 flex-wrap">
-    <h2 class="catalog-title font-headline-lg text-headline-lg text-on-surface"><img src="/xmas/pineBranch.webp" alt="" class="xmas-pine">Todos los productos</h2>
+    <h2 class="catalog-title font-headline-lg text-headline-lg text-on-surface">Todos los productos</h2>
     <span class="font-label-md text-on-surface-variant"><b data-catalog-count>${items.length}</b> productos · <span data-catalog-updated>actualizando…</span></span>
   </div>
   <div class="bg-surface-pure rounded-xl shadow-sm p-4 mb-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3" data-catalog-filters>
