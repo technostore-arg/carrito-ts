@@ -244,7 +244,6 @@ body:has(.stitch-overlay) .stitch-view > header:first-child { visibility: hidden
   .ts-header__search { order: 3; flex-basis: 100%; max-width: none; }
   .ts-header__search select { max-width: 132px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
   .ts-header__search { gap: 6px; padding: 0 10px; }
-  .xmas-santa-hat { width: 22px; height: 18px; top: -8px; }
 }
 @media (max-width: 380px) { .ts-header__search select { max-width: 110px; font-size: 11px; } }
 .ficha-precios { padding: 16px 18px; border: 1px solid var(--ds-border-subtle); border-radius: 14px; background: #fff; }
@@ -396,6 +395,7 @@ body .price-strong, body .checkout-item__total, body .checkout-total b, body .ch
 .ts-header__brand { position: relative; display: inline-flex; }
 .xmas-santa-hat { position: absolute; left: 52%; top: -10px; width: 26px; height: 21px; z-index: 6; pointer-events: none; transform: rotate(10deg); transform-origin: bottom center; filter: drop-shadow(0 2px 3px rgba(11,25,44,.25)); }
 .xmas-santa-hat img { width: 100%; height: 100%; object-fit: contain; display: block; }
+@media (max-width: 900px) { .xmas-santa-hat { width: 22px; height: 18px; top: -8px; } }
 [data-carousel-track] { scroll-snap-type: x mandatory; scrollbar-width: none; }
 [data-carousel-track]::-webkit-scrollbar { display: none; }
 [data-carousel-track] > * { scroll-snap-align: start; }
