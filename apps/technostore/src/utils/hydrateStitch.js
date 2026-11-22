@@ -426,6 +426,7 @@ function compactFooter(doc) {
     const MARCAS = ['Apple', 'SONY', 'SAMSUNG', 'NVIDIA', 'ASUS ROG', 'logitech G', 'Kingston FURY', 'intel', 'Lenovo']
     brands.className = 'w-full px-margin py-1.5 bg-surface-subtle border-y border-border-subtle'
     brands.innerHTML = `<div class="w-full flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
+      <img src="/xmas/garland.webp" alt="" class="xmas-garland-left">
       <span class="font-label-sm text-label-sm font-bold uppercase tracking-wider text-on-surface-variant whitespace-nowrap">Marcas</span>
       ${MARCAS.map(n => `<span class="font-label-md text-label-md font-bold tracking-tight text-on-surface-variant whitespace-nowrap">${esc(n)}</span>`).join('')}
     </div>`
@@ -457,7 +458,7 @@ function buildCatalog(products = [], categorias = []) {
   const f = 'bg-surface-container-low border border-border-subtle rounded-lg px-3 py-2 text-label-md text-on-surface outline-none'
   return `<section id="catalogo" class="w-full px-margin py-space-xl" data-catalog>
   <div class="flex items-end justify-between mb-4 gap-3 flex-wrap">
-    <h2 class="catalog-title font-headline-lg text-headline-lg text-on-surface">Todos los productos</h2>
+    <h2 class="catalog-title font-headline-lg text-headline-lg text-on-surface"><img src="/xmas/pineBranch.webp" alt="" class="xmas-pine">Todos los productos</h2>
     <span class="font-label-md text-on-surface-variant"><b data-catalog-count>${items.length}</b> productos · <span data-catalog-updated>actualizando…</span></span>
   </div>
   <div class="bg-surface-pure rounded-xl shadow-sm p-4 mb-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3" data-catalog-filters>
