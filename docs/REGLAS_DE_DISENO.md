@@ -24,6 +24,7 @@
 - Footer: solo **Información fiscal**, **Garantía y RMA**, disclaimer de garantías y copyright. Orden: identidad → información → posventa → legal.
 
 ## 4. Producto y precios
+- **Regla de precios (negocio):** todo producto debe dejar **al menos $20.000 de ganancia** sobre el costo con IVA. Si el margen porcentual no alcanza ese piso, el precio se eleva automáticamente. Configurable en `pricing_config.min_absolute_profit` / `DEFAULT_CONFIG.minAbsoluteProfit`. Nunca publicar precios con ganancia menor al piso (el envío fijo se come el margen en productos baratos).
 - Ficha: precio de **transferencia** destacado como "Precio especial con transferencia"; abajo precio en tarjeta y cuotas 3 / 6 / 12 calculadas sobre el precio en tarjeta.
 - Galería con las imágenes reales que Elit provee por producto. Si una miniatura falla → placeholder, nunca ícono roto.
 - Carrusel del banner: 6 destacados con SKU real, imágenes representativas (no fotos exactas), sin logo incrustado en el caption.

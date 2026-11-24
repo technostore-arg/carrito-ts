@@ -10,6 +10,8 @@ export async function getPricingConfig(client = null) {
     usdArsRate: Number(r.usd_ars_rate) || 1550,
     listSurchargePercent: Number(r.list_surcharge_percent) || 16,
     safetyStockThreshold: Number(r.safety_stock_threshold) || 3,
+    // Piso de ganancia absoluta; DEFAULT_CONFIG aporta 20000 si la columna no existe aún.
+    ...(r.min_absolute_profit != null ? { minAbsoluteProfit: Number(r.min_absolute_profit) } : {}),
     categoryMargins: typeof r.category_margins === 'string' ? JSON.parse(r.category_margins) : (r.category_margins || {}),
     vatByCategory: typeof r.vat_by_category === 'string' ? JSON.parse(r.vat_by_category) : (r.vat_by_category || {}),
   }

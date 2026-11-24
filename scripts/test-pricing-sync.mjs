@@ -5,7 +5,7 @@
 import assert from 'node:assert/strict'
 import {
   computeQuote, toLegacyQuote, vatRateFor, toArs, quarantineReason,
-  pickActiveListing, VAT_CORE, VAT_GENERAL,
+  pickActiveListing, VAT_CORE, VAT_GENERAL, DEFAULT_CONFIG,
 } from '../server/hub/pricingEngine.js'
 import { createElitClient, normalizeElitItem } from '../server/hub/elitService.js'
 import { syncElitCatalog, syncElitStockAndPrices } from '../server/hub/sync.js'
@@ -154,6 +154,23 @@ assert.equal(toArs(100, 'EUR', 1500), null)
   const picked = pickActiveListing([listing('LOCAL', 10, 'ARS', 1), listing('ELIT', 10, 'USD', 99)], config)
   assert.equal(picked.source, 'local')
   assert.equal(picked.activeSupplier, 'LOCAL')
+}
+
+/* 8b. Piso de ganancia absoluta en productos baratos */
+{
+  const q = computeQuote({
+    master_product: master('accesorios'),
+    supplier_listings: [listing('ELIT', 20, 'USD', 5)], // 20 USD * 1550 = 31.000 ARS
+    pricing_config: config,
+  })
+  const costWithVat = 20 * config.usdArsRate * 1.21 // 20 USD al tipo del fixture + IVA 21%
+  const floor = DEFAULT_CONFIG.minAbsoluteProfit
+  // Margen 20% no llega al piso → se eleva a costo con IVA + 20.000
+  assert.equal(q.price_transfer, Math.round(costWithVat + floor))
+  assert.equal(q.min_profit_applied, true)
+  assert.equal(q.price_transfer - q.cost_with_vat, floor)
+  // El recargo financiero se aplica sobre el precio ya corregido
+  assert.equal(q.price_list, Math.round(q.price_transfer * 1.16))
 }
 
 /* 9. Cliente fixture de Elit */

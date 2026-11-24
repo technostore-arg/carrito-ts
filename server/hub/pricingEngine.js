@@ -6,6 +6,10 @@
  *     stock >= safetyStockThreshold (3) → 'supplier'. Si no → stock 0.
  *  2. IVA discriminado: 10.5% hardware core / 21% periféricos y accesorios.
  *  3. transfer_price = (costo en ARS + IVA) * (1 + margen por categoría).
+ *     Si la ganancia resultante es menor al piso absoluto (minAbsoluteProfit),
+ *     se eleva el precio hasta asegurar esa ganancia mínima — los productos
+ *     baratos no pueden venderse con margen porcentual porque el envío fijo
+ *     se come la ganancia.
  *     list_price = transfer_price * (1 + recargo financiero %).
  *  4. Cuarentena: costo <= 0, moneda inválida o caída >= 40% vs. el costo
  *     anterior → no se publica. Se intenta el siguiente proveedor elegible.
@@ -34,6 +38,8 @@ export const DEFAULT_CONFIG = Object.freeze({
   usdArsRate: 1550,
   listSurchargePercent: 16,
   safetyStockThreshold: 3,
+  // Ganancia mínima absoluta sobre costo con IVA (ARS). Evita vender barato "a pérdida" por el envío.
+  minAbsoluteProfit: 20000,
   categoryMargins: { default: 0.20 },
   vatByCategory: {},
 })
@@ -164,13 +170,20 @@ export function computeQuote(input = {}) {
     return { ...base, quarantined: true, quarantine_reasons: ['COSTO_CERO_O_INVALIDO'] }
   }
 
-  const priceTransfer = Math.round(costArs * (1 + vatRate) * (1 + margin))
+  const costWithVat = costArs * (1 + vatRate)
+  let priceTransfer = Math.round(costWithVat * (1 + margin))
+  const minProfit = Math.max(0, Number(config.minAbsoluteProfit ?? DEFAULT_CONFIG.minAbsoluteProfit) || 0)
+  if (minProfit > 0 && priceTransfer - costWithVat < minProfit) {
+    priceTransfer = Math.round(costWithVat + minProfit)
+  }
   const surcharge = Number(config.listSurchargePercent) || 0
   const priceList = Math.round(priceTransfer * (1 + surcharge / 100))
 
   return {
     ...base,
     cost_ars: Math.round(costArs * 100) / 100,
+    cost_with_vat: Math.round(costWithVat),
+    min_profit_applied: priceTransfer - Math.round(costWithVat) >= minProfit,
     price_transfer: priceTransfer,
     price_list: priceList,
     stock: picked.stock,
