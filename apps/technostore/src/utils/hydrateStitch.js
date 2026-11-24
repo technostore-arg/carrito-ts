@@ -460,6 +460,7 @@ function buildCatalog(products = [], categorias = []) {
     <span class="font-label-md text-on-surface-variant"><b data-catalog-count>${items.length}</b> productos · <span data-catalog-updated>actualizando…</span></span>
   </div>
   <div class="bg-surface-pure rounded-xl shadow-sm p-4 mb-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3" data-catalog-filters>
+    <label class="flex flex-col gap-1 col-span-2 md:col-span-3 lg:col-span-2"><span class="font-label-sm text-on-surface-variant">Buscar en productos</span><input type="search" data-filter="q" placeholder="Nombre, SKU o marca…" class="${f}" value=""></label>
     <label class="flex flex-col gap-1"><span class="font-label-sm text-on-surface-variant">Categoría</span><select data-filter="cat" class="${f}">${opt('todos', 'Todas')}${cats.map(c => opt(c.id, c.label || c.id)).join('')}</select></label>
     <label class="flex flex-col gap-1"><span class="font-label-sm text-on-surface-variant">Marca</span><select data-filter="marca" class="${f}">${opt('todos', 'Todas')}${marcas.map(m => opt(m, m)).join('')}</select></label>
     <label class="flex flex-col gap-1"><span class="font-label-sm text-on-surface-variant">Precio</span><select data-filter="precio" class="${f}">

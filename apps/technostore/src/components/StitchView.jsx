@@ -119,6 +119,7 @@ export default function StitchView({ name, inline = false, products = [], catego
     let pages = 1
     const apply = () => {
       const cat = val('cat'), marca = val('marca'), precio = val('precio'), oferta = val('oferta')
+      const q = val('q').trim().toLowerCase()
       const orden = catalog.querySelector('[data-order]')?.value || 'destacados'
       const PRIORITY = ['hardware', 'memorias', 'computadoras', 'almacenamiento', 'perifericos', 'audio', 'imagen', 'conectividad', 'seguridad', 'cables', 'insumos']
       const prio = d => { const i = PRIORITY.indexOf(d.cat.split(' ')[0]); return i === -1 ? 50 : i }
@@ -133,7 +134,8 @@ export default function StitchView({ name, inline = false, products = [], catego
       const visible = items.filter(el => {
         const d = el.dataset
         const p = Number(d.precio) || 0
-        return (cat === 'todos' || d.cat.split(' ').includes(cat))
+        return (!q || `${d.nombre} ${d.sku || ''} ${d.marca || ''}`.toLowerCase().includes(q))
+          && (cat === 'todos' || d.cat.split(' ').includes(cat))
           && (marca === 'todos' || d.marca === marca)
           && (oferta !== 'si' || d.oferta === '1')
           && (precio === 'todos'
@@ -173,6 +175,14 @@ export default function StitchView({ name, inline = false, products = [], catego
       apply()
     }
     const onClick = e => {
+      const showAll = e.target.closest('[data-show-all]')
+      if (showAll) {
+        const term = showAll.getAttribute('data-show-all') || ''
+        const qInput = catalog.querySelector('[data-filter="q"]')
+        if (qInput) { qInput.value = term; qInput.dispatchEvent(new Event('input', { bubbles: true })) }
+        document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' })
+        return
+      }
       const p = e.target.closest('[data-page]')
       if (p) {
         const v = p.getAttribute('data-page')
@@ -181,16 +191,20 @@ export default function StitchView({ name, inline = false, products = [], catego
         return
       }
       if (!e.target.closest('[data-catalog-reset]')) return
-      for (const s of catalog.querySelectorAll('[data-filter]')) s.value = 'todos'
+      for (const s of catalog.querySelectorAll('[data-filter]')) s.value = s.getAttribute('data-filter') === 'q' ? '' : 'todos'
       const order = catalog.querySelector('[data-order]')
       if (order) order.value = 'destacados'
       page = 1
       apply()
     }
+    const onInput = e => {
+      if (e.target.matches('[data-filter="q"]')) { page = 1; apply() }
+    }
     root.addEventListener('change', onChange)
+    root.addEventListener('input', onInput)
     root.addEventListener('click', onClick)
     apply()
-    return () => { root.removeEventListener('change', onChange); root.removeEventListener('click', onClick) }
+    return () => { root.removeEventListener('change', onChange); root.removeEventListener('input', onInput); root.removeEventListener('click', onClick) }
   }, [html])
 
   // Transparencia: última actualización del catálogo.
@@ -245,7 +259,7 @@ export default function StitchView({ name, inline = false, products = [], catego
       if (q.trim().length < 2) { box.innerHTML = ''; box.classList.add('hidden'); return }
       box.innerHTML = (items.length
         ? items.map(p => `<button type="button" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-surface-container-low text-left" data-path="detalle-de-producto" data-sku="${esc(p.sku)}"><img class="w-10 h-10 object-contain rounded-lg bg-surface-container-low" src="${esc(p.imagenes?.[0] || '')}" alt=""><span class="flex-1 min-w-0"><b class="block text-label-lg text-on-surface truncate">${esc(p.nombre || '')}</b><small class="text-label-sm text-on-surface-variant">${esc(p.sku)} · ${esc(p.categoria || '')}</small></span><span class="font-bold text-primary text-body-sm">$${Number((p.precio_transferencia ?? p.precio) || 0).toLocaleString('es-AR')}</span></button>`).join('')
-          + '<button type="button" class="w-full px-4 py-3 text-primary font-label-md font-bold text-left border-t border-border-subtle" data-path="catalogo-de-productos">Ver todos los resultados →</button>'
+          + `<button type="button" class="w-full px-4 py-3 text-primary font-label-md font-bold text-left border-t border-border-subtle" data-path="catalogo-de-productos" data-show-all="${esc(q.trim())}">Ver todos los resultados →</button>`
         : '<p class="px-4 py-3 text-body-sm text-on-surface-variant">Sin resultados para esa búsqueda.</p>')
       box.classList.remove('hidden')
     }
