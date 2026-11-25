@@ -114,7 +114,7 @@ export default function StitchView({ name, inline = false, products = [], catego
     const count = catalog.querySelector('[data-catalog-count]')
     const info = catalog.querySelector('[data-page-info]')
     const pager = catalog.querySelector('[data-page-buttons]')
-    const val = sel => catalog.querySelector(`[data-filter="${sel}"]`)?.value || 'todos'
+    const val = sel => catalog.querySelector(`[data-filter="${sel}"]`)?.value ?? (sel === 'q' ? '' : 'todos')
     let page = 1
     let pages = 1
     const apply = () => {
