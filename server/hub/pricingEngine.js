@@ -36,7 +36,10 @@ export const CORE_HARDWARE_CATEGORIES = new Set([
 
 export const DEFAULT_CONFIG = Object.freeze({
   usdArsRate: 1550,
-  listSurchargePercent: 16,
+  // Recargo para precio en tarjeta. La pasarela descuenta ~16,67% de lo cobrado
+  // (referencia real: cobro $300.000 en 3 cuotas, acreditado ~$250.000).
+  // Con 16% se perdía ~3,4% vs. transferencia; 20% compensa exactamente el descuento.
+  listSurchargePercent: 20,
   safetyStockThreshold: 3,
   // Ganancia mínima absoluta sobre costo con IVA (ARS). Evita vender barato "a pérdida" por el envío.
   minAbsoluteProfit: 20000,

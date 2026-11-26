@@ -251,6 +251,11 @@ body:has(.stitch-overlay) .stitch-view > header:first-child { visibility: hidden
 .ficha-precios__main { font-size: 30px; line-height: 1.1; }
 .ficha-precios__card { margin-top: 6px; font-size: 12px; color: var(--ds-on-surface-variant); }
 .ficha-precios__cuotas { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--ds-border-subtle); font-size: 11px; color: var(--ds-on-surface-variant); }
+.catalog-price { margin-top: 6px; }
+.catalog-price__tag { display: flex; align-items: center; gap: 4px; font-size: 10px; color: #006d2f; }
+.catalog-price__tag .material-symbols-outlined { font-size: 13px; }
+.catalog-price__main { font-size: 26px; line-height: 1.15; font-weight: 600; }
+.catalog-price__card { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--ds-border-subtle); font-size: 11px; line-height: 1.5; color: var(--ds-on-surface-variant); }
 .img-fallback { display: grid; place-items: center; width: 100%; height: 100%; color: var(--ds-on-surface-variant); opacity: .5; font-size: 28px; }
 .checkout-item__media, [data-catalog-item] > div:first-child { position: relative; }
 

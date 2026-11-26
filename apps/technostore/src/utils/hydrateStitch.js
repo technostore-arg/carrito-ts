@@ -18,13 +18,17 @@ function productCard(p) {
   const precio = Number(p.precio_transferencia ?? p.precio) || 0
   const lista = Number(p.precio_lista ?? p.precio_mercadopago) || 0
   const oferta = lista > precio ? 1 : 0
+  const cuota = n => money(Math.round(lista / n))
   const cats = Array.isArray(p.categorias) && p.categorias.length ? p.categorias : [p.categoria || '']
   return `<div class="bg-surface-pure rounded-2xl p-5 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between group relative" data-sku="${esc(p.sku)}" data-catalog-item data-cat="${esc(cats.join(' '))}" data-marca="${brand}" data-precio="${precio}" data-oferta="${oferta}" data-nombre="${esc(p.nombre || p.sku || '')}" data-stock="${Number(p.stock) || 0}">
   <div class="flex items-center justify-between mb-3"><span class="px-2.5 py-1 bg-surface-container-high text-primary font-label-sm text-label-sm rounded-md font-bold flex items-center gap-1">${brand}</span><span class="px-2 py-0.5 bg-secondary-fixed/30 text-secondary font-label-sm text-label-sm rounded-md font-semibold">${stock}</span></div>
   <div class="w-full h-48 bg-surface-container-low rounded-xl p-4 flex items-center justify-center overflow-hidden mb-4 relative"><img class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" src="${esc(p.imagenes?.[0] || '')}" alt=""></div>
   <div class="flex flex-col flex-1"><h3 class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight mt-0.5">${esc(p.nombre || p.sku || '')}</h3>
-  <div class="price-strong font-headline-md text-headline-md text-on-surface font-extrabold tracking-tight mt-0.5">${money(p.precio_transferencia ?? p.precio)}</div>
-  <p class="price-strong font-label-sm text-label-sm text-secondary font-bold mt-0.5">${money(p.precio_mercadopago ?? p.precio_lista)} en tarjeta</p></div>
+  <div class="catalog-price">
+    <span class="catalog-price__tag"><span class="material-symbols-outlined">savings</span>Mejor precio con transferencia</span>
+    <div class="price-strong catalog-price__main">${money(precio)}</div>
+    <div class="catalog-price__card">${money(lista)} en tarjeta · 3 cuotas de ${cuota(3)} · 6 de ${cuota(6)}</div>
+  </div></div>
   <div class="mt-5 space-y-2"><button class="w-full h-11 bg-primary-container hover:bg-primary text-on-primary rounded-xl font-label-md text-label-md font-bold flex items-center justify-center gap-2 shadow-sm transition-colors" data-add="${esc(p.sku)}">Agregar al Carrito</button>
   <a class="w-full h-9 bg-surface-container hover:bg-surface-container-high text-on-surface rounded-lg font-label-sm text-label-sm font-semibold flex items-center justify-center transition-colors" data-path="detalle-de-producto" data-sku="${esc(p.sku)}" href="#">Ver Ficha Técnica Completa</a></div></div>`
 }

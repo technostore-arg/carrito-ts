@@ -173,6 +173,19 @@ assert.equal(toArs(100, 'EUR', 1500), null)
   assert.equal(q.price_list, Math.round(q.price_transfer * 1.16))
 }
 
+/* 8c. Recargo de tarjeta compensa el ~16,67% que descuenta la pasarela */
+{
+  assert.equal(DEFAULT_CONFIG.listSurchargePercent, 20)
+  const q = computeQuote({
+    master_product: master('accesorios'),
+    supplier_listings: [listing('ELIT', 20, 'USD', 5)],
+    pricing_config: { ...config, listSurchargePercent: DEFAULT_CONFIG.listSurchargePercent },
+  })
+  const fee = 1 / 1.2 // 16,67% descontado sobre lo cobrado
+  assert.ok(q.price_list * fee >= q.price_transfer - 1, 'el cobro en tarjeta no debe quedar por debajo del precio transferencia')
+  assert.equal(q.price_list, Math.round(q.price_transfer * 1.2))
+}
+
 /* 9. Cliente fixture de Elit */
 const client = createElitClient({ useFixture: true })
 assert.equal(client.mode, 'fixture')
