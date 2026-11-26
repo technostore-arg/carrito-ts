@@ -25,9 +25,15 @@ function productCard(p) {
   <div class="w-full h-48 bg-surface-container-low rounded-xl p-4 flex items-center justify-center overflow-hidden mb-4 relative"><img class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" src="${esc(p.imagenes?.[0] || '')}" alt=""></div>
   <div class="flex flex-col flex-1"><h3 class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight mt-0.5">${esc(p.nombre || p.sku || '')}</h3>
   <div class="catalog-price">
-    <span class="catalog-price__tag"><span class="material-symbols-outlined">savings</span>Mejor precio con transferencia</span>
-    <div class="price-strong catalog-price__main">${money(precio)}</div>
-    <div class="catalog-price__card">${money(lista)} en tarjeta · 3 cuotas de ${cuota(3)} · 6 de ${cuota(6)}</div>
+    <span class="catalog-price__tag"><span class="material-symbols-outlined">savings</span>Precio con transferencia</span>
+    <div class="catalog-price__row">
+      <div class="price-strong catalog-price__main">${money(precio)}</div>
+      <span class="catalog-price__card-label">o ${money(lista)} en tarjeta</span>
+    </div>
+    <div class="catalog-price__installments">
+      <span class="catalog-price__pill"><b>3</b> cuotas de <b>${cuota(3)}</b></span>
+      <span class="catalog-price__pill"><b>6</b> cuotas de <b>${cuota(6)}</b></span>
+    </div>
   </div></div>
   <div class="mt-5 space-y-2"><button class="w-full h-11 bg-primary-container hover:bg-primary text-on-primary rounded-xl font-label-md text-label-md font-bold flex items-center justify-center gap-2 shadow-sm transition-colors" data-add="${esc(p.sku)}">Agregar al Carrito</button>
   <a class="w-full h-9 bg-surface-container hover:bg-surface-container-high text-on-surface rounded-lg font-label-sm text-label-sm font-semibold flex items-center justify-center transition-colors" data-path="detalle-de-producto" data-sku="${esc(p.sku)}" href="#">Ver Ficha Técnica Completa</a></div></div>`

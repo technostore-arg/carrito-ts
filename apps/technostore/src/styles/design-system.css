@@ -251,11 +251,15 @@ body:has(.stitch-overlay) .stitch-view > header:first-child { visibility: hidden
 .ficha-precios__main { font-size: 30px; line-height: 1.1; }
 .ficha-precios__card { margin-top: 6px; font-size: 12px; color: var(--ds-on-surface-variant); }
 .ficha-precios__cuotas { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--ds-border-subtle); font-size: 11px; color: var(--ds-on-surface-variant); }
-.catalog-price { margin-top: 6px; }
-.catalog-price__tag { display: flex; align-items: center; gap: 4px; font-size: 10px; color: #006d2f; }
+.catalog-price { margin-top: 8px; padding: 10px 12px; border: 1px solid var(--ds-border-subtle); border-radius: 12px; background: var(--ds-surface-subtle); }
+.catalog-price__tag { display: flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 500; color: #006d2f; }
 .catalog-price__tag .material-symbols-outlined { font-size: 13px; }
-.catalog-price__main { font-size: 26px; line-height: 1.15; font-weight: 600; }
-.catalog-price__card { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--ds-border-subtle); font-size: 11px; line-height: 1.5; color: var(--ds-on-surface-variant); }
+.catalog-price__row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+.catalog-price__main { font-size: 27px; line-height: 1.1; font-weight: 600; letter-spacing: -.02em; }
+.catalog-price__card-label { font-size: 10px; color: var(--ds-on-surface-variant); }
+.catalog-price__installments { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--ds-border-subtle); }
+.catalog-price__pill { padding: 3px 8px; border-radius: 999px; background: #fff; border: 1px solid var(--ds-border-subtle); font-size: 10px; line-height: 1.4; color: var(--ds-on-surface-variant); white-space: nowrap; }
+.catalog-price__pill b { font-weight: 500; color: var(--ds-on-surface); }
 .img-fallback { display: grid; place-items: center; width: 100%; height: 100%; color: var(--ds-on-surface-variant); opacity: .5; font-size: 28px; }
 .checkout-item__media, [data-catalog-item] > div:first-child { position: relative; }
 
