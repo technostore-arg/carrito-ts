@@ -107,13 +107,14 @@ export default function StitchView({ name, inline = false, products = [], catego
       if (add) { e.preventDefault(); onAdd?.(add.getAttribute('data-add')); return }
       const sku = el.closest('[data-sku]')
       if (sku) { e.preventDefault(); onProduct?.(sku.getAttribute('data-sku')); return }
-      const resolved = resolveStitchAction(path)
-      if (window.__DEBUG_STITCH) console.log('[stitch]', path, '->', resolved)
-      onAction?.(resolved, path, el)
+      onAction?.(resolveStitchAction(path), path, el)
       if (el.tagName === 'A' && el.getAttribute('href') === '#') e.preventDefault()
     }
     root.addEventListener('click', onClick)
-    return () => root.removeEventListener('click', onClick)
+    // El overlay envuelve el .stitch-view: registrar también ahí para no perder clicks.
+    const host = inline ? null : root.closest('.stitch-overlay')
+    host?.addEventListener('click', onClick)
+    return () => { root.removeEventListener('click', onClick); host?.removeEventListener('click', onClick) }
   }, [html, onClose, onAction, onProduct, onAdd, onQty, onRemove])
 
   // Catálogo unificado: filtros, orden y paginación (12 por página).
