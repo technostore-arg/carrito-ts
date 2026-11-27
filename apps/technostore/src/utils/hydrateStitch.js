@@ -237,7 +237,8 @@ function renderCheckout(doc, cartItems = [], step = 'cart') {
     { id: 'mercadopago', label: 'Mercado Pago', note: 'Tarjetas y Mercado Crédito', tag: '' },
     { id: 'openpay', label: 'Openpay by BBVA', note: 'Tarjetas de crédito y débito', tag: '' },
     { id: 'sipago', label: 'SiPago Credicoop', note: 'Tarjetas de crédito y débito', tag: '' },
-    { id: 'efectivo', label: 'Efectivo', note: 'Al recibir o retirar', tag: '' },
+    // Efectivo solo disponible si el cliente eligió retiro en oficina.
+    { id: 'efectivo', label: 'Efectivo', note: 'Solo al retirar en oficina', tag: '', onlyRetiro: true },
   ]
   const current = step === 'cart' ? 0 : step === 'shipping' ? 1 : step === 'payment' ? 2 : 3
   const stepName = ['Carrito', 'Envío', 'Pago', 'Confirmación'][current]
@@ -263,7 +264,7 @@ function renderCheckout(doc, cartItems = [], step = 'cart') {
           <div class="checkout-fields"><label>Código postal<input type="text" inputmode="numeric" maxlength="4" placeholder="Ej. 1425" data-cp></label><label>Dirección<input type="text" placeholder="Calle y número" data-address></label><label>Nombre y apellido<input type="text" placeholder="Como figura en el comprobante" data-name></label></div>
           <p class="checkout-note">El costo final se calcula con el código postal y se muestra antes de confirmar.</p></div>` : ''}
         ${step === 'payment' ? `<div class="checkout-card"><h2>Elegí cómo pagar</h2><div class="transfer-banner"><span class="material-symbols-outlined">savings</span><div><b>Mejor precio por transferencia</b><small>Pagando con transferencia o DEBIN ahorrás ${money(ahorro)} respecto del precio en tarjeta. Incluye impuestos.</small></div></div>
-          <div class="checkout-options">${payOptions.map((o, i) => `<button type="button" class="checkout-option ${i === 0 ? 'is-selected' : ''}" data-pay="${o.id}"><span class="checkout-radio"></span><span><b>${o.label}</b><small>${o.note}</small></span>${o.tag ? `<em class="checkout-tag">${o.tag}</em>` : ''}</button>`).join('')}</div>
+          <div class="checkout-options">${payOptions.map((o, i) => `<button type="button" class="checkout-option ${i === 0 ? 'is-selected' : ''}" data-pay="${o.id}"${o.onlyRetiro ? ' data-only-retiro="1"' : ''}><span class="checkout-radio"></span><span><b>${o.label}</b><small>${o.note}</small></span>${o.tag ? `<em class="checkout-tag">${o.tag}</em>` : ''}</button>`).join('')}</div>
           <p class="checkout-note">Las cuotas y promociones se aplican en el checkout de cada pasarela y están sujetas a aprobación. No mostramos datos de tarjeta en este sitio.</p></div>` : ''}
         ${step === 'done' ? `<div class="checkout-card checkout-done"><span class="material-symbols-outlined">check_circle</span><h2>Solicitud recibida</h2><p>Te vamos a contactar por WhatsApp o email para coordinar el pago y el envío. Este sitio no procesa datos de tarjeta.</p></div>` : ''}
       </div>

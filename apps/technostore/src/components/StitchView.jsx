@@ -85,6 +85,20 @@ export default function StitchView({ name, inline = false, products = [], catego
         track?.scrollBy({ left: carousel.getAttribute('data-carousel') === 'next' ? 340 : -340, behavior: 'smooth' })
         return
       }
+      const ship = el.closest('[data-ship]')
+      if (ship) {
+        e.preventDefault()
+        const overlay = el.closest('.stitch-overlay')
+        if (overlay) overlay.setAttribute('data-ship', ship.getAttribute('data-ship'))
+        for (const b of ship.parentElement.querySelectorAll('[data-ship]')) b.classList.toggle('is-selected', b === ship)
+        return
+      }
+      const pay = el.closest('[data-pay]')
+      if (pay) {
+        e.preventDefault()
+        for (const b of pay.parentElement.querySelectorAll('[data-pay]')) b.classList.toggle('is-selected', b === pay)
+        return
+      }
       const qty = el.closest('[data-qty]')
       if (qty) { e.preventDefault(); onQty?.(qty.getAttribute('data-qty'), qty.getAttribute('data-delta')); return }
       const rm = el.closest('[data-remove]')

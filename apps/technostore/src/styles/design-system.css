@@ -345,6 +345,8 @@ body:has(.stitch-overlay) .stitch-view > header:first-child { visibility: hidden
 .checkout-options { display: grid; gap: 8px; }
 .checkout-option { display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 14px; border: 1px solid var(--ds-border-subtle); border-radius: 12px; background: #fff; text-align: left; cursor: pointer; font-family: inherit; }
 .checkout-option.is-selected { border-color: var(--ds-primary-container); background: rgba(0,102,255,.05); }
+.checkout-option[data-only-retiro] { display: none !important; }
+.stitch-overlay[data-ship="retiro"] .checkout-option[data-only-retiro] { display: flex !important; }
 .checkout-option > span:nth-child(2) { flex: 1; min-width: 0; }
 .checkout-option b { display: block; font-size: 13px; font-weight: 500; }
 .checkout-option small { display: block; margin-top: 2px; font-size: 11px; color: var(--ds-on-surface-variant); }
